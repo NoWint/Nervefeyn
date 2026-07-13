@@ -64,9 +64,9 @@ async function maybeInstallBundledPackages(options: SetupOptions): Promise<void>
 	}
 
 	printInfo(`Missing packages: ${summarizePackageSources(missing.map((entry) => entry.source))}`);
-	const shouldInstall = await promptConfirm("Install missing Feynman packages now?", true);
+	const shouldInstall = await promptConfirm("立即安装缺失的 Nervefeyn 包?", true);
 	if (!shouldInstall) {
-		printInfo("Skipping package install. Feynman may install missing packages later if needed.");
+		printInfo("跳过包安装。如需,Nervefeyn 稍后会安装缺失的包。");
 		return;
 	}
 
@@ -179,7 +179,7 @@ export async function runSetup(options: SetupOptions): Promise<void> {
 	}
 
 	try {
-		await promptIntro("Feynman setup");
+		await promptIntro("Nervefeyn 设置");
 		await runModelSetup(options.settingsPath, options.authPath);
 		await maybeInstallBundledPackages(options);
 		await maybeInstallOptionalPackages(options);
@@ -207,7 +207,7 @@ export async function runSetup(options: SetupOptions): Promise<void> {
 			printInfo(`Recommended model: ${modelStatus.recommended}`);
 		}
 
-		await promptOutro("Feynman is ready");
+		await promptOutro("Nervefeyn 已就绪");
 	} catch (error) {
 		if (error instanceof SetupCancelledError) {
 			printInfo("Setup cancelled.");

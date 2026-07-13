@@ -55,7 +55,7 @@ function normalizeActiveOrg(home: string, value: unknown): FeynmanActiveOrg | un
 		: randomUUID();
 	const orgName = typeof record.org_name === "string" && record.org_name.trim()
 		? record.org_name.trim()
-		: "Feynman Local Workspace";
+		: "Nervefeyn 本地工作区";
 	const ownerDir = typeof record.login_owner_data_dir === "string" && record.login_owner_data_dir.trim()
 		? record.login_owner_data_dir.trim()
 		: home;
@@ -91,7 +91,7 @@ export function ensureFeynmanActiveOrg(home = getFeynmanHome()): FeynmanActiveOr
 	const org: FeynmanActiveOrg = {
 		schema: ACTIVE_ORG_SCHEMA,
 		org_uuid: randomUUID(),
-		org_name: "Feynman Local Workspace",
+		org_name: "Nervefeyn 本地工作区",
 		account_uuid: randomUUID(),
 		login_owner_data_dir: home,
 	};

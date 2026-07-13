@@ -452,14 +452,14 @@ export function buildModelStatusSnapshotFromRecords(
 	const guidance: string[] = [];
 	if (nonProAvailable.length === 0) {
 		if (proClassAvailableCount > 0) {
-			guidance.push("No non-Pro authenticated Pi models are available. Pro-class models are disabled in Feynman.");
-			guidance.push("Configure a non-Pro research model, then rerun `feynman model list`.");
+			guidance.push("无非 Pro 已认证 Pi 模型可用。Pro 类模型在 Nervefeyn 中已禁用。");
+			guidance.push("配置一个非 Pro 研究模型,然后重新运行 `nervefeyn model list`。");
 		} else {
-			guidance.push("No authenticated Pi models are available yet.");
+			guidance.push("尚无已认证的 Pi 模型。");
 			guidance.push(
-				"Run `feynman model login <provider>` (OAuth) or configure an API key (env var, auth.json, or models.json for custom providers).",
+				"运行 `nervefeyn model login <provider>` (OAuth) 或配置 API 密钥 (环境变量、auth.json 或 models.json 用于自定义提供商)。",
 			);
-			guidance.push("After auth is in place, rerun `feynman model list`.");
+			guidance.push("认证完成后,重新运行 `nervefeyn model list`。");
 		}
 	} else if (!current) {
 		if (recommended) {

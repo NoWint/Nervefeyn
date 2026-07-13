@@ -93,7 +93,7 @@ export function validateFeynmanPluginManifest(value: unknown): PluginManifestVal
 	} else {
 		for (const [index, job] of researchJobs.entries()) {
 			if (typeof job !== "string" || !researchJobValues.includes(job as ResearchJob)) {
-				errors.push(`research_jobs[${index}] is not a supported Feynman research job`);
+				errors.push(`research_jobs[${index}] 不是受支持的 Nervefeyn 研究作业`);
 			}
 		}
 	}

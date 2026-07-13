@@ -6005,7 +6005,7 @@ function renderGraphExplorer(input: {
 		"<body>",
 		"<header>",
 		"<div>",
-		"<p class=\"eyebrow\">Feynman PaperRank Graph Explorer</p>",
+		"<p class=\"eyebrow\">Nervefeyn PaperRank 图浏览器</p>",
 		`<h1>${escapeHtml(input.topic)}</h1>`,
 		`<p class="muted">Generated ${escapeHtml(input.generatedAt)} from ${input.source === "fixture" ? "fixture data" : "OpenAlex Works API"}.</p>`,
 		"</div>",
