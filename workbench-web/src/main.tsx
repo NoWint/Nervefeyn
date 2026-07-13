@@ -232,6 +232,7 @@ import {
 } from "./tensor-preview.js";
 
 import "react-json-view-lite/dist/index.css";
+import "./styles.css";
 import "./design-system.css";
 
 type SidePanel = "compute" | "customize" | "files" | "memory" | "notebook" | null;
