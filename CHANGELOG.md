@@ -1,31 +1,37 @@
 # CHANGELOG
 
-Workspace lab notebook for long-running or resumable research work.
+长时间运行或可恢复研究工作的 workspace lab notebook。
 
-Use this file to track chronology, not release notes. Keep entries short, factual, and operational.
+本文件用于跟踪时间线,而非 release notes。条目保持简短、事实、可操作。
+
+## 2026-07-13 Nervefeyn 品牌改造
+
+- 从 Feynman fork 为 Nervefeyn,GPLv3,用户面中文化
+- Workbench UI 基于 BonjourPrism 深色设计系统重写
+- 下一步:Phase 2 Workbench UI 实施
 
 ### 2026-07-06 EDT — workbench-light-theme-parity
 
-- Objective: Close the biggest visual 1:1 gap. Drove the installed Claude Science app live (authenticated via `claude-science url`) and captured its real project frame: it is a clean LIGHT UI (`rgb(253,253,252)` background, near-black text, blue accent), not the dark-green theme the workbench had. Owner decision: match Claude's light layout with Feynman green as the single accent, and simplify the frame chrome.
-- Changed: Appended a light-theme override layer to `workbench-web/src/styles.css` that re-skins the frame surfaces (rail, conversation canvas, messages, generated tiles, composer, tab strip, files/side panels) to neutral light with `--cs-*` tokens and Feynman green (`#2f6a3d`) as the accent (links, active tab, selected session, send button). Hides the reference-absent chrome — top-bar status pills, model/session menus, and the context metric strip — to match Claude's quiet frame. Fixed the selected-session pill to a light-gray pill.
-- Verified: Focused source-contract tests pass; full `npm test` (`585/585`, Node 24); `build:workbench-web` green; live headless render on `/projects/workspace/frames/playwright` shows white rail/conversation/composer, hidden metric strip, green accent, and no console errors, matching the captured Claude Science reference frame.
-- Next: Tighten remaining details (composer column max-width/centering, generated-tile spacing) against the reference; regenerate stale dark-UI artifact thumbnails.
+- 目标:补齐最大的视觉 1:1 差距。驱动已安装的 Claude Science app 实际运行(通过 `claude-science url` 认证)并抓取其真实 project frame:它是一个干净的浅色 UI(`rgb(253,253,252)` 背景、近黑文本、蓝色 accent),而不是 workbench 此前使用的深绿主题。Owner 决策:匹配 Claude 的浅色布局,以 Feynman 绿作为单一 accent,并简化 frame chrome。
+- 变更:向 `workbench-web/src/styles.css` 追加一层 light-theme override,把 frame surface(rail、对话 canvas、message、generated tile、composer、tab strip、files/侧栏)重新配色为中性浅色,使用 `--cs-*` token,并以 Feynman 绿(`#2f6a3d`)作为 accent(链接、活动 tab、选中的 session、发送按钮)。隐藏参考 app 缺失的 chrome——顶栏 status pill、model/session 菜单与 context metric 条——以匹配 Claude 简洁的 frame。把选中 session 的 pill 修正为浅灰 pill。
+- 验证:聚焦的 source-contract 测试通过;完整 `npm test`(`585/585`,Node 24);`build:workbench-web` 绿;在 `/projects/workspace/frames/playwright` 上的 headless 实时渲染显示白色 rail/对话/composer、隐藏 metric 条、绿色 accent 且无控制台错误,匹配抓取的 Claude Science 参考帧。
+- 下一步:对照参考继续收紧剩余细节(composer 列最大宽度/居中、generated-tile 间距);重新生成陈旧的深色 UI artifact 缩略图。
 
 ### 2026-07-06 EDT — workbench-center-tab-strip-parity
 
-- Objective: Finish the in-flight Claude Science parity slice that adds a Chat/Files tab strip to the workbench frame center pane, so Files can open in-place instead of only as a right-side panel.
-- Changed: Added a `CenterPane` state (`chat` | `files`) and a `.workspace-tab-strip` nav under the frame header; the transcript+composer render only on the Chat tab, and the existing `FilesPanel` (factored out once as `filesPanelElement` and reused by the side panel) mounts in a `.center-files-panel` on the Files tab. Rail Files button and the files toggle now switch the center pane. New session / run navigation resets the pane to Chat.
-- Verified: Full `npm test` (`585/585`) under Node 24; typecheck and `build:workbench-web` green; live headless render on `/projects/workspace/frames/playwright` confirmed both tabs present, Files tab shows the center files panel and hides the composer, Chat tab restores it, zero console errors.
-- Next: Continue the visual 1:1 parity pass against the installed Claude Science app.
+- 目标:完成进行中的 Claude Science parity 切片,在 workbench frame 中间窗格加 Chat/Files tab strip,使 Files 可以原地打开,而不是只能作为右侧面板。
+- 变更:新增 `CenterPane` 状态(`chat` | `files`)与 frame header 下的 `.workspace-tab-strip` 导航;transcript+composer 仅在 Chat tab 渲染,既有 `FilesPanel`(抽取为 `filesPanelElement` 并被侧栏复用)挂载到 Files tab 的 `.center-files-panel`。Rail 的 Files 按钮与 files toggle 现在切换中间窗格。新 session / run 导航会重置回 Chat。
+- 验证:Node 24 下完整 `npm test`(`585/585`);typecheck 与 `build:workbench-web` 绿;`/projects/workspace/frames/playwright` 上的 headless 实时渲染确认两个 tab 都在,Files tab 显示中间 files 面板并隐藏 composer,Chat tab 恢复 composer,零控制台错误。
+- 下一步:对照已安装的 Claude Science app 继续视觉 1:1 parity。
 
 ### 2026-07-06 12:44 EDT — check-new-issues-clean-main
 
-- Objective: Run the recurring Feynman intake sweep against live GitHub issues, PRs, contributor branches, recent main workflows, release/npm state, package freshness, and repo-local validation while preserving active worktree edits.
-- Checked: Live open issues stayed `#185`, `#184`, and `#182`; open PR list was empty; `origin/main` stayed aligned with local `main` at `fa26693`; latest `main` `Publish and Release` run `28755882698` succeeded at `fa26693`; latest GitHub release and npm package remain `v0.3.5` / `@companion-ai/feynman@0.3.5`; installed/runtime package versions remain `@earendil-works/pi-coding-agent@0.80.3`, `@companion-ai/alpha-hub@0.1.3`, and `pi-btw@0.4.1`; contributor refs were stale behind `origin/main`, had no ahead diff, or contained provider/platform/export/prompt/admin/docs churn rather than a fresh research-loop fix.
-- Decisions: `#185` remains locally covered by bundling existing `pi-btw` in the core Pi package stack because it improves long-running research-loop steering without inventing a Feynman-owned interrupt mechanism. `#184` remains outside the AI-researcher product bar because it is a thesis-planning/support request, not a repo feature or defect. `#182` remains deferred/external because Feynman delegates alpha auth to `@companion-ai/alpha-hub`, issue diagnostics point to alphaXiv/Clerk redirecting away before localhost receives `code`, and the current installed-tarball `alpha status` succeeds. No open PRs needed merge/port/reject/defer action. No new queue-driven code changes were needed in this run.
-- Verified: `npm test` (`585/585`); `npm run typecheck`; `npm run build` with existing RDKit/3Dmol/patristic warnings; `npm run architecture:check` with existing split-debt warnings; website `npm run lint`, `npm run typecheck` (`0 errors`, `0 warnings`), and `npm run build` (`34 pages`); root and website `npm audit --omit=dev` (`0 vulnerabilities`); `git diff --check`; `npm pack --dry-run --json` with `entryCount: 401`, shasum `cc7a11600c6ebf36481195626203769be3c52dcb`; actual temp tarball smoke from `/tmp/feynman-pack-smoke-dmOqSI/companion-ai-feynman-0.3.5.tgz` passed for `feynman --version`, `feynman --help`, `feynman packages list` showing `npm:pi-btw` in Core, and `feynman alpha status` (`Logged in to alphaXiv as Advait Paliwal`); runtime archive inspection confirmed `npm/node_modules/pi-btw/package.json` and `npm/node_modules/pi-btw/extensions/btw.ts`.
-- Note: one first archive-inspection helper hit `ENOBUFS` because it buffered the embedded runtime tarball in Node; a second `tar`-based inspection verified the archive paths directly.
-- Next: Keep intake sweeps read-only unless a fresh Feynman-owned repro or core-research PR appears; the remaining dirty files are preserved active workbench/docs/package-stack edits plus append-only run notes.
+- 目标:在保留活动 worktree 编辑的同时,运行常规 Nervefeyn intake sweep,覆盖 live GitHub issue、PR、contributor 分支、近期 main workflow、release/npm 状态、包新鲜度与 repo 本地验证。
+- 检查:live 开放 issue 仍为 `#185`、`#184`、`#182`;开放 PR 列表为空;`origin/main` 与本地 `main` 在 `fa26693` 对齐;最新 `main` `Publish and Release` 运行 `28755882698` 在 `fa26693` 成功;最新 GitHub release 与 npm 包仍为 `v0.3.5` / `@companion-ai/feynman@0.3.5`;已安装/运行时包版本仍为 `@earendil-works/pi-coding-agent@0.80.3`、`@companion-ai/alpha-hub@0.1.3` 与 `pi-btw@0.4.1`;contributor ref 相对 `origin/main` 落后、无 ahead diff,或包含 provider/platform/export/prompt/admin/docs churn 而非新的 research-loop 修复。
+- 决策:`#185` 仍通过把既有 `pi-btw` 打入核心 Pi 包栈而在本地覆盖,因为它改进了长时间运行 research-loop 的引导,无需发明 Nervefeyn 自有的中断机制。`#184` 仍超出 AI-researcher 产品边界,因为它是论文规划/支持请求,不是 repo 功能或缺陷。`#182` 仍 deferred/external,因为 Nervefeyn 把 alpha auth 委托给 `@companion-ai/alpha-hub`,issue 诊断指向 alphaXiv/Clerk 在 localhost 收到 `code` 之前就跳走,而当前 installed-tarball `alpha status` 成功。无开放 PR 需要 merge/port/reject/defer。本次运行无新的 queue-driven 代码改动。
+- 验证:`npm test`(`585/585`);`npm run typecheck`;`npm run build`(带既有 RDKit/3Dmol/patristic 警告);`npm run architecture:check`(带既有 split-debt 警告);website `npm run lint`、`npm run typecheck`(`0 errors`、`0 warnings`)与 `npm run build`(`34 pages`);root 与 website `npm audit --omit=dev`(`0 vulnerabilities`);`git diff --check`;`npm pack --dry-run --json` 的 `entryCount: 401`、shasum `cc7a11600c6ebf36481195626203769be3c52dcb`;从 `/tmp/feynman-pack-smoke-dmOqSI/companion-ai-feynman-0.3.5.tgz` 实测 tarball smoke 通过 `feynman --version`、`feynman --help`、`feynman packages list`(Core 中显示 `npm:pi-btw`)与 `feynman alpha status`(`Logged in to alphaXiv as Advait Paliwal`);runtime archive 检视确认 `npm/node_modules/pi-btw/package.json` 与 `npm/node_modules/pi-btw/extensions/btw.ts`。
+- 备注:首次 archive 检视 helper 命中 `ENOBUFS`,因为它在 Node 中缓存了 embedded runtime tarball;第二次基于 `tar` 的检视直接验证了 archive 路径。
+- 下一步:除非出现新的 Nervefeyn 自有 repro 或核心研究 PR,否则保持 intake sweep 只读;剩余 dirty 文件是保留的活动 workbench/docs/package-stack 编辑加上 append-only 运行笔记。
 
 ### 2026-07-05 21:18 EDT — workbench-compact-composer-parity
 

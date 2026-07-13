@@ -1,9 +1,9 @@
 <p align="center">
   <a href="https://feynman.is">
-    <img src="assets/hero.png" alt="Feynman CLI" width="800" />
+    <img src="assets/hero.png" alt="Nervefeyn CLI" width="800" />
   </a>
 </p>
-<p align="center">The open source AI research agent.</p>
+<p align="center">开源 AI 研究代理。</p>
 <p align="center">
   <a href="https://feynman.is/docs"><img alt="Docs" src="https://img.shields.io/badge/docs-feynman.is-0d9668?style=flat-square" /></a>
   <a href="https://github.com/companion-inc/feynman/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/companion-inc/feynman?style=flat-square" /></a>
@@ -11,7 +11,7 @@
 
 ---
 
-### Installation
+### 安装
 
 **macOS / Linux:**
 
@@ -25,19 +25,19 @@ curl -fsSL https://feynman.is/install | bash
 irm https://feynman.is/install.ps1 | iex
 ```
 
-The one-line installer fetches the latest tagged release. To pin a version, pass it explicitly, for example `curl -fsSL https://feynman.is/install | bash -s -- 0.2.35`.
+一行式安装器会拉取最新的 tagged release。如需锁定版本,请显式传入,例如 `curl -fsSL https://feynman.is/install | bash -s -- 0.2.35`。
 
-The installer downloads a standalone native bundle with its own Node.js runtime.
+安装器下载的是自带 Node.js 运行时的独立原生 bundle。
 
-To upgrade the standalone app later, rerun the installer. `feynman update` only refreshes installed Pi packages inside Feynman's environment; it does not replace the standalone runtime bundle itself.
+后续升级独立 app,请重新运行安装器。`nervefeyn update` 只会刷新 Nervefeyn 环境内的 Pi 包;它不会替换独立运行时 bundle 本身。
 
-To uninstall the standalone app, remove the launcher and runtime bundle, then optionally remove `~/.feynman` if you also want to delete settings, workbench app state, sessions, and installed package state. If you also want to delete alphaXiv login state, remove `~/.ahub`. See the installation guide for platform-specific paths.
+如需卸载独立 app,请删除 launcher 与运行时 bundle,然后可选地删除 `~/.feynman` 目录(同时会清除设置、workbench app 状态、会话与已安装包状态)。若还想清除 alphaXiv 登录状态,请删除 `~/.ahub`。各平台路径请参见安装指南。
 
-Local models are supported through the setup flow. For LM Studio, run `feynman setup`, choose `LM Studio`, and keep the default `http://localhost:1234/v1` unless you changed the server port. For LiteLLM, choose `LiteLLM Proxy` and keep the default `http://localhost:4000/v1`. For Ollama or vLLM, choose `Custom provider (baseUrl + API key)`, use `openai-completions`, and point it at the local `/v1` endpoint.
+本地模型可通过 setup 流程接入。对于 LM Studio,运行 `nervefeyn setup`,选择 `LM Studio`,在未修改服务端口时保留默认 `http://localhost:1234/v1`。对于 LiteLLM,选择 `LiteLLM Proxy`,保留默认 `http://localhost:4000/v1`。对于 Ollama 或 vLLM,选择 `Custom provider (baseUrl + API key)`,使用 `openai-completions`,并指向本地 `/v1` endpoint。
 
-### Skills Only
+### 仅安装 Skills
 
-If you want just the research skills without the full terminal app:
+如果只需要研究 skills 而不需要完整终端 app:
 
 **macOS / Linux:**
 
@@ -51,7 +51,7 @@ curl -fsSL https://feynman.is/install-skills | bash
 irm https://feynman.is/install-skills.ps1 | iex
 ```
 
-That installs the skill library into `~/.codex/skills/feynman` for Codex. You can also name the Codex target explicitly:
+这会把 skill 库安装到 Codex 的 `~/.codex/skills/feynman`。也可显式指定 Codex 目标:
 
 **macOS / Linux:**
 
@@ -65,7 +65,7 @@ curl -fsSL https://feynman.is/install-skills | bash -s -- --codex
 & ([scriptblock]::Create((irm https://feynman.is/install-skills.ps1))) -Scope Codex
 ```
 
-For a repo-local Claude/agent install instead:
+如需安装到当前 repo 内供 Claude/agent 使用:
 
 **macOS / Linux:**
 
@@ -79,9 +79,9 @@ curl -fsSL https://feynman.is/install-skills | bash -s -- --repo
 & ([scriptblock]::Create((irm https://feynman.is/install-skills.ps1))) -Scope Repo
 ```
 
-That installs into `.agents/skills/feynman` under the current repository.
+这会安装到当前 repo 下的 `.agents/skills/feynman`。
 
-For an OpenCode project-local install instead:
+如需安装到 OpenCode 项目本地:
 
 **macOS / Linux:**
 
@@ -95,112 +95,112 @@ curl -fsSL https://feynman.is/install-skills | bash -s -- --opencode
 & ([scriptblock]::Create((irm https://feynman.is/install-skills.ps1))) -Scope OpenCode
 ```
 
-That installs into `.opencode/skills/feynman` under the current repository.
+这会安装到当前 repo 下的 `.opencode/skills/feynman`。
 
-These installers download the bundled `skills/` and `prompts/` trees plus the repo guidance files referenced by those skills. They do not install the Feynman terminal, bundled Node runtime, auth storage, or Pi packages.
-
----
-
-### What you type → what happens
-
-```
-$ feynman "what do we know about scaling laws"
-→ Searches papers and web, produces a cited research brief
-
-$ feynman deepresearch "mechanistic interpretability"
-→ Multi-agent investigation with parallel researchers, synthesis, verification
-
-$ feynman lit "RLHF alternatives"
-→ Literature review with consensus, disagreements, open questions, and lab/PI corpus mode when the input names a research group
-
-$ feynman rank "mechanistic interpretability sparse autoencoders"
-→ Decides what to read first with citation, method, reproducibility, and provenance evidence
-
-$ feynman rank "mechanistic interpretability sparse autoencoders" --expand-citations 2
-→ Adds cited and citing papers to the local citation graph before scoring graph prestige
-
-$ feynman rank "mechanistic interpretability sparse autoencoders" --full-text-top 3
-→ Adds section-aware full-text evidence and checklist rubric answers before rescoring
-
-$ feynman rank "mechanistic interpretability sparse autoencoders" --critique-top 5
-→ Adds research-critique strengths, concerns, and follow-up questions grounded in score evidence
-
-$ feynman rank "mechanistic interpretability sparse autoencoders" --synthesize
-→ Writes an auditable model synthesis and names the selected model plus whether it was recommended or explicitly requested
-
-$ feynman paper 10.7717/peerj.4375 --fetch-full-text
-→ Resolves legal full-text access candidates for one paper and fetches source-specific text when available
-
-$ feynman serve
-→ Opens the standalone science workbench with projects, Pi chat, Feynman Bio Tools, notebooks, compute, artifact previews, provenance, settings, skills, and onboarding context
-
-$ feynman serve --no-auth
-→ Opens the same local workbench at a plain localhost URL for trusted local testing
-
-$ feynman audit 2401.12345
-→ Compares paper claims against the public codebase
-
-$ feynman replicate "chain-of-thought improves math"
-→ Plans replication checks and runs them only after an explicit environment choice
-
-$ feynman recipe "fine-tune a small model for math reasoning"
-→ Finds ranked, implementable ML training recipes from papers, datasets, docs, and code
-```
+这些安装器会下载打包的 `skills/` 与 `prompts/` 目录树,以及这些 skills 引用的 repo 指导文件。它们不会安装 Nervefeyn 终端、内置 Node 运行时、auth 存储或 Pi 包。
 
 ---
 
-### Workflows
+### 你输入什么 → 会发生什么
 
-Ask naturally or use slash commands as shortcuts.
+```
+$ nervefeyn "what do we know about scaling laws"
+→ 搜索论文与网页,产出带引用的研究简报
 
-| Command | What it does |
+$ nervefeyn deepresearch "mechanistic interpretability"
+→ 多代理调查,并行 researcher、综合、verification
+
+$ nervefeyn lit "RLHF alternatives"
+→ 文献综述,包含共识、分歧、开放问题;输入为研究组时会启用 lab/PI corpus 模式
+
+$ nervefeyn rank "mechanistic interpretability sparse autoencoders"
+→ 决定先读哪篇,附 citation、method、reproducibility 与 provenance 证据
+
+$ nervefeyn rank "mechanistic interpretability sparse autoencoders" --expand-citations 2
+→ 在打分图 prestige 前先把 cited 与 citing 论文加入本地引用图
+
+$ nervefeyn rank "mechanistic interpretability sparse autoencoders" --full-text-top 3
+→ 在重新打分前加入 section-aware 全文证据与 checklist rubric 答案
+
+$ nervefeyn rank "mechanistic interpretability sparse autoencoders" --critique-top 5
+→ 加入基于打分证据的研究 critique 优点、关注点与后续问题
+
+$ nervefeyn rank "mechanistic interpretability sparse autoencoders" --synthesize
+→ 写出可审计的模型综合,并指明所选模型以及是推荐还是显式请求
+
+$ nervefeyn paper 10.7717/peerj.4375 --fetch-full-text
+→ 为单篇论文解析合法全文访问候选,并在可用时抓取源特定文本
+
+$ nervefeyn serve
+→ 打开独立 science workbench,包含 projects、Pi chat、Nervefeyn Bio Tools、notebooks、compute、artifact 预览、provenance、settings、skills 与 onboarding 上下文
+
+$ nervefeyn serve --no-auth
+→ 在可信本地测试场景下以普通 localhost URL 打开同一 workbench
+
+$ nervefeyn audit 2401.12345
+→ 将论文声明与公开代码库进行比对
+
+$ nervefeyn replicate "chain-of-thought improves math"
+→ 规划 replication 检查,仅在显式选择环境后才会执行
+
+$ nervefeyn recipe "fine-tune a small model for math reasoning"
+→ 从论文、数据集、文档与代码中找出可实施、已排名的 ML 训练 recipe
+```
+
+---
+
+### 工作流
+
+自然提问,或使用 slash command 作为快捷方式。
+
+| 命令 | 作用 |
 | --- | --- |
-| `feynman rank <topic>` | PaperRank scoring for deciding what to read first, with transparent evidence for citations, methods, reproducibility, and provenance |
-| `feynman paper <id-or-title>` | Paper access resolver for one DOI, arXiv ID, OpenAlex ID, PMID, PMCID, or title, with OpenAlex, arXiv/alphaXiv, DOI, and Europe PMC candidates plus optional source-specific text fetching |
-| `feynman serve` | Standalone science workbench with project/session navigation, project metadata, in-app Pi chat, optional `--no-auth` plain localhost mode, Feynman Bio Tools, Ketcher chemistry sketch artifacts, notebooks, compute, Files host inventory for local, SSH/BYOC, and cloud-backed artifact contexts, audio/video/spreadsheet/notebook/LaTeX/science artifact previews including element-level HTML report annotations and KET/RXN/CDXML/CXSMILES chemistry sketches, artifact Notes and note preview modals, Cloud storage credential modal, Cloud export target/destination modal, frame records, frame message rows, frame backfill health records, lineage, provenance, settings, org-scoped app-data workbench state under `~/.feynman/orgs/<org_uuid>/workbench`, an org-level `feynman-workbench.db` mirror with physical tables for the full reference-shaped workbench ledger coverage map including compute egress/Modal environment fields and Feynman-owned connector ledgers, watch routine state, skill source/license state, setup decision state, review feedback state, compute poller lease state, redacted credential state, onboarding intent context, verification files, and `CHANGELOG.md` lab-notebook entries |
-| `/deepresearch <topic>` | Source-heavy multi-agent investigation |
-| `/lit <topic-or-lab>` | Literature review from paper search and primary sources; lab/PI inputs map publication trajectories and originality-ranked papers |
-| `/review <artifact>` | Research review with severity and revision plan |
-| `/audit <item>` | Paper vs. codebase mismatch audit |
-| `/replicate <paper>` | Plan replication checks; execute only after choosing an environment |
-| `/recipe <task-or-paper>` | Ranked ML training recipes with dataset, method, code, and verification status |
-| `/compare <topic>` | Source comparison matrix |
-| `/draft <topic>` | Paper-style draft from research findings |
-| `/autoresearch <idea>` | Bounded experiment loop with benchmark evidence |
-| `/watch <topic>` | Research watch baseline with optional scheduled follow-up |
-| `/btw <question>` | Side conversation while the main research agent is busy, with optional handoff back into the main thread |
-| `/outputs` | Browse all research artifacts |
+| `nervefeyn rank <topic>` | PaperRank 打分,用于决定先读什么,提供 citations、methods、reproducibility 与 provenance 的透明证据 |
+| `nervefeyn paper <id-or-title>` | 单篇论文访问解析器,支持 DOI、arXiv ID、OpenAlex ID、PMID、PMCID 或标题,提供 OpenAlex、arXiv/alphaXiv、DOI 与 Europe PMC 候选,以及可选的源特定文本抓取 |
+| `nervefeyn serve` | 独立 science workbench,包含 project/session 导航、project 元数据、应用内 Pi chat、可选 `--no-auth` 普通 localhost 模式、Nervefeyn Bio Tools、Ketcher 化学草图 artifacts、notebooks、compute、Files 主机清单(覆盖本地、SSH/BYOC 与云端 artifact 上下文)、音视频/电子表格/notebook/LaTeX/science artifact 预览(含 element 级 HTML report 注释与 KET/RXN/CDXML/CXSMILES 化学草图)、artifact Notes 与 note 预览 modal、Cloud 存储凭证 modal、Cloud 导出目标/目的地 modal、frame 记录、frame message 行、frame backfill health 记录、lineage、provenance、settings、org 范围 app-data workbench 状态(位于 `~/.feynman/orgs/<org_uuid>/workbench`)、org 级 `feynman-workbench.db` 镜像(以物理表覆盖 reference-shaped workbench ledger 全覆盖图,包含 compute egress/Modal 环境字段与 Nervefeyn 自有 connector ledger)、watch routine 状态、skill source/license 状态、setup 决策状态、review feedback 状态、compute poller lease 状态、redacted 凭证状态、onboarding intent 上下文、verification 文件与 `CHANGELOG.md` lab-notebook 条目 |
+| `/deepresearch <topic>` | 来源密集的多代理调查 |
+| `/lit <topic-or-lab>` | 基于论文搜索与一手来源的文献综述;lab/PI 输入会映射发表轨迹与按原创性排名的论文 |
+| `/review <artifact>` | 研究 review,带 severity 与修订计划 |
+| `/audit <item>` | 论文 vs. 代码库不一致审计 |
+| `/replicate <paper>` | 规划 replication 检查;仅在选定环境后才执行 |
+| `/recipe <task-or-paper>` | 排名 ML 训练 recipe,附数据集、方法、代码与 verification 状态 |
+| `/compare <topic>` | 来源对比矩阵 |
+| `/draft <topic>` | 基于研究结果产出论文风格草稿 |
+| `/autoresearch <idea>` | 带基准证据的有界实验循环 |
+| `/watch <topic>` | 研究 watch baseline,可选定时后续 |
+| `/btw <question>` | 主研究代理忙碌时的旁路对话,可选回交到主线程 |
+| `/outputs` | 浏览所有研究 artifact |
 
 ---
 
-### Agents
+### 子代理
 
-Four bundled research agents, invoked by workflow prompts when decomposition helps.
+四个内置研究子代理,当分解有助于推进时由 workflow prompt 调用。
 
-- **Researcher** — gather evidence across papers, web, repos, docs
-- **Reviewer** — internal research critique with severity-graded feedback
-- **Writer** — structured drafts from research notes
-- **Verifier** — inline citations, source URL verification, dead link cleanup
-
----
-
-### Skills & Tools
-
-- **[AlphaXiv](https://www.alphaxiv.org/)** — paper search, Q&A, code reading, annotations (via Feynman's `alpha` tools and `feynman alpha` command)
-- **Feynman Bio Tools** — Feynman-owned open science connector catalog for literature, exact OpenAlex work/citation/reference/author/venue workflows, exact arXiv search and batch-paper retrieval, PubMed metadata, PMID/PMCID/DOI conversion, related-article links, citation matching, copyright/license checks, PMC full-text routing, bioRxiv/medRxiv preprint DOI lookup, date/category windows, published-preprint links, funder/ROR lookup, usage/content statistics, Europe PMC open-access full-text sections, citation graphs, authors, venues, OA status, ClinicalTrials.gov trial search, NCT details, sponsor programs, eligibility filters, investigator records, endpoint summaries, Grants.gov exact opportunity search, FDA labels, adverse events, recalls, Drugs@FDA applications, sponsor/status/route counts, pharmacologic classes, generic-equivalent active-ingredient sets, ChEMBL compound/drug/ADMET/bioactivity/mechanism/target workflows, PubChem compound/search/similarity/bioassay/safety workflows, ChEBI entity/ontology workflows, BindingDB target/compound workflows, editable Ketcher chemistry sketch seeds, gene, BioMart, Ensembl lookup/xref/VEP/homology/sequence/overlap workflows, MyGene query-many, OLS ontology, QuickGO annotation, UniProt entry, Reactome pathway, CellGuide, PanglaoDB marker genes and gene-to-cell-type workflows, exact Antibody Registry antibody/RRID/catalog/stat workflows, reagent, cell-type, metabolomics, genome-track, UCSC exact track/chromosome/conservation/TFBS workflows, UniBind TF-DNA binding, KEGG entry/search/link/ID-conversion workflows, InterPro/Pfam exact domain architecture, entry, clan, family protein/proteome modes, Human Protein Atlas exact gene/search modes, STRING exact ID mapping, network, similarity, and best-hit workflows, purchasable ZINC compounds, protein, predicted-structure, structure, EM-map, complex, interaction, exact ENCODE/JASPAR/UniBind regulation modes for experiments, biosamples, files, matrices, species/taxa/collections/releases, datasets, and regional TFBS, exact ArrayExpress/GEO/MetaboLights/MGnify/PRIDE omics-archive modes for experiments, samples, files, analyses, projects, and protein evidence, metagenomics, chemical-ontology, chemistry, pathway, exact Rfam RNA family metadata, accession/id conversion, seed alignment, covariance model, tree, region, structure-mapping, and sequence-search workflows, exact gnomAD short variant, gene, region, liftover, ClinVar-mirror, structural, and mitochondrial workflows, exact CADD variant/position/range scores, exact direct ClinVar search/accession/rsID workflows, exact dbSNP rsID/region workflows, GWAS Catalog exact association/study/trait/SNP workflows, eQTL Catalogue exact dataset and association workflows, PheWeb/FinnGen PheWAS workflows, GTEx dataset/tissue/sample/gene/expression/eQTL workflows, tissue/protein-atlas, expression, human-genetics, cBioPortal study/detail/mutation-frequency/mutation/CNA/clinical-attribute workflows, DepMap model/gene/dependency workflows, CIViC gene/variant/evidence/assertion/profile/disease/therapy workflows, ClinGen validity/dosage/actionability/classification workflows, Open Targets disease-drug/disease-target/drug/search workflows, and canceromics sources
-- **[Hugging Face Hub](https://huggingface.co/docs/hub/api)** — dataset metadata, split/schema inspection, and small file reads from model, dataset, and Space repos
-- **Web search** — Exa, Perplexity, or Gemini API; no Chromium cookie access by default
-- **Session search** — indexed recall across prior research sessions
-- **Artifact previews** — local workbench viewers for reports, JSON/JSONL, tables, PDFs, images, audio, video, XLSX workbooks, Jupyter notebooks, LaTeX, sequences, alignments, variants, genomes, KET/RXN/CDXML/CXSMILES/Molfile/SDF/SMILES chemistry artifacts, structures, trees, and tensors
-- **Observability** — PostHog analytics, logs, distributed traces, and Pi AI runtime traces through OpenTelemetry metadata
-- **Research execution options** — Docker, Modal, and RunPod instructions for explicitly chosen replication, benchmark, or dataset-heavy experiment runs; not service deployment or generic cloud administration
-- **Workbench control plane** — local onboarding, project/session/frame state, upload-frame linkage, frame message rows, frame backfill health records, chat-produced artifact attachment, artifact/version lineage, Files host inventory for local workspace files, SSH/BYOC compute hosts, and cloud buckets, media/document/science previews, element-level HTML report annotations, artifact Notes and note preview modals, Cloud storage credential modal, Cloud export target/destination modal with audit logs, execution logs, verification checks, memory categories, watch routine records, skill source/license records, setup decision records, review feedback records, compute poller lease records, scoped settings, and redacted credential availability records under Feynman's own runtime and workspace files
+- **Researcher** — 跨论文、网页、repo、文档收集证据
+- **Reviewer** — 内部研究 critique,带 severity 分级反馈
+- **Writer** — 基于研究笔记产出结构化草稿
+- **Verifier** — 行内引用、来源 URL 验证、死链清理
 
 ---
 
-### How it works
+### Skills 与工具
 
-Built on [Pi](https://github.com/badlogic/pi-mono) for the agent runtime, [alphaXiv](https://www.alphaxiv.org/) for paper search and analysis, and CLI tools for compute and execution. Runtime resources follow Pi's documented package model for [packages](https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/docs/packages.md), [extensions](https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/docs/extensions.md), and [skills](https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/docs/skills.md). Hugging Face inspection uses the public [Hub API endpoints](https://huggingface.co/docs/hub/api) and `HF_TOKEN` / `HUGGINGFACE_HUB_TOKEN` environment variables documented by [`huggingface_hub`](https://huggingface.co/docs/huggingface_hub/main/en/package_reference/environment_variables). The ML recipe workflow was informed by the open-source [Hugging Face `ml-intern`](https://github.com/huggingface/ml-intern) research-agent repo, but is implemented as native Feynman prompts, skills, and read-only tools. Research outputs are source-grounded — research claims link to papers, docs, or repos with direct URLs.
+- **[AlphaXiv](https://www.alphaxiv.org/)** — 论文搜索、Q&A、代码阅读、注释(通过 Nervefeyn 的 `alpha` 工具与 `nervefeyn alpha` 命令)
+- **Nervefeyn Bio Tools** — Nervefeyn 自有的开放科学 connector 目录,覆盖文献、精确 OpenAlex work/citation/reference/author/venue 工作流、精确 arXiv 搜索与批量论文检索、PubMed 元数据、PMID/PMCID/DOI 转换、related-article 链接、citation 匹配、版权/license 检查、PMC 全文路由、bioRxiv/medRxiv preprint DOI 查找、日期/类别窗口、published-preprint 链接、funder/ROR 查找、使用/内容统计、Europe PMC 开放访问全文 section、citation 图、作者、venue、OA 状态、ClinicalTrials.gov 试验搜索、NCT 详情、sponsor 项目、eligibility 过滤、investigator 记录、endpoint 摘要、Grants.gov 精确机会搜索、FDA 标签、不良事件、召回、Drugs@FDA 申请、sponsor/status/route 计数、药理类别、generic-equivalent active-ingredient 集合、ChEMBL compound/drug/ADMET/bioactivity/mechanism/target 工作流、PubChem compound/search/similarity/bioassay/safety 工作流、ChEBI entity/ontology 工作流、BindingDB target/compound 工作流、可编辑 Ketcher 化学草图 seed、gene、BioMart、Ensembl lookup/xref/VEP/homology/sequence/overlap 工作流、MyGene query-many、OLS ontology、QuickGO 注释、UniProt entry、Reactome pathway、CellGuide、PanglaoDB marker genes 与 gene-to-cell-type 工作流、精确 Antibody Registry antibody/RRID/catalog/stat 工作流、reagent、cell-type、metabolomics、genome-track、UCSC 精确 track/chromosome/conservation/TFBS 工作流、UniBind TF-DNA binding、KEGG entry/search/link/ID-conversion 工作流、InterPro/Pfam 精确 domain architecture、entry、clan、family protein/proteome 模式、Human Protein Atlas 精确 gene/search 模式、STRING 精确 ID mapping、network、similarity 与 best-hit 工作流、可购买 ZINC compound、protein、predicted-structure、structure、EM-map、complex、interaction、精确 ENCODE/JASPAR/UniBind regulation 模式(experiments、biosamples、files、matrices、species/taxa/collections/releases、datasets 与 regional TFBS)、精确 ArrayExpress/GEO/MetaboLights/MGnify/PRIDE omics-archive 模式(experiments、samples、files、analyses、projects 与 protein evidence、metagenomics、chemical-ontology、chemistry、pathway)、精确 Rfam RNA family 元数据、accession/id 转换、seed alignment、covariance model、tree、region、structure-mapping 与 sequence-search 工作流、精确 gnomAD short variant、gene、region、liftover、ClinVar-mirror、structural 与 mitochondrial 工作流、精确 CADD variant/position/range 分数、精确 direct ClinVar search/accession/rsID 工作流、精确 dbSNP rsID/region 工作流、GWAS Catalog 精确 association/study/trait/SNP 工作流、eQTL Catalogue 精确 dataset 与 association 工作流、PheWeb/FinnGen PheWAS 工作流、GTEx dataset/tissue/sample/gene/expression/eQTL 工作流、tissue/protein-atlas、expression、human-genetics、cBioPortal study/detail/mutation-frequency/mutation/CNA/clinical-attribute 工作流、DepMap model/gene/dependency 工作流、CIViC gene/variant/evidence/assertion/profile/disease/therapy 工作流、ClinGen validity/dosage/actionability/classification 工作流、Open Targets disease-drug/disease-target/drug/search 工作流,以及 canceromics 来源
+- **[Hugging Face Hub](https://huggingface.co/docs/hub/api)** — 从 model、dataset 与 Space repo 读取 dataset 元数据、split/schema 检视与小文件
+- **Web search** — Exa、Perplexity 或 Gemini API;默认不访问 Chromium cookie
+- **Session search** — 跨过往研究会话的索引召回
+- **Artifact 预览** — 本地 workbench 查看器,支持 reports、JSON/JSONL、表格、PDF、图片、音频、视频、XLSX 工作簿、Jupyter notebook、LaTeX、sequence、alignment、variant、genome、KET/RXN/CDXML/CXSMILES/Molfile/SDF/SMILES 化学 artifact、structure、tree 与 tensor
+- **可观测性** — PostHog analytics、日志、分布式 trace,以及通过 OpenTelemetry metadata 的 Pi AI runtime trace
+- **研究执行选项** — Docker、Modal 与 RunPod 指南,用于显式选定的 replication、benchmark 或数据集密集型实验运行;不用于服务部署或通用云管理
+- **Workbench 控制面** — 本地 onboarding、project/session/frame 状态、upload-frame 关联、frame message 行、frame backfill health 记录、chat 产出的 artifact 附件、artifact/version lineage、Files 主机清单(覆盖本地工作区文件、SSH/BYOC compute 主机与云 bucket)、media/document/science 预览、element 级 HTML report 注释、artifact Notes 与 note 预览 modal、Cloud 存储凭证 modal、Cloud 导出目标/目的地 modal(带审计日志)、执行日志、verification 检查、memory 类别、watch routine 记录、skill source/license 记录、setup 决策记录、review feedback 记录、compute poller lease 记录、scoped settings 与 redacted 凭证可用性记录,全部位于 Nervefeyn 自有的运行时与工作区文件下
+
+---
+
+### 工作原理
+
+基于 [Pi](https://github.com/badlogic/pi-mono) 提供 agent 运行时,基于 [alphaXiv](https://www.alphaxiv.org/) 提供论文搜索与分析,基于 CLI 工具进行 compute 与执行。运行时资源遵循 Pi 文档化的 [packages](https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/docs/packages.md)、[extensions](https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/docs/extensions.md) 与 [skills](https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/docs/skills.md) 包模型。Hugging Face 检视使用公开的 [Hub API endpoints](https://huggingface.co/docs/hub/api) 以及 `huggingface_hub` 文档中的 `HF_TOKEN` / `HUGGINGFACE_HUB_TOKEN` 环境变量。ML recipe 工作流参考了开源的 [Hugging Face `ml-intern`](https://github.com/huggingface/ml-intern) research-agent repo,但实现为原生的 Nervefeyn prompt、skill 与只读工具。研究输出均以来源为依据 —— 研究声明以直链 URL 关联到论文、文档或 repo。
 
 ---
 
@@ -216,9 +216,9 @@ Built on [Pi](https://github.com/badlogic/pi-mono) for the agent runtime, [alpha
 
 ---
 
-### Contributing
+### 贡献
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor guide.
+完整贡献者指南请见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ```bash
 git clone https://github.com/companion-inc/feynman.git
@@ -230,4 +230,9 @@ npm run typecheck
 npm run build
 ```
 
-[Docs](https://feynman.is/docs) · [Release Notes](RELEASES.md) · [MIT License](LICENSE)
+[文档](https://feynman.is/docs) · [Release Notes](RELEASES.md) · [MIT License](LICENSE)
+
+---
+
+Nervefeyn © 2026 NoWint (github.com/NoWint)
+基于 Feynman © companion-inc (github.com/companion-inc/feynman)
