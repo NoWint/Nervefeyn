@@ -329,7 +329,7 @@ function stripAnsi(value: string): string {
 
 function ensureRuntimeReady(request: WorkbenchPromptRequest) {
 	if (!request.appRoot || !request.sessionDir || !request.feynmanAgentDir) {
-		throw new Error("Workbench chat is not connected to the Feynman runtime. Start it with `feynman serve`.");
+		throw new Error("Workbench chat is not connected to the Feynman runtime. Start it with `nervefeyn serve`.");
 	}
 
 	ensureSupportedNodeVersion();

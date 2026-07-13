@@ -467,7 +467,7 @@ export function buildModelStatusSnapshotFromRecords(
 		} else {
 			guidance.push("No default research model is set, and no non-Pro research model is available for automatic selection.");
 		}
-		guidance.push("Run `feynman model set <provider/non-pro-model>` after choosing from `feynman model list`.");
+		guidance.push("Run `nervefeyn model set <provider/non-pro-model>` after choosing from `nervefeyn model list`.");
 	} else if (!currentValid) {
 		guidance.push(`Configured default model is unavailable: ${current}.`);
 		if (recommended) {

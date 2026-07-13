@@ -660,7 +660,7 @@ function buildCredentialResources(): WorkbenchResource[] {
 			description: "Provider credentials are managed through Feynman's model login flow and reused by Pi sessions.",
 			status: "available",
 			source: "Feynman CLI",
-			command: "feynman model login [id]",
+			command: "nervefeyn model login [id]",
 			tags: ["models", "oauth", "api keys"],
 		},
 		{
@@ -669,7 +669,7 @@ function buildCredentialResources(): WorkbenchResource[] {
 			description: "Web evidence providers are configured through Feynman's search settings.",
 			status: "available",
 			source: "Feynman CLI",
-			command: "feynman search set <provider> [api-key]",
+			command: "nervefeyn search set <provider> [api-key]",
 			tags: ["search", "evidence"],
 		},
 	];

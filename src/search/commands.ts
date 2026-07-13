@@ -29,19 +29,19 @@ export function printSearchStatus(status = getPiWebAccessStatus()): void {
 	printInfo(`Config path: ${status.configPath}${configPathSuffix}`);
 	if (!status.configExists) {
 		printInfo("Not configured yet. Run one of:");
-		printInfo("  feynman search set auto");
-		printInfo("  feynman search set perplexity <api-key>");
-		printInfo("  feynman search set exa <api-key>");
-		printInfo("  feynman search set gemini <api-key>");
+		printInfo("  nervefeyn search set auto");
+		printInfo("  nervefeyn search set perplexity <api-key>");
+		printInfo("  nervefeyn search set exa <api-key>");
+		printInfo("  nervefeyn search set gemini <api-key>");
 	}
 }
 
 export function setSearchProvider(provider: PiWebSearchProvider, apiKey?: string): void {
 	if (!SEARCH_PROVIDERS.includes(provider)) {
-		throw new Error(`Usage: feynman search set <${SEARCH_PROVIDERS.join("|")}> [api-key]`);
+		throw new Error(`Usage: nervefeyn search set <${SEARCH_PROVIDERS.join("|")}> [api-key]`);
 	}
 	if (apiKey !== undefined && provider === "auto") {
-		throw new Error("The auto provider does not use an API key. Usage: feynman search set auto");
+		throw new Error("The auto provider does not use an API key. Usage: nervefeyn search set auto");
 	}
 
 	const updates: Partial<Record<keyof PiWebAccessConfig, unknown>> = {

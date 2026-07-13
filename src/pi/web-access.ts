@@ -171,7 +171,7 @@ export function formatPiWebAccessDoctorLines(
 		lines.splice(8, 0, `  gemini browser profile: ${status.chromeProfile}`);
 	}
 	if (!status.configExists) {
-		lines.push("  hint: run `feynman search set <auto|perplexity|exa|gemini> [api-key]` to configure web search");
+		lines.push("  hint: run `nervefeyn search set <auto|perplexity|exa|gemini> [api-key]` to configure web search");
 	}
 	return lines;
 }

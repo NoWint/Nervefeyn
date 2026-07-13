@@ -32,11 +32,11 @@ type SetupOptions = {
 
 function printNonInteractiveSetupGuidance(): void {
 	printInfo("Non-interactive terminal. Use explicit commands:");
-	printInfo("  feynman model login <provider>");
-	printInfo("  feynman model set <provider/non-pro-model>");
-	printInfo("  # or configure API keys via env vars/auth.json and rerun `feynman model list`");
-	printInfo("  feynman alpha login");
-	printInfo("  feynman doctor");
+	printInfo("  nervefeyn model login <provider>");
+	printInfo("  nervefeyn model set <provider/non-pro-model>");
+	printInfo("  # or configure API keys via env vars/auth.json and rerun `nervefeyn model list`");
+	printInfo("  nervefeyn alpha login");
+	printInfo("  nervefeyn doctor");
 }
 
 function summarizePackageSources(sources: string[]): string {

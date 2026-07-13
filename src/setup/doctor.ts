@@ -206,5 +206,5 @@ export function runDoctor(options: DoctorOptions): void {
 	for (const line of modelStatus.modelGuidance) {
 		console.log(`next step: ${line}`);
 	}
-	console.log("setup hint: feynman setup");
+	console.log("setup hint: nervefeyn setup");
 }

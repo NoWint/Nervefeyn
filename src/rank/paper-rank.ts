@@ -4114,7 +4114,7 @@ function createFixturePaperContentFetcher(works: OpenAlexWork[]): PaperContentFe
 
 export async function runPaperRank(options: PaperRankOptions): Promise<PaperRankRunResult> {
 	const topic = options.topic.trim();
-	if (!topic) throw new Error("Usage: feynman rank <topic>");
+	if (!topic) throw new Error("Usage: nervefeyn rank <topic>");
 	const limit = parseRankLimit(options.limit);
 	const fullTextTop = parseFullTextTop(options.fullTextTop);
 	const citationExpansion = parseCitationExpansion(options.citationExpansion);
@@ -4269,7 +4269,7 @@ export async function fetchOpenAlexWorkByIdentifier(
 	fetchImpl: typeof fetch = fetch,
 ): Promise<{ works: OpenAlexWork[]; meta?: JsonRecord; url: string; source: "openalex" }> {
 	const normalized = identifier.trim();
-	if (!normalized) throw new Error("Usage: feynman paper <doi|arxiv-id|openalex-id|pmid|pmcid|title>");
+	if (!normalized) throw new Error("Usage: nervefeyn paper <doi|arxiv-id|openalex-id|pmid|pmcid|title>");
 	const openAlexId = openAlexShortWorkId(normalized);
 	const doi = extractDoiIdentifier(normalized);
 	const arxivId = extractArxivId(normalized);
@@ -4307,7 +4307,7 @@ export async function fetchOpenAlexWorkByIdentifier(
 
 export async function resolvePaperAccess(options: PaperAccessOptions): Promise<PaperAccessResult> {
 	const identifier = options.identifier.trim();
-	if (!identifier) throw new Error("Usage: feynman paper <doi|arxiv-id|openalex-id|pmid|pmcid|title>");
+	if (!identifier) throw new Error("Usage: nervefeyn paper <doi|arxiv-id|openalex-id|pmid|pmcid|title>");
 	const now = options.now ?? new Date();
 	const generatedAt = now.toISOString();
 	const outputDir = resolve(options.outputDir ?? "outputs");
@@ -5712,7 +5712,7 @@ function buildScoreCalibrationTemplate(input: {
 			"Put paper IDs in `rankedPaperIds` only when that order is the researcher's independent read-first order.",
 			"Add pairwise `preferences` entries as { preferred, over, reason, source } when a direct comparison is easier than ranking every paper.",
 			"Do not use this template unchanged. Empty preferences intentionally produce no calibration agreement.",
-			`Rerun with: feynman rank ${shellQuoteArg(input.topic)} --preference-file ${input.slug}-calibration-template.json`,
+			`Rerun with: nervefeyn rank ${shellQuoteArg(input.topic)} --preference-file ${input.slug}-calibration-template.json`,
 		],
 		rankedPaperIds: [],
 		preferences: [],
@@ -5851,7 +5851,7 @@ function renderCalibrationGuide(input: {
 		"4. Re-run PaperRank with the filled preference file:",
 		"",
 		"```bash",
-		`feynman rank ${shellQuoteArg(input.topic)} --preference-file ${input.slug}-calibration-template.json`,
+		`nervefeyn rank ${shellQuoteArg(input.topic)} --preference-file ${input.slug}-calibration-template.json`,
 		"```",
 		"",
 		"## Candidate Papers",
@@ -5897,7 +5897,7 @@ function buildReproductionNotesTemplate(input: {
 			"Add entries to `notes` as completed reproduction outcomes. Do not use this template unchanged.",
 			"Use status `reproduced`, `partially_reproduced`, `failed`, or `not_runnable`.",
 			"Record the central claim, metric, expected value, observed value, discrepancy, code/data links, environment, and commands when available.",
-			`Rerun with: feynman rank ${shellQuoteArg(input.topic)} --reproduction-notes ${input.slug}-reproduction-notes-template.json`,
+			`Rerun with: nervefeyn rank ${shellQuoteArg(input.topic)} --reproduction-notes ${input.slug}-reproduction-notes-template.json`,
 		],
 		notes: [],
 		candidatePapers: reproductionTemplatePaperChoices(input),

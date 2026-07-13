@@ -234,7 +234,7 @@ export function resolvePackageUpdateSources(name: string, platform: NodeJS.Platf
 	const trimmed = name.trim();
 	if (!trimmed) return [];
 	if (isRemovedOptionalPackageTarget(trimmed)) {
-		throw new Error(`Removed optional package target: ${trimmed}. Use \`feynman packages list\` and install only the research-continuity presets you need.`);
+		throw new Error(`Removed optional package target: ${trimmed}. Use \`nervefeyn packages list\` and install only the research-continuity presets you need.`);
 	}
 	if (trimmed.startsWith("npm:") || trimmed.startsWith("github:") || trimmed.startsWith("file:")) {
 		return [trimmed];

@@ -401,7 +401,7 @@ async function handleWorkbenchRequest(
 		if (options.requireAuth) {
 			const authorized = isAuthorized(request, url, options.token);
 			if (!authorized) {
-				send(response, 401, "Unauthorized. Open the URL printed by `feynman serve`.");
+				send(response, 401, "Unauthorized. Open the URL printed by `nervefeyn serve`.");
 				return;
 			}
 

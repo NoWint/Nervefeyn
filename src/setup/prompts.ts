@@ -24,7 +24,7 @@ export type PromptSelectOption<T = string> = {
 
 function ensureInteractiveTerminal(): void {
 	if (!process.stdin.isTTY || !process.stdout.isTTY) {
-		throw new Error("feynman setup requires an interactive terminal.");
+		throw new Error("nervefeyn setup requires an interactive terminal.");
 	}
 }
 
