@@ -1,5 +1,5 @@
 {
-  "themes": ["-themes/feynman.json"],
+  "themes": ["-themes/nervefeyn.json"],
   "packages": [
     "npm:@companion-ai/alpha-hub",
     "npm:pi-subagents",

@@ -1,31 +1,31 @@
 {
   "$schema": "https://raw.githubusercontent.com/badlogic/pi-mono/main/packages/coding-agent/src/modes/interactive/theme/theme-schema.json",
-  "name": "feynman",
+  "name": "nervefeyn",
   "vars": {
-    "ink": "#d3c6aa",
-    "paper": "#2d353b",
-    "paper2": "#343f44",
-    "paper3": "#3a464c",
-    "panel": "#374247",
-    "stone": "#9da9a0",
-    "ash": "#859289",
-    "darkAsh": "#5c6a72",
-    "sage": "#a7c080",
-    "teal": "#7fbbb3",
-    "rose": "#e67e80",
-    "violet": "#d699b6",
-    "selection": "#425047",
-    "successBg": "#2f3b32",
-    "errorBg": "#3b3135"
+    "ink": "#fafafa",
+    "paper": "#0a0a0a",
+    "paper2": "#141414",
+    "paper3": "#1c1c1c",
+    "panel": "#141414",
+    "stone": "#a1a1a1",
+    "ash": "#6b6b6b",
+    "darkAsh": "#4a4a4a",
+    "sage": "#d4a05a",
+    "teal": "#4a9eff",
+    "rose": "#ff6467",
+    "violet": "#c792ea",
+    "selection": "#1c1c1c",
+    "successBg": "#1a1810",
+    "errorBg": "#2a1414"
   },
   "colors": {
     "accent": "sage",
-    "border": "stone",
-    "borderAccent": "teal",
-    "borderMuted": "darkAsh",
+    "border": "darkAsh",
+    "borderAccent": "sage",
+    "borderMuted": "ash",
     "success": "sage",
     "error": "rose",
-    "warning": "stone",
+    "warning": "sage",
     "muted": "stone",
     "dim": "ash",
     "text": "ink",
@@ -48,9 +48,9 @@
     "mdLinkUrl": "ash",
     "mdCode": "teal",
     "mdCodeBlock": "ink",
-    "mdCodeBlockBorder": "stone",
+    "mdCodeBlockBorder": "darkAsh",
     "mdQuote": "stone",
-    "mdQuoteBorder": "stone",
+    "mdQuoteBorder": "darkAsh",
     "mdHr": "darkAsh",
     "mdListBullet": "sage",
 
@@ -58,7 +58,7 @@
     "toolDiffRemoved": "rose",
     "toolDiffContext": "stone",
 
-    "syntaxComment": "stone",
+    "syntaxComment": "ash",
     "syntaxKeyword": "sage",
     "syntaxFunction": "teal",
     "syntaxVariable": "ink",
@@ -78,8 +78,8 @@
     "bashMode": "sage"
   },
   "export": {
-    "pageBg": "#2d353b",
-    "cardBg": "#343f44",
-    "infoBg": "#374247"
+    "pageBg": "#0a0a0a",
+    "cardBg": "#141414",
+    "infoBg": "#1c1c1c"
   }
 }

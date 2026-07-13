@@ -8,14 +8,14 @@ function rgb(red: number, green: number, blue: number): string {
 	return `\x1b[38;2;${red};${green};${blue}m`;
 }
 
-// Match the outer CLI to the bundled Feynman Pi theme instead of generic magenta panels.
-const INK = rgb(211, 198, 170);
-const STONE = rgb(157, 169, 160);
-export const ASH = rgb(133, 146, 137);
-const DARK_ASH = rgb(92, 106, 114);
-export const SAGE = rgb(167, 192, 128);
-const TEAL = rgb(127, 187, 179);
-const ROSE = rgb(230, 126, 128);
+// Match the outer CLI to the Nervefeyn Pi theme (BonjourPrism dark: charcoal + warm gold).
+const INK = rgb(250, 250, 250);
+const STONE = rgb(161, 161, 161);
+export const ASH = rgb(107, 107, 107);
+const DARK_ASH = rgb(74, 74, 74);
+export const SAGE = rgb(212, 160, 90);
+const TEAL = rgb(74, 158, 255);
+const ROSE = rgb(255, 100, 103);
 
 function paint(text: string, ...codes: string[]): string {
 	return `${codes.join("")}${text}${RESET}`;
