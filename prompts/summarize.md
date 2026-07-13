@@ -1,82 +1,82 @@
 ---
-description: Summarize a research source, paper, report, repository README, local artifact, or PDF using the RLM pattern — source stored on disk, never injected raw into context.
+description: 使用 RLM 模式总结研究来源、论文、报告、仓库 README、本地制品或 PDF——来源存于磁盘,绝不原始注入上下文。
 args: <source> [--window-size <chars>] [--overlap <chars>] [--tier1-threshold <chars>] [--tier2-threshold <chars>]
 section: Research Workflows
 topLevelCli: true
 ---
-## Tool Discipline (Read First)
+## 工具纪律(先阅读)
 
-Tool names are literal. Use only tools visible in the current tool set.
+工具名称是字面量。仅使用当前工具集中可见的工具。
 
-- Search with `web_search`; do not call `search_web`, `google_search`, `google:search`, `search_google`, or `WebSearch`.
-- Fetch URLs with `fetch_content`; do not call bare `fetch`, `WebFetch`, `read_url_content`, or pass an array as `url`. Use `urls` for multiple URLs when the tool supports it.
-- Use visible Feynman alpha tools such as `alpha_search` when present. For shell access, call `feynman alpha ...`; do not call the user's bare global `alpha` binary.
-- To ask the user a question, write plain chat text and wait for the next user message. Do not call `ask_user_question`, `ask_user`, `ask_followup_question`, or `user_choice`.
-- Do not use `Task` as an agent dispatcher. Use only the visible `subagent` tool when it exists.
-- If a tool returns `Tool not found` or `Invalid URL`, do not retry the same invalid call. Map to a canonical visible tool and valid arguments, or record the capability as blocked.
+- 使用 `web_search` 搜索;不要调用 `search_web`、`google_search`、`google:search`、`search_google` 或 `WebSearch`。
+- 使用 `fetch_content` 抓取 URL;不要调用裸 `fetch`、`WebFetch`、`read_url_content`,也不要将数组作为 `url` 传入。当工具支持时,使用 `urls` 传入多个 URL。
+- 当存在可见的 nervefeyn alpha 工具(如 `alpha_search`)时使用它们。如需 shell 访问,调用 `nervefeyn alpha ...`;不要调用用户全局的裸 `alpha` 二进制。
+- 要向用户提问,直接写纯聊天文本并等待下一条用户消息。不要调用 `ask_user_question`、`ask_user`、`ask_followup_question` 或 `user_choice`。
+- 不要将 `Task` 用作 agent 调度器。仅当存在可见的 `subagent` 工具时使用它。
+- 如果工具返回 `Tool not found` 或 `Invalid URL`,不要重试同一个无效调用。映射到规范的可见工具与合法参数,或将该能力记录为 blocked。
 
-Summarize the following research source: $@
+总结以下研究来源:$@
 
-Derive a short slug from the source filename or URL domain (lowercase, hyphens, no filler words, ≤5 words — e.g. `attention-is-all-you-need`). Use this slug for all files in this run.
+从来源文件名或 URL 域名派生一个短 slug(小写、连字符、无填充词,≤5 个词——例如 `attention-is-all-you-need`)。本次运行的所有文件使用该 slug。
 
-## Why this uses the RLM pattern
+## 为何使用 RLM 模式
 
-Standard summarization injects the full document into context. Above ~15k tokens, early content degrades as the window fills (context rot). This workflow keeps the document on disk as an external variable and reads only bounded windows — so context pressure is proportional to the window size, not the document size.
+标准总结会将整篇文档注入上下文。超过约 15k token 后,随着窗口填满,早期内容会退化(context rot)。此工作流将文档作为外部变量保留在磁盘上,只读取有界窗口——因此上下文压力与窗口大小成正比,而非与文档大小成正比。
 
-Tier 1 (below the Tier-1 threshold) is a deliberate exception: direct injection is safe for short inputs and windowed reading would add unnecessary friction.
+Tier 1(低于 Tier-1 阈值)是一个刻意的例外:对短输入而言直接注入是安全的,而窗口化读取会增加不必要的摩擦。
 
-## Runtime knobs (context-window controls)
+## 运行时旋钮(上下文窗口控制)
 
-Support both inline flags and environment variables so users can tune context-window behavior per run or globally.
+同时支持内联 flag 与环境变量,以便用户按运行或全局调整上下文窗口行为。
 
-- `--window-size <chars>` or `FEYNMAN_SUMMARIZE_WINDOW_CHARS` (default: `6000`)
-- `--overlap <chars>` or `FEYNMAN_SUMMARIZE_OVERLAP_CHARS` (default: `500`)
-- `--tier1-threshold <chars>` or `FEYNMAN_SUMMARIZE_TIER1_THRESHOLD` (default: `8000`)
-- `--tier2-threshold <chars>` or `FEYNMAN_SUMMARIZE_TIER2_THRESHOLD` (default: `60000`)
+- `--window-size <chars>` 或 `FEYNMAN_SUMMARIZE_WINDOW_CHARS`(默认:`6000`)
+- `--overlap <chars>` 或 `FEYNMAN_SUMMARIZE_OVERLAP_CHARS`(默认:`500`)
+- `--tier1-threshold <chars>` 或 `FEYNMAN_SUMMARIZE_TIER1_THRESHOLD`(默认:`8000`)
+- `--tier2-threshold <chars>` 或 `FEYNMAN_SUMMARIZE_TIER2_THRESHOLD`(默认:`60000`)
 
-Rules:
-- Inline flags override environment variables.
-- Validate `window-size > overlap` and `tier1-threshold < tier2-threshold`; if invalid, stop and report a clear configuration error.
-- Log resolved values once per run: `[summarize] config window=<w> overlap=<o> tier1=<t1> tier2=<t2>`.
-
----
-
-## Step 1 — Fetch, validate, measure
-
-Run all guards before any tier logic. A failure here is cheap; a failure mid-Tier-3 is not.
-
-- **GitHub repo URL** (`https://github.com/owner/repo` — exactly 4 slashes): fetch the raw README instead. Try `https://raw.githubusercontent.com/{owner}/{repo}/main/README.md`, then `/master/README.md`. A repo HTML page is not the document the user wants to summarize.
-- **Remote URL**: fetch to disk with `curl -sL -o outputs/.notes/<slug>-raw.txt <url>`. Do NOT use fetch_content — its return value enters context directly, bypassing the RLM external-variable principle.
-- **Local file or PDF**: copy or extract to `outputs/.notes/<slug>-raw.txt`. For PDFs, extract text via `pdftotext` or equivalent before measuring.
-- **Empty or failed fetch**: if the file is < 50 bytes after fetching, stop and surface the error to the user — do not proceed to tier selection.
-- **Binary content**: if the file is > 1 KB but contains < 100 readable text characters, stop and tell the user the content appears binary or unextracted.
-- **Existing output**: if `outputs/<slug>-summary.md` already exists, ask the user whether to overwrite or use a different slug. Do not proceed until confirmed.
-
-Measure decoded text characters (not bytes — UTF-8 multi-byte chars would overcount). Log: `[summarize] source=<source> slug=<slug> chars=<count>`
+规则:
+- 内联 flag 覆盖环境变量。
+- 验证 `window-size > overlap` 且 `tier1-threshold < tier2-threshold`;若非法,停下并报告一个清晰的配置错误。
+- 每次运行记录一次解析后的值:`[summarize] config window=<w> overlap=<o> tier1=<t1> tier2=<t2>`。
 
 ---
 
-## Step 2 — Choose tier
+## 第 1 步 — 抓取、验证、测量
 
-| Chars | Tier | Strategy |
+在任何 tier 逻辑之前运行所有守卫。此处的失败代价低;Tier-3 中途的失败代价不低。
+
+- **GitHub 仓库 URL**(`https://github.com/owner/repo`——恰好 4 个斜杠):改为抓取原始 README。先试 `https://raw.githubusercontent.com/{owner}/{repo}/main/README.md`,再试 `/master/README.md`。仓库 HTML 页面并非用户想要总结的文档。
+- **远程 URL**:用 `curl -sL -o outputs/.notes/<slug>-raw.txt <url>` 抓取到磁盘。不要使用 fetch_content——其返回值直接进入上下文,绕过 RLM 外部变量原则。
+- **本地文件或 PDF**:复制或提取到 `outputs/.notes/<slug>-raw.txt`。对于 PDF,先通过 `pdftotext` 或等价工具提取文本再测量。
+- **空或失败的抓取**:若抓取后文件 < 50 字节,停下并向用户报错——不要继续到 tier 选择。
+- **二进制内容**:若文件 > 1 KB 但可读文本字符 < 100,停下并告诉用户内容看起来是二进制或未提取。
+- **已存在输出**:若 `outputs/<slug>-summary.md` 已存在,询问用户是覆盖还是使用不同 slug。确认前不要继续。
+
+测量解码后的文本字符数(非字节——UTF-8 多字节字符会被多算)。记录:`[summarize] source=<source> slug=<slug> chars=<count>`
+
+---
+
+## 第 2 步 — 选择 tier
+
+| Chars | Tier | 策略 |
 |---|---|---|
-| < `<tier1-threshold>` | 1 | Direct read — full content enters context (safe for short inputs) |
-| `<tier1-threshold>` – `<tier2-threshold>` | 2 | RLM-lite — windowed bash extraction, progressive notes to disk |
-| > `<tier2-threshold>` | 3 | Full RLM — bash chunking + parallel researcher subagents |
+| < `<tier1-threshold>` | 1 | 直接读取——完整内容进入上下文(对短输入安全) |
+| `<tier1-threshold>` – `<tier2-threshold>` | 2 | RLM-lite——窗口化 bash 提取,渐进式笔记写入磁盘 |
+| > `<tier2-threshold>` | 3 | 完整 RLM——bash 分块 + 并行 researcher subagent |
 
-Log: `[summarize] tier=<N> chars=<count>`
-
----
-
-## Tier 1 — Direct read
-
-Read `outputs/.notes/<slug>-raw.txt` in full. Summarize directly using the output format. Write to `outputs/<slug>-summary.md`.
+记录:`[summarize] tier=<N> chars=<count>`
 
 ---
 
-## Tier 2 — RLM-lite windowed read
+## Tier 1 — 直接读取
 
-The document stays on disk. Extract `<window-size>`-char windows via bash:
+完整读取 `outputs/.notes/<slug>-raw.txt`。直接使用输出格式总结。写入 `outputs/<slug>-summary.md`。
+
+---
+
+## Tier 2 — RLM-lite 窗口化读取
+
+文档保留在磁盘上。通过 bash 提取 `<window-size>` 字符的窗口:
 
 ```python
 # WHY f.seek/f.read: the read tool uses line offsets, not char offsets.
@@ -86,22 +86,22 @@ with open("outputs/.notes/<slug>-raw.txt", encoding="utf-8") as f:
     window = f.read(<window-size>)
 ```
 
-For each window:
-1. Extract key claims and evidence.
-2. Append to `outputs/.notes/<slug>-notes.md` before reading the next window. This is the checkpoint: if the session is interrupted, processed windows survive.
-3. Log: `[summarize] window <N>/<total> done`
+对每个窗口:
+1. 提取关键论断与证据。
+2. 在读取下一个窗口前追加到 `outputs/.notes/<slug>-notes.md`。这是检查点:若会话被中断,已处理的窗口会留存。
+3. 记录:`[summarize] window <N>/<total> done`
 
-Synthesize `outputs/.notes/<slug>-notes.md` into `outputs/<slug>-summary.md`.
+将 `outputs/.notes/<slug>-notes.md` 综合为 `outputs/<slug>-summary.md`。
 
 ---
 
-## Tier 3 — Full RLM parallel chunks
+## Tier 3 — 完整 RLM 并行分块
 
-Each chunk gets a fresh researcher subagent context window — context rot is impossible because no subagent sees more than `<window-size>` chars.
+每个分块获得一个全新的 researcher subagent 上下文窗口——context rot 不可能发生,因为没有 subagent 会看到超过 `<window-size>` 字符。
 
-WHY overlap matters: academic papers contain multi-sentence arguments that span chunk boundaries. The configured overlap ensures a cross-boundary claim appears fully in at least one adjacent chunk.
+为何 overlap 重要:学术论文包含跨越分块边界的多句论证。配置的 overlap 确保跨边界论断至少完整出现在一个相邻分块中。
 
-### 3a. Chunk the document
+### 3a. 对文档分块
 
 ```python
 import os
@@ -124,11 +124,11 @@ for n, chunk in enumerate(chunks):
 print(f"[summarize] chunks={len(chunks)} chunk_size={chunk_size} overlap={overlap}")
 ```
 
-### 3b. Confirm before spawning
+### 3b. 生成前确认
 
-Briefly summarize: "Source is ~<chars> chars -> <N> chunks -> <N> researcher subagents. Continuing with the chunked pass." Then continue automatically. Do not ask for confirmation or wait for a proceed response unless the user explicitly requested review before launching.
+简要总结:"来源约 ~<chars> 字符 -> <N> 个分块 -> <N> 个 researcher subagent。继续进行分块 pass。"然后自动继续。除非用户明确要求在启动前审查,否则不要请求确认或等待继续响应。
 
-### 3c. Dispatch researcher subagents
+### 3c. 派发 researcher subagent
 
 ```json
 {
@@ -142,22 +142,22 @@ Briefly summarize: "Source is ~<chars> chars -> <N> chunks -> <N> researcher sub
 }
 ```
 
-### 3d. Aggregate
+### 3d. 聚合
 
-After all subagents return, verify every expected `outputs/.notes/<slug>-summary-chunk-NNN.md` exists. Note any missing chunk indices — they will appear in the Coverage gaps section of the output. Do not abort on partial coverage; a partial summary with gaps noted is more useful than no summary.
+所有 subagent 返回后,验证每个预期的 `outputs/.notes/<slug>-summary-chunk-NNN.md` 都存在。记录任何缺失的分块索引——它们将出现在输出的 Coverage gaps 章节中。不要因部分覆盖而中止;带缺口的局部总结比没有总结更有用。
 
-When synthesizing:
-- **Deduplicate**: a claim in multiple chunks is one claim — keep the most complete formulation.
-- **Resolve boundary conflicts**: for adjacent-chunk contradictions, prefer the version with more supporting context.
-- **Remove BOUNDARY PARTIAL markers** where a complete version exists in a neighbouring chunk.
+综合时:
+- **去重**:多个分块中的同一论断视为一个论断——保留最完整的表述。
+- **解决边界冲突**:对相邻分块的矛盾,优先采用有更多支撑上下文的版本。
+- **移除 BOUNDARY PARTIAL 标记**(当相邻分块中存在完整版本时)。
 
-Write to `outputs/<slug>-summary.md`.
+写入 `outputs/<slug>-summary.md`。
 
 ---
 
-## Output format
+## 输出格式
 
-All tiers produce the same artifact at `outputs/<slug>-summary.md`:
+所有 tier 在 `outputs/<slug>-summary.md` 产出同一制品:
 
 ```markdown
 # Summary: [document title or source filename]
@@ -194,6 +194,6 @@ All tiers produce the same artifact at `outputs/<slug>-summary.md`:
 [Missing chunk indices and their approximate byte ranges]
 ```
 
-Before you stop, verify on disk that `outputs/<slug>-summary.md` exists.
+停止前,在磁盘上验证 `outputs/<slug>-summary.md` 存在。
 
-Sources contains only the single source confirmed reachable in Step 1. No verifier subagent is needed — there are no URLs constructed from memory to verify.
+Sources 仅包含在第 1 步中确认可达的单一来源。不需要 verifier subagent——没有从记忆中构造的 URL 需要验证。

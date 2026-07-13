@@ -1,53 +1,53 @@
 ---
-description: Find ranked, implementable ML training recipes backed by papers, datasets, docs, and code.
+description: 查找有论文、数据集、文档与代码支撑的、可实现的、已排序的 ML 训练配方。
 args: <task-or-paper>
 section: Research Workflows
 topLevelCli: true
 ---
-## Tool Discipline (Read First)
+## 工具纪律(先阅读)
 
-Tool names are literal. Use only tools visible in the current tool set.
+工具名称是字面量。仅使用当前工具集中可见的工具。
 
-- Search with `web_search`; do not call `search_web`, `google_search`, `google:search`, `search_google`, or `WebSearch`.
-- Fetch URLs with `fetch_content`; do not call bare `fetch`, `WebFetch`, `read_url_content`, or pass an array as `url`. Use `urls` for multiple URLs when the tool supports it.
-- Use visible Feynman alpha tools such as `alpha_search` when present. For shell access, call `feynman alpha ...`; do not call the user's bare global `alpha` binary.
-- To ask the user a question, write plain chat text and wait for the next user message. Do not call `ask_user_question`, `ask_user`, `ask_followup_question`, or `user_choice`.
-- Do not use `Task` as an agent dispatcher. Use only the visible `subagent` tool when it exists.
-- If a tool returns `Tool not found` or `Invalid URL`, do not retry the same invalid call. Map to a canonical visible tool and valid arguments, or record the capability as blocked.
+- 使用 `web_search` 搜索;不要调用 `search_web`、`google_search`、`google:search`、`search_google` 或 `WebSearch`。
+- 使用 `fetch_content` 抓取 URL;不要调用裸 `fetch`、`WebFetch`、`read_url_content`,也不要将数组作为 `url` 传入。当工具支持时,使用 `urls` 传入多个 URL。
+- 当存在可见的 nervefeyn alpha 工具(如 `alpha_search`)时使用它们。如需 shell 访问,调用 `nervefeyn alpha ...`;不要调用用户全局的裸 `alpha` 二进制。
+- 要向用户提问,直接写纯聊天文本并等待下一条用户消息。不要调用 `ask_user_question`、`ask_user`、`ask_followup_question` 或 `user_choice`。
+- 不要将 `Task` 用作 agent 调度器。仅当存在可见的 `subagent` 工具时使用它。
+- 如果工具返回 `Tool not found` 或 `Invalid URL`,不要重试同一个无效调用。映射到规范的可见工具与合法参数,或将该能力记录为 blocked。
 
-Find implementable ML training recipes for: $@
+为以下任务查找可实现的 ML 训练配方:$@
 
-Derive a short slug from the task (lowercase, hyphens, no filler words, ≤5 words). Use this slug for all files in this run.
+从任务派生一个短 slug(小写、连字符、无填充词,≤5 个词)。本次运行的所有文件使用该 slug。
 
-This is an execution request, not a request to explain the workflow. Continue immediately.
+这是一次执行请求,而非解释工作流的请求。立即继续。
 
-## Required artifacts
+## 必需制品
 
 - `outputs/.plans/<slug>-recipe.md`
 - `outputs/.drafts/<slug>-recipe-research.md`
 - `outputs/<slug>-recipe.md`
 - `outputs/<slug>-recipe.provenance.md`
 
-## Workflow
+## 工作流
 
-1. **Plan** — Write `outputs/.plans/<slug>-recipe.md` with the target task, benchmark or desired behavior, candidate source types, feasibility constraints, and a task ledger. Continue automatically after writing the plan.
-2. **Research** — Use the `researcher` subagent when the task needs a broad paper/code sweep. For narrow tasks, gather evidence directly. The research must start from evidence of results, not from example scripts alone.
-3. **Recipe extraction** — For each promising approach, link the observed result to the exact recipe that produced it. A useful entry has: paper or report, benchmark/result, dataset, training method, key hyperparameters, compute assumptions, implementation code path, and current docs.
-4. **Dataset validation** — Check whether each dataset is available, what splits/columns it exposes, and whether the format matches the method. Use `hf_dataset_info` for Hugging Face datasets when available. If schema or availability was not directly checked, mark it `unverified`; do not imply it is usable.
-5. **Implementation grounding** — Find working code or official docs for the chosen training path. Use `hf_repo_files` and `hf_repo_read_file` for relevant Hugging Face Hub repos. Prefer current official docs and actively maintained repos. Record exact file paths, function names, class names, and command patterns when available.
-6. **Synthesis** — Write `outputs/.drafts/<slug>-recipe-research.md` first, then promote a concise final ranked brief to `outputs/<slug>-recipe.md`.
-7. **Verification** — For any recipe you rank first, verify the key source URLs and the dataset/code availability before final delivery. If a source, dataset, or code path cannot be checked, keep it in the brief only with an explicit `blocked` or `unverified` label.
-8. **Provenance** — Write `outputs/<slug>-recipe.provenance.md` with date, sources consulted, sources accepted/rejected, verification status, and artifact paths.
+1. **Plan** — 将目标任务、基准或期望行为、候选来源类型、可行性约束,以及一个任务账本写入 `outputs/.plans/<slug>-recipe.md`。写入 plan 后自动继续。
+2. **研究** — 当任务需要广泛的论文/代码扫描时,使用 `researcher` subagent。对于狭义任务,直接收集证据。研究必须从结果证据出发,而非仅从示例脚本出发。
+3. **配方提取** — 对每个有前景的方法,将观察到的结果与产生它的确切配方关联。一个有用的条目包含:论文或报告、基准/结果、数据集、训练方法、关键超参数、算力假设、实现代码路径,以及当前文档。
+4. **数据集验证** — 检查每个数据集是否可用、暴露哪些 splits/columns,以及格式是否与方法匹配。当可用时,对 Hugging Face 数据集使用 `hf_dataset_info`。若 schema 或可用性未被直接检查,标记为 `unverified`;不要暗示它可用。
+5. **实现落地** — 为所选训练路径寻找可运行的代码或官方文档。对相关的 Hugging Face Hub 仓库使用 `hf_repo_files` 与 `hf_repo_read_file`。优先使用当前的官方文档与活跃维护的仓库。可用时记录确切的文件路径、函数名、类名与命令模式。
+6. **综合** — 先写 `outputs/.drafts/<slug>-recipe-research.md`,然后将一份简洁的最终排序简报提升为 `outputs/<slug>-recipe.md`。
+7. **验证** — 对你排在第一的任何配方,在最终交付前验证关键来源 URL 与数据集/代码可用性。若某个来源、数据集或代码路径无法检查,仅以显式的 `blocked` 或 `unverified` 标签保留在简报中。
+8. **Provenance** — 写入 `outputs/<slug>-recipe.provenance.md`,包含日期、查阅的来源、接受/拒绝的来源、验证状态与制品路径。
 
-## Required final shape
+## 必需的最终形态
 
-The final brief must include:
+最终简报必须包含:
 
-- **Recommendation:** the one recipe to try first and why.
-- **Ranked recipe table:** one row per candidate with paper/source, result, dataset, method, hyperparameters, compute, code/docs, and verification status.
-- **Dataset notes:** schema, split, size, license/access constraints when checked.
-- **Implementation plan:** minimal steps to run the top recipe.
-- **Known gaps:** missing code, inaccessible data, unclear hyperparameters, or benchmark mismatch.
-- **Sources:** URLs for every paper, repo, dataset, and doc page used.
+- **Recommendation:** 首选尝试的那一个配方及其原因。
+- **Ranked recipe table:** 每个候选一行,包含论文/来源、结果、数据集、方法、超参数、算力、代码/文档与验证状态。
+- **Dataset notes:** schema、split、大小、许可证/访问约束(当已检查时)。
+- **Implementation plan:** 运行首选配方的最少步骤。
+- **Known gaps:** 缺失的代码、不可访问的数据、不清晰的超参数,或基准不匹配。
+- **Sources:** 所用每篇论文、仓库、数据集与文档页面的 URL。
 
-Do not claim a method is state of the art, replicated, or production-ready unless the underlying checks prove it. Use `verified`, `unverified`, `blocked`, and `inferred` precisely.
+除非底层检查证明了它,否则不要声称某个方法是最先进的、已复现的或生产可用的。精确使用 `verified`、`unverified`、`blocked` 与 `inferred`。

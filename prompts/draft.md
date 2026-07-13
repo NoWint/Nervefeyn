@@ -1,31 +1,31 @@
 ---
-description: Turn research findings into a polished paper-style draft with equations, sections, and explicit claims.
+description: 将研究发现转化为一份精炼的论文式草稿,包含公式、章节与显式论断。
 args: <topic>
 section: Research Workflows
 topLevelCli: true
 ---
-## Tool Discipline (Read First)
+## 工具纪律(先阅读)
 
-Tool names are literal. Use only tools visible in the current tool set.
+工具名称是字面量。仅使用当前工具集中可见的工具。
 
-- Search with `web_search`; do not call `search_web`, `google_search`, `google:search`, `search_google`, or `WebSearch`.
-- Fetch URLs with `fetch_content`; do not call bare `fetch`, `WebFetch`, `read_url_content`, or pass an array as `url`. Use `urls` for multiple URLs when the tool supports it.
-- Use visible Feynman alpha tools such as `alpha_search` when present. For shell access, call `feynman alpha ...`; do not call the user's bare global `alpha` binary.
-- To ask the user a question, write plain chat text and wait for the next user message. Do not call `ask_user_question`, `ask_user`, `ask_followup_question`, or `user_choice`.
-- Do not use `Task` as an agent dispatcher. Use only the visible `subagent` tool when it exists.
-- If a tool returns `Tool not found` or `Invalid URL`, do not retry the same invalid call. Map to a canonical visible tool and valid arguments, or record the capability as blocked.
+- 使用 `web_search` 搜索;不要调用 `search_web`、`google_search`、`google:search`、`search_google` 或 `WebSearch`。
+- 使用 `fetch_content` 抓取 URL;不要调用裸 `fetch`、`WebFetch`、`read_url_content`,也不要将数组作为 `url` 传入。当工具支持时,使用 `urls` 传入多个 URL。
+- 当存在可见的 nervefeyn alpha 工具(如 `alpha_search`)时使用它们。如需 shell 访问,调用 `nervefeyn alpha ...`;不要调用用户全局的裸 `alpha` 二进制。
+- 要向用户提问,直接写纯聊天文本并等待下一条用户消息。不要调用 `ask_user_question`、`ask_user`、`ask_followup_question` 或 `user_choice`。
+- 不要将 `Task` 用作 agent 调度器。仅当存在可见的 `subagent` 工具时使用它。
+- 如果工具返回 `Tool not found` 或 `Invalid URL`,不要重试同一个无效调用。映射到规范的可见工具与合法参数,或将该能力记录为 blocked。
 
-Write a paper-style draft for: $@
+为以下主题撰写论文式草稿:$@
 
-Derive a short slug from the topic (lowercase, hyphens, no filler words, ≤5 words). Use this slug for all files in this run.
+从主题派生一个短 slug(小写、连字符、无填充词,≤5 个词)。本次运行的所有文件使用该 slug。
 
-Requirements:
-- Before writing, outline the draft structure: proposed title, sections, key claims to make, source material to draw from, and a verification log for the critical claims, figures, and calculations. Write the outline to `outputs/.plans/<slug>.md`. Briefly summarize the outline to the user and continue immediately. Do not ask for confirmation or wait for a proceed response unless the user explicitly requested outline review.
-- Use the `writer` subagent when the draft should be produced from already-collected notes, then use the `verifier` subagent to add inline citations and verify sources.
-- Include at minimum: title, abstract, problem statement, related work, method or synthesis, evidence or experiments, limitations, conclusion.
-- Use clean Markdown with LaTeX where equations materially help.
-- Follow the system prompt's provenance rules for all results, figures, charts, images, tables, benchmarks, and quantitative comparisons. If evidence is missing, leave a placeholder or proposed experimental plan instead of claiming an outcome.
-- Generate charts only when a chart tool is visible and the underlying source-backed quantitative data, benchmarks, or comparisons support the visual; otherwise write a chart specification or table. Use Mermaid for architectures and pipelines only when the structure is supported by sources. Every figure, chart spec, or table needs provenance.
-- Before delivery, sweep the draft for any claim that sounds stronger than its support. Mark tentative results as tentative and remove unsupported numerics instead of letting the verifier discover them later.
-- Save exactly one draft to `papers/<slug>.md`.
-- End with a `Sources` appendix with direct URLs for all primary references.
+要求:
+- 撰写前,概述草稿结构:提议标题、章节、要提出的关键论断、要引用的来源材料,以及针对关键论断、图表与计算的验证日志。将大纲写入 `outputs/.plans/<slug>.md`。向用户简要总结大纲并立即继续。除非用户明确要求审查大纲,否则不要请求确认或等待继续响应。
+- 当草稿应从已收集的笔记中产出时,使用 `writer` subagent,然后使用 `verifier` subagent 添加行内引用并验证来源。
+- 至少包含:标题、摘要、问题陈述、相关工作、方法或综合、证据或实验、局限性、结论。
+- 使用干净的 Markdown,在公式确有帮助处使用 LaTeX。
+- 对所有结果、图表、图像、表格、基准与定量对比遵循系统 prompt 的 provenance 规则。若证据缺失,留下占位符或提议的实验计划,而非声称某个结果。
+- 仅当图表工具可见且底层有来源支撑的定量数据、基准或对比支持该可视化时才生成图表;否则写一个图表规格或表格。仅当结构有来源支撑时,使用 Mermaid 表示架构与流水线。每个图表、图表规格或表格都需要 provenance。
+- 交付前,清扫草稿中任何听起来比其支撑更强的论断。将试探性结果标记为试探性,移除无支撑的数字,而不是让 verifier 之后才发现。
+- 将恰好一份草稿保存到 `papers/<slug>.md`。
+- 以一个 `Sources` 附录收尾,包含所有一手参考文献的直接 URL。

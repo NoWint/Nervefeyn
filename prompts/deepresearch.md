@@ -1,96 +1,96 @@
 ---
-description: Run a thorough, source-heavy investigation on a topic and produce a durable research brief with inline citations.
+description: 针对某个主题进行详尽、来源丰富的调查,并产出带行内引用的持久研究简报。
 args: <topic>
 section: Research Workflows
 topLevelCli: true
 ---
-## Tool Discipline (Read First)
+## 工具纪律(先阅读)
 
-Tool names are literal. Use only tools visible in the current tool set.
+工具名称是字面量。仅使用当前工具集中可见的工具。
 
-- Search with `web_search`; do not call `search_web`, `google_search`, `google:search`, `search_google`, or `WebSearch`.
-- Fetch URLs with `fetch_content`; do not call bare `fetch`, `WebFetch`, `read_url_content`, or pass an array as `url`. Use `urls` for multiple URLs when the tool supports it.
-- Use visible Feynman alpha tools such as `alpha_search` when present. For shell access, call `feynman alpha ...`; do not call the user's bare global `alpha` binary.
-- To ask the user a question, write plain chat text and wait for the next user message. Do not call `ask_user_question`, `ask_user`, `ask_followup_question`, or `user_choice`.
-- Do not use `Task` as an agent dispatcher. Use only the visible `subagent` tool when it exists.
-- If a tool returns `Tool not found` or `Invalid URL`, do not retry the same invalid call. Map to a canonical visible tool and valid arguments, or record the capability as blocked.
+- 使用 `web_search` 搜索;不要调用 `search_web`、`google_search`、`google:search`、`search_google` 或 `WebSearch`。
+- 使用 `fetch_content` 抓取 URL;不要调用裸 `fetch`、`WebFetch`、`read_url_content`,也不要将数组作为 `url` 传入。当工具支持时,使用 `urls` 传入多个 URL。
+- 当存在可见的 nervefeyn alpha 工具(如 `alpha_search`)时使用它们。如需 shell 访问,调用 `nervefeyn alpha ...`;不要调用用户全局的裸 `alpha` 二进制。
+- 要向用户提问,直接写纯聊天文本并等待下一条用户消息。不要调用 `ask_user_question`、`ask_user`、`ask_followup_question` 或 `user_choice`。
+- 不要将 `Task` 用作 agent 调度器。仅当存在可见的 `subagent` 工具时使用它。
+- 如果工具返回 `Tool not found` 或 `Invalid URL`,不要重试同一个无效调用。映射到规范的可见工具与合法参数,或将该能力记录为 blocked。
 
-Run deep research for: $@
+为以下主题开展深度研究:$@
 
-This is an execution request, not a request to explain or implement the workflow instructions.
-Execute the workflow. Do not answer by describing the protocol, do not explain these instructions, and do not restate the protocol. Your first actions should be tool calls that create directories and write the plan artifact.
+这是一次执行请求,而非解释或实现工作流说明的请求。
+执行工作流。不要通过描述协议来回答,不要解释这些说明,也不要重述协议。你的首批动作应当是创建目录并写入 plan 制品的工具调用。
 
-## Required Artifacts
+## 必需制品
 
-Derive a short slug from the topic: lowercase, hyphenated, no filler words, at most 5 words.
+从主题派生一个短 slug:小写、连字符、无填充词,至多 5 个词。
 
-Every run must leave these files on disk:
+每次运行必须在磁盘上留下这些文件:
 - `outputs/.plans/<slug>.md`
 - `outputs/.drafts/<slug>-draft.md`
 - `outputs/.drafts/<slug>-cited.md`
-- `outputs/<slug>.md` or `papers/<slug>.md`
-- `outputs/<slug>.provenance.md` or `papers/<slug>.provenance.md`
+- `outputs/<slug>.md` 或 `papers/<slug>.md`
+- `outputs/<slug>.provenance.md` 或 `papers/<slug>.provenance.md`
 
-After the user approves the plan, if any capability fails, continue in degraded mode and still write a blocked or partial final output and provenance sidecar. Never end with chat-only output after plan approval. Never end with only an explanation in chat after plan approval. Use `Verification: BLOCKED` when verification could not be completed.
+在用户批准 plan 后,如果任何能力失败,以降级模式继续,仍要写入 blocked 或部分最终产出与 provenance sidecar。在 plan 批准后绝不要以仅聊天输出收尾。在 plan 批准后绝不要仅以聊天中的解释收尾。当验证无法完成时使用 `Verification: BLOCKED`。
 
-## Step 1: Plan
+## 第 1 步:Plan
 
-Create `outputs/.plans/<slug>.md` immediately. The plan must include:
-- Key questions
-- Evidence needed
-- Scale decision
-- Task ledger
-- Verification log
-- Decision log
+立即创建 `outputs/.plans/<slug>.md`。plan 必须包含:
+- 关键问题
+- 所需证据
+- 规模决策
+- 任务账本
+- 验证日志
+- 决策日志
 
-Make the scale decision before assigning owners in the plan. If the topic is a narrow "what is X" explainer, the plan must use lead-owned direct search tasks only; do not allocate researcher subagents in the task ledger.
+在 plan 中分配 owner 之前做出规模决策。如果主题是狭义的"什么是 X"式解释,plan 必须仅使用 lead 自有的直接搜索任务;不要在任务账本中分配 researcher subagent。
 
-Also save the plan with `memory_remember` using key `deepresearch.<slug>.plan` if that tool is available. If it is not available, continue without it.
+如果 `memory_remember` 工具可用,使用 key `deepresearch.<slug>.plan` 保存 plan。如果不可用,继续无需它。
 
-After writing the plan, stop and ask for explicit confirmation before gathering evidence. Summarize the plan briefly and ask:
+写入 plan 后,在收集证据前停下并请求明确确认。简要总结 plan 并询问:
 
-`Proceed with this deep research plan? Reply "yes" to continue, or tell me what to change.`
+`是否按此深度研究 plan 继续?回复 "yes" 继续,或告诉我需要修改什么。`
 
-Do not run searches, fetch sources, spawn subagents, draft, cite, review, or deliver final artifacts until the user confirms. If the user requests changes, update `outputs/.plans/<slug>.md` first, then ask for confirmation again.
+在用户确认之前,不要运行搜索、抓取来源、生成 subagent、起草、引用、审查或交付最终制品。如果用户要求修改,先更新 `outputs/.plans/<slug>.md`,再次请求确认。
 
-## Step 2: Scale
+## 第 2 步:规模
 
-Use direct search for:
-- Single fact or narrow question, including "what is X" explainers
-- Work you can answer with 3-10 tool calls
+对以下情况使用直接搜索:
+- 单一事实或狭义问题,包括"什么是 X"式解释
+- 你能用 3-10 次工具调用完成的工作
 
-For "what is X" explainer topics, you MUST NOT spawn researcher subagents unless the user explicitly asks for comprehensive coverage, current landscape, benchmarks, or production deployment.
-Do not inflate a simple explainer into a multi-agent survey.
+对于"什么是 X"式解释主题,除非用户明确要求全面覆盖、当前格局、基准测试或生产部署,否则绝对不要生成 researcher subagent。
+不要将简单的解释膨胀为多 agent 调研。
 
-Use subagents only when decomposition clearly helps:
-- Direct comparison of 2-3 items: 2 `researcher` subagents
-- Broad survey or multi-faceted topic: 3-4 `researcher` subagents
-- Complex multi-domain research: 4-6 `researcher` subagents
+仅当分解明显有帮助时使用 subagent:
+- 2-3 个项目的直接对比:2 个 `researcher` subagent
+- 广泛调研或多维主题:3-4 个 `researcher` subagent
+- 复杂的多领域研究:4-6 个 `researcher` subagent
 
-## Step 3: Gather Evidence
+## 第 3 步:收集证据
 
-Use only tool names visible in the current tool set. For web search, call `web_search`; never call `google:search`, `google_search`, or `search_google`.
+仅使用当前工具集中可见的工具名称。对于网络搜索,调用 `web_search`;绝不调用 `google:search`、`google_search` 或 `search_google`。
 
-Avoid crash-prone PDF parsing in this workflow. Do not call `alpha_get_paper` and do not fetch `.pdf` URLs unless the user explicitly asks for PDF extraction. Prefer paper metadata, abstracts, HTML pages, official docs, and web snippets. If only a PDF exists, cite the PDF URL from search metadata and mark full-text PDF parsing as blocked instead of fetching it.
+在此工作流中避免易崩溃的 PDF 解析。不要调用 `alpha_get_paper`,也不要抓取 `.pdf` URL,除非用户明确要求 PDF 提取。优先使用论文元数据、摘要、HTML 页面、官方文档与网络片段。如果仅存在 PDF,从搜索元数据中引用 PDF URL,并将全文 PDF 解析标记为 blocked,而不是抓取它。
 
-If direct search was chosen:
-- Skip researcher spawning entirely.
-- Search and fetch sources yourself.
-- Use multiple search terms/angles before drafting. Minimum: 3 distinct queries for direct-mode research, covering definition/history, mechanism/formula, and current usage/comparison when relevant.
-- Record the exact search terms used in `outputs/.drafts/<slug>-research-direct.md`.
-- Write notes to `outputs/.drafts/<slug>-research-direct.md`.
-- Continue to synthesis.
+如果选择了直接搜索:
+- 完全跳过 researcher 生成。
+- 自己搜索并抓取来源。
+- 在起草前使用多个搜索词/角度。直接模式研究最少 3 个不同查询,涵盖定义/历史、机制/公式,以及(相关时)当前用法/对比。
+- 将使用的确切搜索词记录到 `outputs/.drafts/<slug>-research-direct.md`。
+- 将笔记写入 `outputs/.drafts/<slug>-research-direct.md`。
+- 继续进入综合。
 
-If subagents were chosen:
-- Write a per-researcher brief first, such as `outputs/.plans/<slug>-T1.md`.
-- Keep `subagent` tool-call JSON small and valid.
-- Do not place multi-paragraph instructions inside the `subagent` JSON.
-- Use only supported `subagent` keys. Do not add extra keys such as `artifacts` unless the tool schema explicitly exposes them.
-- Always set `failFast: false`.
-- Do not name exact tool commands in subagent tasks unless those tool names are visible in the current tool set.
-- Prefer broad guidance such as "use paper search and web search"; if a PDF parser or paper fetch fails, the researcher must continue from metadata, abstracts, and web sources and mark PDF parsing as blocked.
+如果选择了 subagent:
+- 先写每 researcher 的简报,例如 `outputs/.plans/<slug>-T1.md`。
+- 保持 `subagent` 工具调用 JSON 小巧且合法。
+- 不要在 `subagent` JSON 中放置多段说明。
+- 仅使用受支持的 `subagent` key。不要添加 `artifacts` 等额外 key,除非工具 schema 明确暴露它们。
+- 始终设置 `failFast: false`。
+- 不要在 subagent 任务中点名确切工具命令,除非这些工具名称在当前工具集中可见。
+- 优先使用宽泛指引,如"使用论文搜索和网络搜索";如果 PDF 解析器或论文抓取失败,researcher 必须从元数据、摘要与网络来源继续,并将 PDF 解析标记为 blocked。
 
-Example shape:
+示例形态:
 
 ```json
 {
@@ -103,37 +103,37 @@ Example shape:
 }
 ```
 
-After evidence gathering, update the plan ledger and verification log. If research failed, record exactly what failed and proceed with a blocked or partial draft.
+收集证据后,更新 plan 账本与验证日志。如果研究失败,确切记录失败内容,并以 blocked 或部分草稿继续。
 
-## Step 4: Draft
+## 第 4 步:起草
 
-Write the report yourself. Do not delegate synthesis.
+自己撰写报告。不要委托综合。
 
-Save to `outputs/.drafts/<slug>-draft.md`.
+保存到 `outputs/.drafts/<slug>-draft.md`。
 
-Include:
-- Executive summary
-- Findings organized by question/theme
-- Evidence-backed caveats and disagreements
-- Open questions
-- No invented sources, results, figures, benchmarks, images, charts, or tables
+包含:
+- 执行摘要
+- 按问题/主题组织的研究发现
+- 有证据支撑的注意事项与分歧
+- 开放问题
+- 不得编造来源、结果、图表、基准、图像、图表或表格
 
-Before citation, sweep the draft:
-- Every critical claim, number, figure, table, or benchmark must map to a source URL, research note, raw artifact path, or command/script output.
-- Remove or downgrade unsupported claims.
-- Mark inferences as inferences.
+引用前,清扫草稿:
+- 每个关键论断、数字、图表、表格或基准必须映射到一个来源 URL、研究笔记、原始制品路径或命令/脚本输出。
+- 移除或降级无支撑的论断。
+- 将推断标记为推断。
 
-## Step 5: Cite
+## 第 5 步:引用
 
-If direct search/no researcher subagents was chosen:
-- Do citation yourself.
-- Verify reachable HTML/doc URLs with available fetch/search tools.
-- Copy or rewrite `outputs/.drafts/<slug>-draft.md` to `outputs/.drafts/<slug>-cited.md` with inline citations and a Sources section.
-- Do not spawn the `verifier` subagent for simple direct-search runs.
+如果选择了直接搜索/无 researcher subagent:
+- 自己做引用。
+- 用可用的抓取/搜索工具验证可达的 HTML/文档 URL。
+- 将 `outputs/.drafts/<slug>-draft.md` 复制或改写为 `outputs/.drafts/<slug>-cited.md`,带行内引用与 Sources 章节。
+- 对简单的直接搜索运行,不要生成 `verifier` subagent。
 
-If researcher subagents were used, run the `verifier` agent after the draft exists. This step is mandatory and must complete before any reviewer runs. Do not run the `verifier` and `reviewer` in the same parallel `subagent` call.
+如果使用了 researcher subagent,在草稿存在后运行 `verifier` agent。此步骤是强制的,必须在任何 reviewer 运行前完成。不要在同一个并行 `subagent` 调用中同时运行 `verifier` 和 `reviewer`。
 
-Use this shape:
+使用此形态:
 
 ```json
 {
@@ -143,19 +143,19 @@ Use this shape:
 }
 ```
 
-After the verifier returns, verify on disk that `outputs/.drafts/<slug>-cited.md` exists. If the verifier wrote elsewhere, find the cited file and move or copy it to `outputs/.drafts/<slug>-cited.md`.
+verifier 返回后,在磁盘上验证 `outputs/.drafts/<slug>-cited.md` 存在。如果 verifier 写到了别处,找到该引用文件并将其移动或复制到 `outputs/.drafts/<slug>-cited.md`。
 
-## Step 6: Review
+## 第 6 步:审查
 
-If direct search/no researcher subagents was chosen:
-- Review the cited draft yourself.
-- Write `outputs/.drafts/<slug>-verification.md` with FATAL / MAJOR / MINOR findings and the checks performed.
-- Fix FATAL issues before delivery.
-- Do not spawn the `reviewer` subagent for simple direct-search runs.
+如果选择了直接搜索/无 researcher subagent:
+- 自己审查引用后的草稿。
+- 写入 `outputs/.drafts/<slug>-verification.md`,包含 FATAL / MAJOR / MINOR 发现以及所执行的检查。
+- 交付前修复 FATAL 问题。
+- 对简单的直接搜索运行,不要生成 `reviewer` subagent。
 
-If researcher subagents were used, only after `outputs/.drafts/<slug>-cited.md` exists, run the `reviewer` agent against it.
+如果使用了 researcher subagent,仅在 `outputs/.drafts/<slug>-cited.md` 存在后,对其运行 `reviewer` agent。
 
-Use this shape:
+使用此形态:
 
 ```json
 {
@@ -165,21 +165,21 @@ Use this shape:
 }
 ```
 
-If the reviewer flags FATAL issues, fix them before delivery and run one more review pass. Note MAJOR issues in Open Questions. Accept MINOR issues.
+如果 reviewer 标记 FATAL 问题,交付前修复它们并再跑一轮审查。在 Open Questions 中记录 MAJOR 问题。接受 MINOR 问题。
 
-When applying reviewer fixes, do not issue one giant `edit` tool call with many replacements. Use small localized edits only for 1-3 simple corrections. For section rewrites, table rewrites, or more than 3 substantive fixes, read the cited draft and write a corrected full file to `outputs/.drafts/<slug>-revised.md` instead.
+应用 reviewer 修复时,不要发起一个包含大量替换的巨大 `edit` 工具调用。仅对 1-3 个简单修正使用小的局部 edit。对于章节重写、表格重写或超过 3 处实质性修复,读取引用草稿并将修正后的完整文件写入 `outputs/.drafts/<slug>-revised.md`。
 
-After applying reviewer, verifier, audit, or PI-style fixes, run an explicit on-disk verification before saying the fixes landed. Use `rg`, `grep`, `diff`, `wc`, `stat`, or a targeted read to prove the old unsupported wording is gone and the replacement wording exists. If an `edit` or `write` tool call fails, do not describe the fix as applied; record the failure in the plan/provenance, retry with a smaller edit or a full corrected file, and verify again. Provenance may only say an issue was fixed when this post-edit verification passed.
+应用 reviewer、verifier、audit 或 PI 风格修复后,在声称修复落地前运行一次显式的磁盘上验证。使用 `rg`、`grep`、`diff`、`wc`、`stat` 或定向读取,证明旧的无支撑措辞已消失且替换措辞存在。如果 `edit` 或 `write` 工具调用失败,不要将修复描述为已应用;在 plan/provenance 中记录失败,用更小的 edit 或完整修正文件重试,并再次验证。provenance 仅在此编辑后验证通过时才可声称某问题已修复。
 
-The final candidate is `outputs/.drafts/<slug>-revised.md` if it exists; otherwise it is `outputs/.drafts/<slug>-cited.md`.
+最终候选是 `outputs/.drafts/<slug>-revised.md`(若存在);否则是 `outputs/.drafts/<slug>-cited.md`。
 
-## Step 7: Deliver
+## 第 7 步:交付
 
-Copy the final candidate to:
-- `papers/<slug>.md` for paper-style drafts
-- `outputs/<slug>.md` for everything else
+将最终候选复制到:
+- `papers/<slug>.md`(论文式草稿)
+- `outputs/<slug>.md`(其他一切)
 
-Write provenance next to it as `<slug>.provenance.md`:
+在其旁写入 provenance 作为 `<slug>.provenance.md`:
 
 ```markdown
 # Provenance: [topic]
@@ -194,8 +194,8 @@ Write provenance next to it as `<slug>.provenance.md`:
 - **Research files:** [files used]
 ```
 
-Before responding, verify on disk that all required artifacts exist. If verification could not be completed, set `Verification: BLOCKED` or `PASS WITH NOTES` and list the missing checks.
+回复前,在磁盘上验证所有必需制品存在。如果验证无法完成,设置 `Verification: BLOCKED` 或 `PASS WITH NOTES` 并列出缺失的检查。
 
-Before responding, also verify that any fixes claimed in the provenance are reflected in the final candidate. If a fix removed a phrase, number, source, or claim, run a targeted `rg`/`grep` check for the removed content and a second check for the corrected content. Do not claim "all patches applied", "all checks pass", or "fixed" unless these commands or reads succeed.
+回复前,还要验证 provenance 中声称的任何修复都反映在最终候选中。如果某个修复移除了某个短语、数字、来源或论断,对被移除内容运行定向 `rg`/`grep` 检查,并对修正后内容运行第二次检查。除非这些命令或读取成功,否则不要声称"所有补丁已应用"、"所有检查通过"或"已修复"。
 
-Final response should be brief: link the final file, provenance file, and any blocked checks.
+最终回复应简洁:链接最终文件、provenance 文件以及任何 blocked 检查。
