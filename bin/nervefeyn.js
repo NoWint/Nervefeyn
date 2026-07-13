@@ -24,15 +24,15 @@ function compareNodeVersions(left, right) {
 const parsedNodeVersion = parseNodeVersion(process.versions.node);
 if (compareNodeVersions(parsedNodeVersion, parseNodeVersion(MIN_NODE_VERSION)) < 0 || parsedNodeVersion.major > MAX_NODE_MAJOR) {
   const isWindows = process.platform === "win32";
-  console.error(`feynman supports Node.js ${MIN_NODE_VERSION} through ${MAX_NODE_MAJOR}.x (detected ${process.versions.node}).`);
+  console.error(`nervefeyn 支持 Node.js ${MIN_NODE_VERSION} through ${MAX_NODE_MAJOR}.x (detected ${process.versions.node}).`);
   console.error(parsedNodeVersion.major > MAX_NODE_MAJOR
-    ? "This newer Node release is not supported yet."
+    ? "此 Node 版本暂不支持。"
     : isWindows
-      ? "Install a supported Node.js release from https://nodejs.org, or use the standalone installer:"
-      : `Switch to a supported Node release with \`nvm install ${PREFERRED_NODE_MAJOR} && nvm use ${PREFERRED_NODE_MAJOR}\`, or use the standalone installer:`);
+      ? "从以下地址安装受支持的 Node.js 版本: https://nodejs.org, or use the standalone installer:"
+      : `切换到受支持的 Node 版本: \`nvm install ${PREFERRED_NODE_MAJOR} && nvm use ${PREFERRED_NODE_MAJOR}\`, or use the standalone installer:`);
   console.error(isWindows
-    ? "irm https://feynman.is/install.ps1 | iex"
-    : "curl -fsSL https://feynman.is/install | bash");
+    ? "irm https://nervefeyn.dev/install.ps1 | iex"
+    : "curl -fsSL https://nervefeyn.dev/install | bash");
   process.exit(1);
 }
 const here = import.meta.dirname;
