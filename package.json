@@ -1,14 +1,14 @@
 {
-  "name": "@companion-ai/feynman",
+  "name": "@nervefeyn/nervefeyn",
   "version": "0.3.5",
-  "description": "Research-first CLI agent built on Pi and alphaXiv",
-  "license": "MIT",
+  "description": "基于 Pi 与 alphaXiv 的研究优先 CLI 代理",
+  "license": "GPL-3.0-only",
   "type": "module",
   "engines": {
     "node": ">=22.19.0 <26"
   },
   "bin": {
-    "feynman": "bin/feynman.js"
+    "nervefeyn": "bin/nervefeyn.js"
   },
   "files": [
     "bin/",
@@ -50,7 +50,7 @@
     "dev": "tsx src/index.ts",
     "prepack": "node ./scripts/clean-publish-artifacts.mjs && npm run build && node ./scripts/prepare-runtime-workspace.mjs",
     "start": "tsx src/index.ts",
-    "start:dist": "node ./bin/feynman.js",
+    "start:dist": "node ./bin/nervefeyn.js",
     "test": "node ./scripts/patch-embedded-pi.mjs && node --import tsx --test --test-concurrency=1 tests/*.test.ts",
     "typecheck": "tsc --noEmit && npm run typecheck:workbench-web",
     "typecheck:workbench-web": "tsc -p workbench-web/tsconfig.json --noEmit",
@@ -60,7 +60,8 @@
     "pi-package",
     "research-agent",
     "literature-review",
-    "experiments"
+    "experiments",
+    "neuroscience"
   ],
   "pi": {
     "extensions": [
@@ -154,15 +155,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/companion-inc/feynman.git"
+    "url": "git+https://github.com/NoWint/Nervefeyn.git"
   },
-  "homepage": "https://github.com/companion-inc/feynman#readme",
+  "homepage": "https://github.com/NoWint/Nervefeyn#readme",
   "bugs": {
-    "url": "https://github.com/companion-inc/feynman/issues"
+    "url": "https://github.com/NoWint/Nervefeyn/issues"
   },
   "main": "index.js",
   "directories": {
     "test": "tests"
   },
-  "author": ""
+  "author": "NoWint (https://github.com/NoWint)"
 }
