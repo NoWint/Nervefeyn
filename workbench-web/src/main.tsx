@@ -232,7 +232,7 @@ import {
 } from "./tensor-preview.js";
 
 import "react-json-view-lite/dist/index.css";
-import "./styles.css";
+import "./design-system.css";
 
 type SidePanel = "compute" | "customize" | "files" | "memory" | "notebook" | null;
 type CenterPane = "chat" | "files";
@@ -484,7 +484,7 @@ const onboardingBottleneckOptions = [
 
 const onboardingPermissionOptions = [
 	{ id: "files", title: "Local files", description: "Import PDFs, datasets, code, figures, and generated outputs." },
-	{ id: "science-databases", title: "Science databases", description: "Use Feynman Bio Tools for public papers, genes, variants, proteins, structures, trials, and datasets." },
+	{ id: "science-databases", title: "Science databases", description: "使用 Nervefeyn 生物工具检索公开论文、基因、变异、蛋白质、结构、试验与数据集。" },
 	{ id: "web", title: "Web evidence", description: "Search public papers, docs, datasets, and source pages." },
 	{ id: "compute", title: "Local compute", description: "Run notebook cells after the project opens." },
 	{ id: "connectors", title: "MCP connectors", description: "Register project-scoped tool connectors when selected." },
@@ -862,7 +862,7 @@ function commandPaletteGroups(state: WorkbenchState, query: string): CommandPale
 			id: "new-project",
 			kind: "new-project",
 			label: "New project",
-			sublabel: "Create a Feynman science project",
+			sublabel: "创建 Nervefeyn 科研项目",
 			updatedAtMs: Number.MAX_SAFE_INTEGER,
 		}]
 		: [];
@@ -2409,7 +2409,7 @@ function App() {
 				id: `queued-tool-${Date.now()}`,
 				label: "Queued to active Pi turn",
 				status: "running",
-				output: "Sending to the running Feynman session",
+				output: "发送到运行中的 Nervefeyn 会话",
 			}],
 		};
 		setSession({
@@ -2521,7 +2521,7 @@ function App() {
 		} satisfies WorkbenchChatSession;
 		const createdAt = new Date().toISOString();
 		setBusy(true);
-		setStatus(options.status ?? "Feynman is working");
+		setStatus(options.status ?? "Nervefeyn 正在工作");
 		setError(null);
 		if (options.clearComposer !== false) setMessage("");
 		setSession({
@@ -2540,12 +2540,12 @@ function App() {
 				{
 					id: `local-assistant-${Date.now()}`,
 					role: "assistant",
-					content: "Starting Feynman inside this workspace...",
+					content: "在此工作区启动 Nervefeyn...",
 					createdAt,
 					status: "running",
 					toolEvents: [{
 						id: "pi-turn",
-						label: "Feynman Pi turn",
+						label: "Nervefeyn Pi 轮次",
 						status: "running",
 					}],
 				},
@@ -2665,7 +2665,7 @@ function App() {
 		return (
 			<div className="boot-screen">
 				<div>
-					<p className="eyebrow">Feynman Science</p>
+					<p className="eyebrow">Nervefeyn · 神经计算</p>
 					<h1>Workbench failed to load</h1>
 					<p>{error}</p>
 				</div>
@@ -2677,7 +2677,7 @@ function App() {
 		return (
 			<div className="boot-screen">
 				<div>
-					<p className="eyebrow">Feynman Science</p>
+					<p className="eyebrow">Nervefeyn · 神经计算</p>
 					<h1>Loading workbench</h1>
 					<p>{status}</p>
 				</div>
@@ -2982,7 +2982,7 @@ function App() {
 											disabled={!session}
 										>
 											<span>Default</span>
-											<small>{data?.modelStatus?.current ? `Uses ${data.modelStatus.current}` : "Uses the configured Feynman default"}</small>
+											<small>{data?.modelStatus?.current ? `Uses ${data.modelStatus.current}` : "使用配置的 Nervefeyn 默认值"}</small>
 										</button>
 										{modelMenuSpecs.map((spec) => (
 											<button
@@ -3156,7 +3156,7 @@ function App() {
 										</div>
 										<div className="message-body">
 											<div className="message-meta">
-												<span>{chatMessage.role === "assistant" ? "Feynman" : chatMessage.role}</span>
+												<span>{chatMessage.role === "assistant" ? "Nervefeyn" : chatMessage.role}</span>
 												<span className="message-meta-actions">
 													{transcriptAnnotations.length ? <span>{transcriptAnnotations.length} bookmark{transcriptAnnotations.length === 1 ? "" : "s"}</span> : null}
 													<button
@@ -3221,7 +3221,7 @@ function App() {
 							) : (
 								<div className="empty-state">
 									<Bot size={18} aria-hidden />
-									<h2>Ask Feynman to research, verify, reproduce, or synthesize.</h2>
+									<h2>让 Nervefeyn 研究、验证、复现或综合。</h2>
 									<p>The chat is attached to this project, its files, Pi subagents, compute records, and provenance state.</p>
 								</div>
 							)
@@ -3659,7 +3659,7 @@ function CloudStorageModal({
 													<button
 														type="button"
 														onClick={() => {
-															if (window.confirm(`Remove ${credential.name} from Feynman cloud storage?`)) onRemoveCredential(credential.settingsRecordId);
+															if (window.confirm(`从 Nervefeyn 云存储移除 ${credential.name}?`)) onRemoveCredential(credential.settingsRecordId);
 														}}
 													>
 														Delete credential
@@ -3912,10 +3912,10 @@ function OnboardingScreen({
 	const stepTitle = [
 		"What kind of science are we setting up?",
 		"What should the first workbench optimize for?",
-		"What material will Feynman work with?",
+		"Nervefeyn 将处理什么材料?",
 		"Where does the workflow get stuck?",
 		"Add context, choose the first task, and grant setup scopes.",
-	][step] ?? "Set up Feynman";
+	][step] ?? "设置 Nervefeyn";
 	return (
 		<div className="entry-shell onboarding-shell">
 			<input
@@ -3929,7 +3929,7 @@ function OnboardingScreen({
 				<div className="entry-brand">
 					<div className="brand-mark"><Atom size={18} aria-hidden /></div>
 					<div>
-						<div className="brand-title">Feynman</div>
+						<div className="brand-title">Nervefeyn</div>
 						<div className="brand-subtitle">Open science setup</div>
 					</div>
 					{onLauncher ? <button type="button" onClick={onLauncher}>Projects</button> : null}
@@ -4117,7 +4117,7 @@ function ProjectLauncher({
 					<div className="entry-brand">
 						<div className="brand-mark"><Atom size={18} aria-hidden /></div>
 						<div>
-							<div className="brand-title">Feynman</div>
+							<div className="brand-title">Nervefeyn</div>
 							<div className="brand-subtitle">Open science workbench</div>
 						</div>
 					</div>
@@ -4221,7 +4221,7 @@ function ProjectLauncher({
 									<span>{seed.includes(":") ? seed.slice(seed.indexOf(":") + 1).trim() : seed}</span>
 								</div>
 							))}
-							{!seeds.length ? <div><strong>No seed workflows found</strong><span>Feynman loads packaged open-science fixtures into workspace outputs on serve.</span></div> : null}
+							{!seeds.length ? <div><strong>No seed workflows found</strong><span>Nervefeyn 在服务时加载打包的开放科学 fixtures 到工作区产物。</span></div> : null}
 						</div>
 					</div>
 				</section>
@@ -4356,7 +4356,7 @@ function GlobalCommandPalette({
 					)) : (
 						<div className="command-palette-empty">
 							<strong>No matches</strong>
-							<span>Search across Feynman projects, sessions, and artifacts.</span>
+							<span>在 Nervefeyn 项目、会话和产物中搜索。</span>
 						</div>
 					)}
 				</div>
@@ -4629,7 +4629,7 @@ function NotebookPanel({
 						<div className="environment-manager">
 							<header>
 								<strong>Managed environment</strong>
-								<span>Python venv and R library inside this Feynman workspace.</span>
+								<span>此 Nervefeyn 工作区内的 Python venv 和 R 库。</span>
 							</header>
 							<div className="control-stack">
 								<div className="segmented-control" aria-label="Environment language">
