@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nervefeyn Workbench · v3 极简顶栏</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    font-family: "Geist", -apple-system, "SF Pro Text", "PingFang SC", system-ui, sans-serif;
+    color: var(--fg); background: var(--bg);
+    font-size: 13px; line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+  }
+  :root {
+    --bg:#0a0a0a; --bg2:#0e0e0e; --card:#141414; --muted:#1c1c1c; --pop:#1c1c1c;
+    --fg:#fafafa; --mt:#a1a1a1; --mt2:#6b6b6b; --mt3:#4a4a4a;
+    --primary:#d4a05a; --primary-fg:#1a1410;
+    --secondary:#1c1c1c; --secondary-fg:#fafafa;
+    --accent:#262626; --accent-fg:#fafafa;
+    --input:#1f1f1f; --border:#1a1a1a; --border2:#161616;
+    --sb:#0a0a0a; --sb-border:#1a1a1a;
+    --success:#62d178; --warn:#eab308; --destructive:#ff6467; --info:#4a9eff;
+    --font-sans: "Geist", -apple-system, "SF Pro Text", "PingFang SC", system-ui, sans-serif;
+    --font-mono: "Geist Mono", "SF Mono", ui-monospace, monospace;
+  }
+  .app { display: grid; grid-template-columns: 220px 1fr; width: 100vw; height: 100vh; background: var(--bg); }
+
+  /* === Sidebar === */
+  .sb { background: var(--bg); border-right: 1px solid var(--border); padding: 14px 10px; padding-top: 18px; display: flex; flex-direction: column; gap: 18px; font-size: 13px; overflow-y: auto; }
+  .sb::-webkit-scrollbar { width: 6px; }
+  .sb::-webkit-scrollbar-thumb { background: var(--mt3); }
+  .sb::-webkit-scrollbar-track { background: transparent; }
+
+  .brand { display: flex; align-items: center; gap: 9px; padding: 4px 6px 14px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+  .brand .dot { width: 8px; height: 8px; background: var(--primary); flex: none; }
+  .brand .nm { font: 600 14px/1 var(--font-sans); color: var(--fg); letter-spacing: -0.01em; }
+  .brand .sub { font: 500 9.5px/1 var(--font-mono); color: var(--mt2); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 3px; }
+  .brand-l { display: flex; flex-direction: column; gap: 3px; }
+
+  .cta { display: flex; align-items: center; justify-content: space-between; padding: 7px 11px; background: var(--primary); color: var(--primary-fg); cursor: pointer; font: 500 12px/1 var(--font-sans); }
+  .cta:hover { filter: brightness(1.08); }
+  .cta svg { flex: none; width: 12px; height: 12px; }
+
+  .nav { display: flex; flex-direction: column; gap: 0; }
+  .nav-it { display: flex; align-items: center; gap: 9px; padding: 6px 6px; cursor: pointer; font-size: 12.5px; color: var(--mt); }
+  .nav-it svg { color: var(--mt2); flex: none; width: 14px; height: 14px; }
+  .nav-it:hover { color: var(--fg); }
+  .nav-it:hover svg { color: var(--mt); }
+  .nav-it.act { color: var(--fg); }
+  .nav-it.act svg { color: var(--primary); }
+  .nav-it .ct { margin-left: auto; font: 500 10px/1 var(--font-mono); color: var(--mt2); }
+
+  .sec-head { font: 500 10px/1 var(--font-mono); letter-spacing: 0.08em; color: var(--mt2); text-transform: uppercase; padding: 0 6px 4px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  .sec-head svg { color: var(--mt3); }
+
+  .inst-it { display: grid; grid-template-columns: 14px 1fr auto; gap: 8px; align-items: center; padding: 5px 6px; cursor: pointer; font-size: 12px; color: var(--mt); }
+  .inst-it:hover { color: var(--fg); }
+  .inst-it.act { color: var(--fg); }
+  .inst-it.act .ic { color: var(--primary); }
+  .inst-it .ic { width: 14px; height: 14px; display: grid; place-items: center; color: var(--mt2); flex: none; }
+  .inst-it .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .inst-it .vr { font: 500 10px/1 var(--font-mono); color: var(--mt3); }
+
+  .sb-foot { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+  .status-chip { font: 500 11px/1 var(--font-mono); color: var(--mt); display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .status-chip .dot { width: 5px; height: 5px; border-radius: 999px; background: var(--mt3); flex: none; }
+  .status-chip .dot.ok { background: var(--success); }
+  .user-pill { display: flex; align-items: center; gap: 8px; padding: 6px 6px; cursor: pointer; color: var(--mt); }
+  .user-pill:hover { color: var(--fg); }
+  .user-pill .av { width: 20px; height: 20px; border-radius: 999px; background: var(--muted); color: var(--fg); display: grid; place-items: center; font: 600 9px/1 var(--font-sans); flex: none; }
+  .user-pill .handle { font-size: 12px; font-weight: 500; flex: 1; color: var(--fg); }
+
+  /* === Main === */
+  .main { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--bg); height: 100vh; overflow: hidden; }
+
+  .topbar { display: flex; align-items: center; gap: 12px; padding: 11px 18px; border-bottom: 1px solid var(--border); flex: 0 0 auto; }
+
+  .view-tabs { display: flex; padding: 2px; border: 1px solid var(--border); background: var(--bg); }
+  .view-tabs .pill { height: 22px; padding: 0 10px; display: grid; place-items: center; cursor: pointer; color: var(--mt); font: 500 11.5px/1 var(--font-sans); }
+  .view-tabs .pill.act { background: var(--fg); color: var(--bg); }
+
+  .tb-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+  .icon-btn { width: 28px; height: 28px; color: var(--mt); display: grid; place-items: center; cursor: pointer; position: relative; }
+  .icon-btn:hover { color: var(--fg); }
+  .icon-btn svg { width: 14px; height: 14px; }
+  .icon-btn .dot::after { content: ""; position: absolute; top: -2px; right: -2px; width: 6px; height: 6px; background: var(--primary); border: 1px solid var(--bg); border-radius: 50%; display: none; }
+  .icon-btn.has-notif .dot::after { display: block; background: var(--destructive); }
+
+  .content { flex: 1 1 auto; min-height: 0; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+  .screen { padding: 28px; display: none; flex-direction: column; gap: 20px; overflow-y: auto; flex: 1 1 auto; min-height: 0; }
+  .screen.act { display: flex; }
+  .screen::-webkit-scrollbar { width: 6px; }
+  .screen::-webkit-scrollbar-thumb { background: var(--mt3); }
+  .screen::-webkit-scrollbar-track { background: transparent; }
+
+  /* === Workbench Home 极简 === */
+  .hero { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+  .hero-l { flex: 1; min-width: 0; }
+  .eyebrow { font: 500 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--mt2); }
+  .hero h1 { margin: 8px 0 6px; font: 600 24px/1.15 var(--font-sans); letter-spacing: -0.01em; }
+  .hero .meta { margin: 0; color: var(--mt); font-size: 13px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .hero .meta .sep { color: var(--border); }
+  .hero-acts { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 11px; border: 1px solid transparent; cursor: pointer; font: 500 12px/1 var(--font-sans); white-space: nowrap; color: var(--fg); background: transparent; }
+  .btn svg { width: 12px; height: 12px; }
+  .btn-pri { background: var(--primary); color: var(--primary-fg); }
+  .btn-pri:hover { filter: brightness(1.08); }
+  .btn-sec { background: var(--secondary); color: var(--fg); border-color: var(--border); }
+  .btn-sec:hover { background: var(--accent); }
+  .btn-gh { background: transparent; color: var(--mt); border-color: transparent; }
+  .btn-gh:hover { color: var(--fg); background: var(--muted); }
+  .btn-icon { width: 28px; height: 28px; padding: 0; justify-content: center; color: var(--mt); }
+
+  .card { display: flex; flex-direction: column; gap: 14px; padding: 18px; border: 1px solid var(--border); background: var(--card); }
+  .card-hd { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; }
+  .card h3 { margin: 4px 0 0; font: 600 14px/1.3 var(--font-sans); }
+  .hd-ic { width: 28px; height: 28px; border: 1px solid var(--border); background: var(--bg); color: var(--mt); display: grid; place-items: center; flex: none; }
+  .hd-ic svg { width: 15px; height: 15px; }
+
+  .neuro-preview { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .np-card { border: 1px solid var(--border); background: var(--bg); padding: 12px; display: flex; flex-direction: column; gap: 8px; cursor: pointer; }
+  .np-card:hover { border-color: var(--primary); }
+  .np-card .np-hd { display: flex; justify-content: space-between; align-items: center; }
+  .np-card .np-nm { font: 500 11px/1 var(--font-mono); color: var(--mt2); text-transform: uppercase; letter-spacing: 0.06em; }
+  .np-card .np-ct { font: 500 10px/1 var(--font-mono); color: var(--mt3); }
+  .np-card .np-viz { height: 64px; background: var(--bg2); border: 1px solid var(--border2); position: relative; overflow: hidden; }
+
+  .eeg-mini { background: linear-gradient(180deg, #0a0a0a 0%, #0e0e0e 100%); }
+  .eeg-mini svg { width: 100%; height: 100%; }
+  .fmri-mini { background: #050505; display: grid; place-items: center; }
+  .fmri-mini .slice { width: 48px; height: 48px; border-radius: 50%; background: radial-gradient(circle at 40% 40%, #2a1810 0%, #1a0e08 40%, #050505 70%); position: relative; }
+  .fmri-mini .slice::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 60% 50%, rgba(212,160,90,0.4) 0%, transparent 30%), radial-gradient(circle at 30% 60%, rgba(98,209,120,0.3) 0%, transparent 25%); }
+  .conn-mini { background: #050505; display: grid; place-items: center; }
+  .conn-mini svg { width: 100%; height: 100%; }
+  .raster-mini { background: #050505; padding: 6px; }
+  .raster-mini .row { height: 3px; display: flex; gap: 1px; }
+  .raster-mini .row .tick { width: 1px; background: var(--primary); }
+
+  svg.ic { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+  /* === 会话页 === */
+  #sessionScreen { padding: 0; gap: 0; overflow: hidden; }
+  #sessionScreen.act { display: grid; grid-template-columns: 1fr 320px; }
+  .chat-col { display: flex; flex-direction: column; min-width: 0; min-height: 0; border-right: 1px solid var(--border); }
+  .chat-hd { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--border); gap: 12px; flex: 0 0 auto; }
+  .chat-hd .tt { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .chat-hd h2 { font: 600 14px/1.2 var(--font-sans); color: var(--fg); letter-spacing: -0.01em; }
+  .chat-hd .sub { font: 500 10.5px/1.4 var(--font-mono); color: var(--mt2); }
+  .chat-hd .acts { display: flex; gap: 4px; align-items: center; }
+  .chat-hd .status { font: 500 11px/1 var(--font-mono); color: var(--mt); display: flex; align-items: center; gap: 6px; margin-right: 6px; }
+  .chat-hd .status .dot { width: 5px; height: 5px; border-radius: 999px; background: var(--mt3); }
+  .chat-hd .status .dot.ok { background: var(--success); }
+
+  .transcript { flex: 1 1 auto; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 18px; min-height: 0; }
+  .transcript::-webkit-scrollbar { width: 6px; }
+  .transcript::-webkit-scrollbar-thumb { background: var(--mt3); }
+  .transcript::-webkit-scrollbar-track { background: transparent; }
+
+  .msg { display: grid; grid-template-columns: 28px 1fr; gap: 12px; align-items: flex-start; }
+  .msg .av { width: 24px; height: 24px; border-radius: 999px; background: var(--muted); color: var(--fg); display: grid; place-items: center; font: 600 9px/1 var(--font-sans); flex: none; margin-top: 2px; }
+  .msg.assistant .av { background: var(--primary); color: var(--primary-fg); }
+  .msg .body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .msg .meta { font: 500 10px/1 var(--font-mono); color: var(--mt3); display: flex; gap: 8px; }
+  .msg .meta .role { color: var(--mt2); text-transform: uppercase; letter-spacing: 0.06em; }
+  .msg .meta .tm { color: var(--mt3); }
+  .msg .text { font-size: 13px; color: var(--fg); line-height: 1.55; }
+  .msg .text code { font: 500 11.5px/1.3 var(--font-mono); color: var(--primary); background: var(--muted); padding: 1px 5px; }
+  .msg .text p + p { margin-top: 8px; }
+  .msg .actions { display: flex; gap: 4px; margin-top: 4px; opacity: 0; transition: opacity 0.15s; }
+  .msg:hover .actions { opacity: 1; }
+  .msg .actions .act-ico { width: 22px; height: 22px; color: var(--mt3); display: grid; place-items: center; cursor: pointer; border: 0; background: transparent; }
+  .msg .actions .act-ico:hover { color: var(--fg); }
+  .msg .actions .act-ico svg { width: 12px; height: 12px; }
+
+  .msg .art-card { border: 1px solid var(--border); background: var(--bg); padding: 10px 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; margin-top: 6px; max-width: 460px; }
+  .msg .art-card:hover { border-color: var(--primary); }
+  .msg .art-card .ic { width: 24px; height: 24px; display: grid; place-items: center; color: var(--primary); flex: none; }
+  .msg .art-card .ic svg { width: 14px; height: 14px; }
+  .msg .art-card .info { flex: 1; min-width: 0; }
+  .msg .art-card .nm { font: 500 12px/1.3 var(--font-sans); color: var(--fg); }
+  .msg .art-card .ds { font: 500 10px/1 var(--font-mono); color: var(--mt3); margin-top: 3px; }
+
+  .composer { border-top: 1px solid var(--border); padding: 14px 20px; flex: 0 0 auto; display: flex; gap: 8px; align-items: flex-end; }
+  .composer .input-wrap { flex: 1; border: 1px solid var(--border); background: var(--bg); display: flex; flex-direction: column; }
+  .composer .input-wrap:focus-within { border-color: var(--mt3); }
+  .composer textarea { width: 100%; border: 0; outline: none; background: transparent; color: var(--fg); font: 13px/1.5 var(--font-sans); padding: 10px 12px; resize: none; min-height: 44px; max-height: 200px; }
+  .composer .input-foot { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-top: 1px solid var(--border2); }
+  .composer .tool-pil { font: 500 10px/1 var(--font-mono); color: var(--mt2); padding: 3px 7px; border: 1px solid var(--border); cursor: pointer; }
+  .composer .tool-pil:hover { color: var(--fg); border-color: var(--mt3); }
+  .composer .tool-pil.on { color: var(--primary); border-color: var(--primary); }
+  .composer .send-row { margin-left: auto; display: flex; gap: 4px; align-items: center; }
+
+  /* 右侧产物面板 */
+  .art-col { background: var(--bg); display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+  .art-hd { padding: 12px 16px 10px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .art-hd .tt { font: 600 12px/1 var(--font-sans); color: var(--fg); }
+  .art-hd .ct { font: 500 10px/1 var(--font-mono); color: var(--mt2); }
+  .art-list { flex: 1 1 auto; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 4px; }
+  .art-list::-webkit-scrollbar { width: 6px; }
+  .art-list::-webkit-scrollbar-thumb { background: var(--mt3); }
+  .art-row { display: grid; grid-template-columns: 18px 1fr auto; gap: 8px; align-items: center; padding: 7px 8px; cursor: pointer; }
+  .art-row:hover { background: var(--muted); }
+  .art-row.act { background: var(--muted); box-shadow: inset 2px 0 0 var(--primary); }
+  .art-row .ic { width: 14px; height: 14px; color: var(--mt2); display: grid; place-items: center; flex: none; }
+  .art-row .ic svg { width: 12px; height: 12px; }
+  .art-row .nm { font: 500 11.5px/1.3 var(--font-sans); color: var(--fg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .art-row .vr { font: 500 9.5px/1 var(--font-mono); color: var(--mt3); }
+
+  .art-preview { padding: 12px 16px; border-top: 1px solid var(--border); flex: 0 0 auto; max-height: 240px; overflow: hidden; }
+  .art-preview .ph { font: 500 10px/1 var(--font-mono); color: var(--mt2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .art-preview .np-viz { height: 80px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- === 侧边栏 === -->
+  <aside class="sb" role="navigation" aria-label="主导航">
+    <div class="brand">
+      <span class="dot"></span>
+      <div class="brand-l">
+        <span class="nm">Nervefeyn</span>
+        <span class="sub">神经计算研究工作台</span>
+      </div>
+    </div>
+
+    <div class="cta" role="button" tabindex="0" aria-label="新建研究会话 (Ctrl+N)">
+      <span>新建研究会话</span>
+      <svg class="ic" width="14" height="14" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+    </div>
+
+    <div class="nav" role="menu">
+      <div class="nav-it" role="menuitem" data-view="home"><svg class="ic" width="16" height="16" viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3"/><rect width="7" height="5" x="14" y="3"/><rect width="7" height="9" x="14" y="12"/><rect width="7" height="5" x="3" y="16"/></svg><span>工作台</span></div>
+      <div class="nav-it act" role="menuitem" data-view="session"><svg class="ic" width="16" height="16" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>会话</span><span class="ct">12</span></div>
+      <div class="nav-it" role="menuitem"><svg class="ic" width="16" height="16" viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg><span>文献库</span><span class="ct">347</span></div>
+      <div class="nav-it" role="menuitem"><svg class="ic" width="16" height="16" viewBox="0 0 24 24"><path d="M3 3h18v18H3z"/><path d="M9 9h6v6H9z"/></svg><span>数据集</span></div>
+      <div class="nav-it" role="menuitem"><svg class="ic" width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>设置</span></div>
+    </div>
+
+    <div class="sec-head"><span>置顶项目</span><svg class="ic" width="12" height="12" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div>
+    <div class="nav">
+      <div class="inst-it"><span class="ic"><svg class="ic" width="14" height="14" viewBox="0 0 24 24"><path d="M9 3v18"/><path d="M3 9h18"/></svg></span><span class="nm">EEG 跨被试泛化</span><span class="vr">活跃</span></div>
+      <div class="inst-it"><span class="ic"><svg class="ic" width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg></span><span class="nm">fMRI 解码模型</span><span class="vr">休眠</span></div>
+    </div>
+
+    <div class="sec-head"><span>最近会话</span><svg class="ic" width="12" height="12" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div>
+    <div class="nav">
+      <div class="inst-it act"><span class="ic">🧠</span><span class="nm">EEGNet 跨被试复现</span><span class="vr">2h</span></div>
+      <div class="inst-it"><span class="ic">📊</span><span class="nm">DANDI 数据集检索</span><span class="vr">1d</span></div>
+      <div class="inst-it"><span class="ic">⚡</span><span class="nm">Spike sorting 调研</span><span class="vr">3d</span></div>
+      <div class="inst-it"><span class="ic">🔬</span><span class="nm">NeuroAI 综述</span><span class="vr">1w</span></div>
+    </div>
+
+    <div class="sb-foot">
+      <div class="status-chip" style="padding: 6px 9px; border: 1px solid var(--border); background: var(--bg);">
+        <span class="dot ok"></span>
+        <span>GLM-5.2 · Pi 0.80.3</span>
+      </div>
+      <div class="user-pill">
+        <span class="av">NW</span>
+        <span class="handle">NoWint</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- === 主区 === -->
+  <main class="main" role="main">
+    <div class="topbar">
+      <div class="view-tabs">
+        <div class="pill" data-view="home">工作台</div>
+        <div class="pill act" data-view="session">会话</div>
+      </div>
+      <div class="tb-right">
+        <div class="icon-btn has-notif" aria-label="通知"><span class="dot"></span><svg class="ic" viewBox="0 0 24 24"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg></div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- === 工作台首页(极简)=== -->
+      <div class="screen" id="homeScreen">
+        <div class="hero">
+          <div class="hero-l">
+            <div class="eyebrow">项目 · 已选中</div>
+            <h1>EEG 跨被试泛化研究</h1>
+            <div class="meta">
+              <span>17 篇文献</span>
+              <span class="sep">·</span>
+              <span>3 个数据集</span>
+              <span class="sep">·</span>
+              <span>2 小时前</span>
+            </div>
+          </div>
+          <div class="hero-acts">
+            <button class="btn btn-sec"><svg class="ic" viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>文献</button>
+            <button class="btn btn-pri"><svg class="ic" viewBox="0 0 24 24"><path d="M5 3l14 9-14 9z"/></svg>继续研究</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hd">
+            <div><div class="eyebrow">最近产物</div><h3>神经数据预览</h3></div>
+            <span class="hd-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></span>
+          </div>
+          <div class="neuro-preview">
+            <div class="np-card">
+              <div class="np-hd"><span class="np-nm">EEG · Fz-Cz</span><span class="np-ct">2.4s</span></div>
+              <div class="np-viz eeg-mini">
+                <svg viewBox="0 0 200 64" preserveAspectRatio="none">
+                  <path d="M0,32 Q5,12 10,32 T20,32 Q25,50 30,32 T40,32 Q45,18 50,32 T60,32 Q65,46 70,32 T80,32 Q85,8 90,32 T100,32 Q105,54 110,32 T120,32 Q125,20 130,32 T140,32 Q145,44 150,32 T160,32 Q165,14 170,32 T180,32 Q185,40 190,32 T200,32" stroke="#d4a05a" stroke-width="1" fill="none"/>
+                </svg>
+              </div>
+            </div>
+            <div class="np-card">
+              <div class="np-hd"><span class="np-nm">fMRI · z=24</span><span class="np-ct">轴位</span></div>
+              <div class="np-viz fmri-mini"><div class="slice"></div></div>
+            </div>
+            <div class="np-card">
+              <div class="np-hd"><span class="np-nm">连接体</span><span class="np-ct">84 区</span></div>
+              <div class="np-viz conn-mini">
+                <svg viewBox="0 0 100 64">
+                  <g stroke="#d4a05a" stroke-width="0.4" opacity="0.6" fill="none">
+                    <line x1="20" y1="32" x2="50" y2="16"/>
+                    <line x1="20" y1="32" x2="50" y2="48"/>
+                    <line x1="20" y1="32" x2="80" y2="32"/>
+                    <line x1="50" y1="16" x2="80" y2="32"/>
+                    <line x1="50" y1="48" x2="80" y2="32"/>
+                    <line x1="50" y1="16" x2="50" y2="48"/>
+                    <line x1="50" y1="32" x2="80" y2="16"/>
+                    <line x1="50" y1="32" x2="80" y2="48"/>
+                  </g>
+                  <g fill="#d4a05a">
+                    <circle cx="20" cy="32" r="2"/>
+                    <circle cx="50" cy="16" r="2"/>
+                    <circle cx="50" cy="32" r="2"/>
+                    <circle cx="50" cy="48" r="2"/>
+                    <circle cx="80" cy="32" r="2"/>
+                    <circle cx="80" cy="16" r="1.5"/>
+                    <circle cx="80" cy="48" r="1.5"/>
+                  </g>
+                </svg>
+              </div>
+            </div>
+            <div class="np-card">
+              <div class="np-hd"><span class="np-nm">Spike raster</span><span class="np-ct">32 ch</span></div>
+              <div class="np-viz raster-mini" id="rasterMini"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- === 会话页 === -->
+      <div class="screen act" id="sessionScreen">
+        <div class="chat-col">
+          <div class="chat-hd">
+            <div class="tt">
+              <h2>EEGNet 跨被试复现</h2>
+              <div class="sub">EEG 跨被试泛化 · 17 文献 · 3 数据集</div>
+            </div>
+            <div class="acts">
+              <div class="status"><span class="dot ok"></span>Pi 在线</div>
+              <button class="btn btn-gh btn-icon" title="设置"><svg class="ic" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+            </div>
+          </div>
+
+          <div class="transcript">
+            <!-- 用户消息 -->
+            <div class="msg user">
+              <div class="av">NW</div>
+              <div class="body">
+                <div class="meta"><span class="role">NoWint</span><span class="tm">14:32</span></div>
+                <div class="text"><p>帮我复现 Lawhern 2018 的 EEGNet,在 PhysioNet BCI 2000 数据集上跑跨被试 4 类运动想象。重点关注 <code>depth_multiplier</code> 与 <code>dropout_rate</code> 的设定。</p></div>
+              </div>
+            </div>
+
+            <!-- 助手回复 -->
+            <div class="msg assistant">
+              <div class="av">NF</div>
+              <div class="body">
+                <div class="meta"><span class="role">Nervefeyn · researcher</span><span class="tm">14:33</span></div>
+                <div class="text">
+                  <p>已检索到 3 个候选源:原论文(arXiv:1611.08024)、官方 PyTorch 复现(vlawhern/EEGNet)、PhysioNet 数据集档案。先建立复现计划。</p>
+                  <p>关键超参:DepthMultiplier=2, dropoutRate=0.5, k=10s window。数据集用 9 个受试者的 EPOC 数据,4-class MI。</p>
+                </div>
+                <!-- 产物卡片 -->
+                <div class="art-card">
+                  <div class="ic"><svg class="ic" viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg></div>
+                  <div class="info">
+                    <div class="nm">eegnet-replication-plan.md</div>
+                    <div class="ds">outputs/.plans/ · 2.4 KB · 刚刚</div>
+                  </div>
+                </div>
+                <div class="art-card">
+                  <div class="ic"><svg class="ic" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></div>
+                  <div class="info">
+                    <div class="nm">cross-subject-accuracy.csv</div>
+                    <div class="ds">experiments/ · 9 行 · 2 分钟前</div>
+                  </div>
+                </div>
+                <div class="actions">
+                  <button class="act-ico" title="复制"><svg class="ic" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></button>
+                  <button class="act-ico" title="重新生成"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 用户消息 -->
+            <div class="msg user">
+              <div class="av">NW</div>
+              <div class="body">
+                <div class="meta"><span class="role">NoWint</span><span class="tm">14:38</span></div>
+                <div class="text"><p>对比一下 Kostas 2019 的 BENDR 方法在同一个数据集上的跨被试准确率。</p></div>
+              </div>
+            </div>
+
+            <!-- 助手回复带 EEG 预览 -->
+            <div class="msg assistant">
+              <div class="av">NF</div>
+              <div class="body">
+                <div class="meta"><span class="role">Nervefeyn · verifier</span><span class="tm">14:40</span></div>
+                <div class="text">
+                  <p>已对比。EEGNet 平均 0.67 ± 0.08,BENDR 平均 0.71 ± 0.06(均 9 折交叉被试)。BENDR 在受试 3、7 上明显领先,但 EEGNet 在受试 1 上更稳。</p>
+                </div>
+                <!-- 内嵌 EEG 预览 -->
+                <div class="art-card" style="flex-direction: column; align-items: stretch; max-width: 100%;">
+                  <div style="display: flex; gap: 10px; align-items: center;">
+                    <div class="ic"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h3l3-9 6 18 3-9h3"/></svg></div>
+                    <div class="info">
+                      <div class="nm">cross-subject-eeg-preview.svg</div>
+                      <div class="ds">experiments/figs/ · 4.2 KB · 刚刚</div>
+                    </div>
+                  </div>
+                  <div class="np-viz eeg-mini" style="height: 56px; margin-top: 8px; border: 1px solid var(--border2);">
+                    <svg viewBox="0 0 400 56" preserveAspectRatio="none">
+                      <path d="M0,28 Q20,10 40,28 T80,28 Q100,45 120,28 T160,28 Q180,15 200,28 T240,28 Q260,42 280,28 T320,28 Q340,18 360,28 T400,28" stroke="#d4a05a" stroke-width="1" fill="none"/>
+                      <path d="M0,40 Q20,32 40,40 T80,40 Q100,48 120,40 T160,40 Q180,34 200,40 T240,40 Q260,46 280,40 T320,40 Q340,42 360,40 T400,40" stroke="#6b6b6b" stroke-width="0.5" fill="none"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="actions">
+                  <button class="act-ico" title="复制"><svg class="ic" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg></button>
+                  <button class="act-ico" title="重新生成"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 编辑器 -->
+          <div class="composer">
+            <div class="input-wrap">
+              <textarea placeholder="问 Nervefeyn 一个研究问题…" rows="1"></textarea>
+              <div class="input-foot">
+                <div class="tool-pil on">researcher</div>
+                <div class="tool-pil">verifier</div>
+                <div class="tool-pil">+ 技能</div>
+                <div class="tool-pil">+ 数据集</div>
+                <div class="send-row">
+                  <button class="btn btn-gh btn-icon" title="附件"><svg class="ic" viewBox="0 0 24 24"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 17.99 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg></button>
+                  <button class="btn btn-pri"><svg class="ic" viewBox="0 0 24 24"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg>发送</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右侧产物面板 -->
+        <div class="art-col">
+          <div class="art-hd">
+            <div class="tt">本会话产物</div>
+            <div class="ct">6 个</div>
+          </div>
+          <div class="art-list">
+            <div class="art-row act">
+              <span class="ic"><svg class="ic" viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg></span>
+              <span class="nm">eegnet-replication-plan.md</span>
+              <span class="vr">2.4K</span>
+            </div>
+            <div class="art-row">
+              <span class="ic"><svg class="ic" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></span>
+              <span class="nm">cross-subject-accuracy.csv</span>
+              <span class="vr">9 行</span>
+            </div>
+            <div class="art-row">
+              <span class="ic"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h3l3-9 6 18 3-9h3"/></svg></span>
+              <span class="nm">cross-subject-eeg-preview.svg</span>
+              <span class="vr">4.2K</span>
+            </div>
+            <div class="art-row">
+              <span class="ic"><svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14 2z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+              <span class="nm">lawhern-2018-notes.md</span>
+              <span class="vr">已验证</span>
+            </div>
+            <div class="art-row">
+              <span class="ic"><svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14 2z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+              <span class="nm">kostas-2019-notes.md</span>
+              <span class="vr">待审</span>
+            </div>
+            <div class="art-row">
+              <span class="ic"><svg class="ic" viewBox="0 0 24 24"><path d="M3 3h18v18H3z"/><path d="M9 9h6v6H9z"/></svg></span>
+              <span class="nm">physionet-mi4-metadata.json</span>
+              <span class="vr">DANDI</span>
+            </div>
+          </div>
+          <div class="art-preview">
+            <div class="ph">预览 · cross-subject-eeg-preview.svg</div>
+            <div class="np-viz eeg-mini" style="height: 80px;">
+              <svg viewBox="0 0 400 80" preserveAspectRatio="none">
+                <path d="M0,40 Q20,15 40,40 T80,40 Q100,62 120,40 T160,40 Q180,20 200,40 T240,40 Q260,55 280,40 T320,40 Q340,25 360,40 T400,40" stroke="#d4a05a" stroke-width="1.2" fill="none"/>
+                <path d="M0,60 Q20,48 40,60 T80,60 Q100,68 120,60 T160,60 Q180,52 200,60 T240,60 Q260,66 280,60 T320,60 Q340,62 360,60 T400,60" stroke="#6b6b6b" stroke-width="0.6" fill="none"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+  (function generateRaster() {
+    var el = document.getElementById('rasterMini');
+    if (!el) { return; }
+    var html = '';
+    for (var i = 0; i < 14; i++) {
+      html += '<div class="row">';
+      for (var j = 0; j < 80; j++) {
+        var fire = Math.random() < 0.16;
+        html += '<span class="tick" style="' + (fire ? 'background:#d4a05a;opacity:' + (0.4 + Math.random()*0.6) : 'background:#1a1a1a') + '"></span>';
+      }
+      html += '</div>';
+    }
+    el.innerHTML = html;
+  })();
+
+  (function bindViewSwitch() {
+    var tabs = document.querySelectorAll('.view-tabs .pill, .nav-it[data-view]');
+    var screens = {
+      home: document.getElementById('homeScreen'),
+      session: document.getElementById('sessionScreen')
+    };
+    tabs.forEach(function(t) {
+      t.addEventListener('click', function() {
+        var key = t.getAttribute('data-view');
+        if (!key || !screens[key]) { return; }
+        document.querySelectorAll('.view-tabs .pill').forEach(function(p) { p.classList.toggle('act', p.getAttribute('data-view') === key); });
+        document.querySelectorAll('.nav-it[data-view]').forEach(function(p) { p.classList.toggle('act', p.getAttribute('data-view') === key); });
+        Object.keys(screens).forEach(function(k) { screens[k].classList.toggle('act', k === key); });
+      });
+    });
+  })();
+</script>
+</body>
+</html>

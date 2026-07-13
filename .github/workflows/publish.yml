@@ -1,0 +1,184 @@
+name: Publish and Release
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  version-check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      should_publish_npm: ${{ steps.version.outputs.should_publish_npm }}
+      should_release_github: ${{ steps.version.outputs.should_release_github }}
+      should_run_verify: ${{ steps.version.outputs.should_run_verify }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: "https://registry.npmjs.org"
+      - id: version
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LOCAL=$(node -p "require('./package.json').version")
+          echo "version=$LOCAL" >> "$GITHUB_OUTPUT"
+          PUBLISHED=$(npm view @companion-ai/feynman version 2>/dev/null || true)
+          if [ "$PUBLISHED" = "$LOCAL" ]; then
+            echo "should_publish_npm=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_publish_npm=true" >> "$GITHUB_OUTPUT"
+          fi
+          if gh release view "v$LOCAL" >/dev/null 2>&1; then
+            echo "should_release_github=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_release_github=true" >> "$GITHUB_OUTPUT"
+          fi
+          if [ "$PUBLISHED" = "$LOCAL" ] && gh release view "v$LOCAL" >/dev/null 2>&1; then
+            echo "should_run_verify=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_run_verify=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  verify:
+    needs: version-check
+    if: needs.version-check.outputs.should_run_verify == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: "https://registry.npmjs.org"
+      - run: npm ci
+      - run: npm test
+      - run: npm pack
+
+  publish-npm:
+    needs:
+      - version-check
+      - verify
+    if: needs.version-check.outputs.should_publish_npm == 'true' && needs.verify.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: "https://registry.npmjs.org"
+      - run: npm ci
+      - shell: bash
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          LOCAL=$(node -p "require('./package.json').version")
+          PUBLISHED=$(npm view @companion-ai/feynman version 2>/dev/null || true)
+          if [ "$PUBLISHED" = "$LOCAL" ]; then
+            echo "@companion-ai/feynman@$LOCAL is already published; skipping npm publish."
+            exit 0
+          fi
+          npx npm@latest publish --access public --provenance
+
+  build-native-bundles:
+    needs: version-check
+    if: needs.version-check.outputs.should_release_github == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: linux-x64
+            os: ubuntu-latest
+          - id: darwin-x64
+            os: macos-15-intel
+          - id: darwin-arm64
+            os: macos-14
+          - id: win32-x64
+            os: windows-latest
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - run: npm ci --ignore-scripts
+      - run: npm run build
+      - run: npm run build:native-bundle
+      - name: Smoke native bundle (Unix)
+        if: matrix.id != 'win32-x64'
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          tmp=$(mktemp -d)
+          tar -xzf "dist/release/feynman-${VERSION}-${{ matrix.id }}.tar.gz" -C "$tmp"
+          "$tmp/feynman-${VERSION}-${{ matrix.id }}/feynman" --help >/tmp/feynman-help.out
+          head -20 /tmp/feynman-help.out
+      - name: Smoke native bundle (Windows)
+        if: matrix.id == 'win32-x64'
+        shell: pwsh
+        run: |
+          $version = node -p "require('./package.json').version"
+          $tmp = Join-Path $env:RUNNER_TEMP ("feynman-smoke-" + [guid]::NewGuid().ToString("N"))
+          New-Item -ItemType Directory -Path $tmp | Out-Null
+          Expand-Archive -LiteralPath "dist/release/feynman-$version-win32-x64.zip" -DestinationPath $tmp -Force
+          $bundleRoot = Join-Path $tmp "feynman-$version-win32-x64"
+          & (Join-Path $bundleRoot "feynman.cmd") --help | Select-Object -First 20
+      - uses: actions/upload-artifact@v7
+        with:
+          name: native-${{ matrix.id }}
+          path: dist/release/*
+
+  release-github:
+    needs:
+      - version-check
+      - build-native-bundles
+    if: needs.version-check.outputs.should_release_github == 'true' && needs.build-native-bundles.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v8
+        with:
+          path: release-assets
+          merge-multiple: true
+      - name: Build release notes
+        shell: bash
+        env:
+          VERSION: ${{ needs.version-check.outputs.version }}
+        run: |
+          node scripts/extract-release-notes.mjs "$VERSION" "$RUNNER_TEMP/release-notes.md"
+      - name: Create GitHub release
+        shell: bash
+        env:
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.version-check.outputs.version }}
+        run: |
+          if gh release view "v$VERSION" >/dev/null 2>&1; then
+            gh release upload "v$VERSION" release-assets/* --clobber
+            gh release edit "v$VERSION" \
+              --title "v$VERSION" \
+              --notes-file "$RUNNER_TEMP/release-notes.md" \
+              --draft=false \
+              --latest
+          else
+            gh release create "v$VERSION" release-assets/* \
+              --title "v$VERSION" \
+              --notes-file "$RUNNER_TEMP/release-notes.md" \
+              --target "$GITHUB_SHA"
+          fi

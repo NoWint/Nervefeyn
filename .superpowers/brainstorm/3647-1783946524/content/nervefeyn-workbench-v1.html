@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nervefeyn Workbench · 设计语言 v1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    font-family: "Geist", -apple-system, "SF Pro Text", "PingFang SC", system-ui, sans-serif;
+    color: var(--fg); background: var(--bg);
+    font-size: 13px; line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+  }
+  :root {
+    --bg:#0a0a0a; --bg2:#0e0e0e; --card:#141414; --muted:#1c1c1c; --pop:#1c1c1c;
+    --fg:#fafafa; --mt:#a1a1a1; --mt2:#6b6b6b; --mt3:#4a4a4a;
+    --primary:#d4a05a; --primary-fg:#1a1410;
+    --secondary:#1c1c1c; --secondary-fg:#fafafa;
+    --accent:#262626; --accent-fg:#fafafa;
+    --input:#1f1f1f; --border:#1a1a1a; --border2:#161616;
+    --sb:#0a0a0a; --sb-border:#1a1a1a;
+    --success:#62d178; --warn:#eab308; --destructive:#ff6467; --info:#4a9eff;
+    --font-sans: "Geist", -apple-system, "SF Pro Text", "PingFang SC", system-ui, sans-serif;
+    --font-mono: "Geist Mono", "SF Mono", ui-monospace, monospace;
+  }
+  .app { display: grid; grid-template-columns: 220px 1fr; width: 100vw; height: 100vh; background: var(--bg); }
+
+  /* === Sidebar === */
+  .sb { background: var(--bg); border-right: 1px solid var(--border); padding: 14px 10px; padding-top: 18px; display: flex; flex-direction: column; gap: 18px; font-size: 13px; overflow-y: auto; }
+  .sb::-webkit-scrollbar { width: 6px; }
+  .sb::-webkit-scrollbar-thumb { background: var(--mt3); }
+  .sb::-webkit-scrollbar-track { background: transparent; }
+
+  .brand { display: flex; align-items: center; gap: 9px; padding: 4px 6px 14px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+  .brand .dot { width: 8px; height: 8px; background: var(--primary); flex: none; }
+  .brand .nm { font: 600 14px/1 var(--font-sans); color: var(--fg); letter-spacing: -0.01em; }
+  .brand .sub { font: 500 9.5px/1 var(--font-mono); color: var(--mt2); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 3px; }
+  .brand-l { display: flex; flex-direction: column; gap: 3px; }
+
+  .ws { display: flex; align-items: center; gap: 8px; padding: 4px 6px; cursor: pointer; color: var(--mt); }
+  .ws:hover { color: var(--fg); }
+  .ws .av { width: 18px; height: 18px; border-radius: 999px; background: var(--muted); color: var(--fg); display: grid; place-items: center; font: 600 9px/1 var(--font-sans); flex: none; }
+  .ws .nm { font-weight: 500; flex: 1; font-size: 12.5px; color: var(--fg); }
+  .ws svg { color: var(--mt); flex: none; width: 12px; height: 12px; }
+
+  .cta { display: flex; align-items: center; justify-content: space-between; padding: 7px 11px; background: var(--primary); color: var(--primary-fg); cursor: pointer; font: 500 12px/1 var(--font-sans); }
+  .cta:hover { filter: brightness(1.08); }
+  .cta svg { flex: none; width: 12px; height: 12px; }
+
+  .nav { display: flex; flex-direction: column; gap: 0; }
+  .nav-it { display: flex; align-items: center; gap: 9px; padding: 6px 6px; cursor: pointer; font-size: 12.5px; color: var(--mt); }
+  .nav-it svg { color: var(--mt2); flex: none; width: 14px; height: 14px; }
+  .nav-it:hover { color: var(--fg); }
+  .nav-it:hover svg { color: var(--mt); }
+  .nav-it.act { color: var(--fg); }
+  .nav-it.act svg { color: var(--primary); }
+  .nav-it .ct { margin-left: auto; font: 500 10px/1 var(--font-mono); color: var(--mt2); }
+
+  .sec-head { font: 500 10px/1 var(--font-mono); letter-spacing: 0.08em; color: var(--mt2); text-transform: uppercase; padding: 0 6px 4px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  .sec-head svg { color: var(--mt3); }
+
+  .inst-it { display: grid; grid-template-columns: 14px 1fr auto; gap: 8px; align-items: center; padding: 5px 6px; cursor: pointer; font-size: 12px; color: var(--mt); }
+  .inst-it:hover { color: var(--fg); }
+  .inst-it.act { color: var(--fg); }
+  .inst-it.act .ic { color: var(--primary); }
+  .inst-it .ic { width: 14px; height: 14px; display: grid; place-items: center; color: var(--mt2); flex: none; }
+  .inst-it .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .inst-it .vr { font: 500 10px/1 var(--font-mono); color: var(--mt3); }
+
+  .sb-foot { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+  .user-pill { display: flex; align-items: center; gap: 8px; padding: 6px 6px; cursor: pointer; color: var(--mt); }
+  .user-pill:hover { color: var(--fg); }
+  .user-pill .av { width: 20px; height: 20px; border-radius: 999px; background: var(--muted); color: var(--fg); display: grid; place-items: center; font: 600 9px/1 var(--font-sans); flex: none; }
+  .user-pill .handle { font-size: 12px; font-weight: 500; flex: 1; color: var(--fg); }
+  .user-pill .badge { min-width: 28px; height: 20px; padding: 0 6px; background: transparent; color: var(--mt3); font: 500 9.5px/1 var(--font-mono); display: grid; place-items: center; border: 0; }
+
+  /* === Main === */
+  .main { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--bg); height: 100vh; overflow: hidden; }
+
+  .topbar { display: flex; align-items: center; gap: 12px; padding: 11px 18px; border-bottom: 1px solid var(--border); flex: 0 0 auto; }
+  .search { display: flex; align-items: center; gap: 8px; flex: 1; max-width: 320px; min-width: 180px; height: 28px; padding: 0 10px; border: 1px solid var(--border); background: var(--bg); color: var(--mt); }
+  .search:focus-within { border-color: var(--mt3); }
+  .search input { flex: 1; border: 0; outline: none; background: transparent; color: var(--fg); font-size: 12.5px; }
+  .search .kbd { padding: 1px 5px; color: var(--mt2); font: 500 10px/1.4 var(--font-mono); border: 0; background: transparent; }
+
+  .tb-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+  .status-chip { font: 500 11px/1 var(--font-mono); color: var(--mt); display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .status-chip .dot { width: 5px; height: 5px; border-radius: 999px; background: var(--mt3); flex: none; }
+  .status-chip .dot.ok { background: var(--success); }
+  .status-chip .dot.warn { background: var(--warn); }
+  .status-chip .dot.err { background: var(--destructive); }
+  .icon-btn { width: 28px; height: 28px; color: var(--mt); display: grid; place-items: center; cursor: pointer; position: relative; }
+  .icon-btn:hover { color: var(--fg); }
+  .icon-btn svg { width: 14px; height: 14px; }
+  .icon-btn .dot::after { content: ""; position: absolute; top: -2px; right: -2px; width: 6px; height: 6px; background: var(--primary); border: 1px solid var(--bg); border-radius: 50%; display: none; }
+  .icon-btn.has-notif .dot::after { display: block; background: var(--destructive); }
+  .user-chip { display: flex; align-items: center; gap: 8px; padding: 3px 8px 3px 3px; cursor: pointer; }
+  .user-chip .av { width: 22px; height: 22px; border-radius: 999px; background: var(--muted); color: var(--fg); display: grid; place-items: center; font: 600 9px/1 var(--font-sans); flex: none; }
+  .user-chip .nm { font-size: 12px; font-weight: 500; color: var(--fg); }
+
+  .content { flex: 1 1 auto; min-height: 0; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+  .screen { padding: 24px 28px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; flex: 1 1 auto; min-height: 0; }
+  .screen::-webkit-scrollbar { width: 6px; }
+  .screen::-webkit-scrollbar-thumb { background: var(--mt3); }
+  .screen::-webkit-scrollbar-track { background: transparent; }
+
+  .hero { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+  .hero-l { flex: 1; min-width: 0; }
+  .eyebrow { font: 500 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--mt2); }
+  .hero h1 { margin: 8px 0 6px; font: 600 24px/1.15 var(--font-sans); letter-spacing: -0.01em; }
+  .hero .meta { margin: 0; color: var(--mt); font-size: 13px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .hero .meta .sep { color: var(--border); }
+  .hero-acts { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 11px; border: 1px solid transparent; cursor: pointer; font: 500 12px/1 var(--font-sans); white-space: nowrap; color: var(--fg); background: transparent; }
+  .btn svg { width: 12px; height: 12px; }
+  .btn-pri { background: var(--primary); color: var(--primary-fg); }
+  .btn-pri:hover { filter: brightness(1.08); }
+  .btn-sec { background: var(--secondary); color: var(--fg); border-color: var(--border); }
+  .btn-sec:hover { background: var(--accent); }
+  .btn-gh { background: transparent; color: var(--mt); border-color: transparent; }
+  .btn-gh:hover { color: var(--fg); background: var(--muted); }
+  .btn-icon { width: 28px; height: 28px; padding: 0; justify-content: center; color: var(--mt); }
+
+  .grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; }
+  .card { display: flex; flex-direction: column; gap: 14px; padding: 18px; border: 1px solid var(--border); background: var(--card); }
+  .card-hd { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; }
+  .card h3 { margin: 4px 0 0; font: 600 14px/1.3 var(--font-sans); }
+  .hd-ic { width: 28px; height: 28px; border: 1px solid var(--border); background: var(--bg); color: var(--mt); display: grid; place-items: center; flex: none; }
+  .hd-ic svg { width: 15px; height: 15px; }
+  .list-line { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .list-line:last-child { border-bottom: 0; padding-bottom: 0; }
+  .list-line small { display: block; margin-top: 3px; color: var(--mt); font-size: 11.5px; }
+  .list-line strong { font-weight: 500; }
+  .tag { font: 500 10.5px/1 var(--font-mono); color: var(--mt); white-space: nowrap; padding: 0; background: transparent; border: 0; }
+  .tag.acc { color: var(--primary); }
+  .tag.ok { color: var(--success); }
+  .tag.warn { color: var(--warn); }
+  .tag.err { color: var(--destructive); }
+  .tag.info { color: var(--info); }
+
+  svg.ic { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+  /* === 神经数据预览缩略卡片 === */
+  .neuro-preview { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .np-card { border: 1px solid var(--border); background: var(--bg); padding: 12px; display: flex; flex-direction: column; gap: 8px; cursor: pointer; }
+  .np-card:hover { border-color: var(--primary); }
+  .np-card .np-hd { display: flex; justify-content: space-between; align-items: center; }
+  .np-card .np-nm { font: 500 11px/1 var(--font-mono); color: var(--mt2); text-transform: uppercase; letter-spacing: 0.06em; }
+  .np-card .np-ct { font: 500 10px/1 var(--font-mono); color: var(--mt3); }
+  .np-card .np-viz { height: 56px; background: var(--bg2); border: 1px solid var(--border2); position: relative; overflow: hidden; }
+
+  /* EEG 波形迷你预览 */
+  .eeg-mini { background: linear-gradient(180deg, #0a0a0a 0%, #0e0e0e 100%); }
+  .eeg-mini svg { width: 100%; height: 100%; }
+
+  /* fMRI 切片迷你预览 */
+  .fmri-mini { background: #050505; display: grid; place-items: center; }
+  .fmri-mini .slice { width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle at 40% 40%, #2a1810 0%, #1a0e08 40%, #050505 70%); position: relative; }
+  .fmri-mini .slice::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 60% 50%, rgba(212,160,90,0.4) 0%, transparent 30%), radial-gradient(circle at 30% 60%, rgba(98,209,120,0.3) 0%, transparent 25%); }
+
+  /* 连接体图迷你预览 */
+  .conn-mini { background: #050505; display: grid; place-items: center; }
+  .conn-mini svg { width: 100%; height: 100%; }
+
+  /* Spike raster 迷你预览 */
+  .raster-mini { background: #050505; padding: 4px; }
+  .raster-mini .row { height: 3px; display: flex; gap: 1px; }
+  .raster-mini .row .tick { width: 1px; background: var(--primary); }
+
+  .note { padding: 14px 16px; background: var(--bg2); border-left: 2px solid var(--primary); font-size: 12.5px; color: var(--mt); line-height: 1.55; }
+  .note strong { color: var(--fg); font-weight: 500; }
+  .note code { font: 500 11px/1 var(--font-mono); color: var(--primary); background: var(--muted); padding: 2px 5px; }
+
+  /* mockup 顶部说明条 */
+  .mockup-banner { position: fixed; top: 0; left: 0; right: 0; height: 0; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- === 侧边栏 === -->
+  <aside class="sb" role="navigation" aria-label="主导航">
+    <div class="brand">
+      <span class="dot"></span>
+      <div class="brand-l">
+        <span class="nm">Nervefeyn</span>
+        <span class="sub">神经计算研究工作台</span>
+      </div>
+    </div>
+
+    <div class="ws">
+      <span class="av">XT</span>
+      <span class="nm">个人工作区</span>
+      <svg class="ic" width="14" height="14" viewBox="0 0 24 24"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+    </div>
+
+    <div class="cta" role="button" tabindex="0" aria-label="新建研究会话 (Ctrl+N)">
+      <span>新建研究会话</span>
+      <svg class="ic" width="14" height="14" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+    </div>
+
+    <div class="nav" role="menu">
+      <div class="nav-it act" role="menuitem"><svg class="ic" width="16" height="16" viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3"/><rect width="7" height="5" x="14" y="3"/><rect width="7" height="9" x="14" y="12"/><rect width="7" height="5" x="3" y="16"/></svg><span>工作台</span></div>
+      <div class="nav-it" role="menuitem"><svg class="ic" width="16" height="16" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>会话</span><span class="ct">12</span></div>
+      <div class="nav-it" role="menuitem"><svg class="ic" width="16" height="16" viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg><span>文献库</span><span class="ct">347</span></div>
+      <div class="nav-it" role="menuitem"><svg class="ic" width="16" height="16" viewBox="0 0 24 24"><path d="M3 3h18v18H3z"/><path d="M9 9h6v6H9z"/></svg><span>数据集</span></div>
+      <div class="nav-it" role="menuitem"><svg class="ic" width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>设置</span></div>
+    </div>
+
+    <div class="sec-head"><span>置顶项目</span><svg class="ic" width="12" height="12" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div>
+    <div class="nav">
+      <div class="inst-it act"><span class="ic"><svg class="ic" width="14" height="14" viewBox="0 0 24 24"><path d="M9 3v18"/><path d="M3 9h18"/></svg></span><span class="nm">EEG 跨被试泛化</span><span class="vr">活跃</span></div>
+      <div class="inst-it"><span class="ic"><svg class="ic" width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg></span><span class="nm">fMRI 解码模型</span><span class="vr">休眠</span></div>
+    </div>
+
+    <div class="sec-head"><span>最近会话</span><svg class="ic" width="12" height="12" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div>
+    <div class="nav">
+      <div class="inst-it"><span class="ic">🧠</span><span class="nm">神经编码 BCI 复现</span><span class="vr">2h</span></div>
+      <div class="inst-it"><span class="ic">📊</span><span class="nm">DANDI 数据集检索</span><span class="vr">1d</span></div>
+      <div class="inst-it"><span class="ic">⚡</span><span class="nm">Spike sorting 调研</span><span class="vr">3d</span></div>
+      <div class="inst-it"><span class="ic">🔬</span><span class="nm">NeuroAI 综述</span><span class="vr">1w</span></div>
+    </div>
+
+    <div class="sb-foot">
+      <div class="status-chip" style="padding: 6px 9px; border: 1px solid var(--border); background: var(--bg);">
+        <span class="dot ok"></span>
+        <span>GLM-5.2 · Pi 0.80.3</span>
+      </div>
+      <div class="user-pill">
+        <span class="av">NW</span>
+        <span class="handle">NoWint</span>
+        <span class="badge">本地</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- === 主区 === -->
+  <main class="main" role="main">
+    <div class="topbar">
+      <div class="icon-btn" role="button" tabindex="0" aria-label="主菜单"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18"/><path d="M3 6h18"/><path d="M3 18h18"/></svg></div>
+      <div class="search" role="search">
+        <svg class="ic" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        <input placeholder="搜索会话 / 文献 / 数据集 / 技能…" aria-label="搜索">
+        <span class="kbd" aria-hidden="true">⌘K</span>
+      </div>
+      <div class="tb-right">
+        <div class="status-chip"><span class="dot ok"></span><span>DANDI 已连接</span></div>
+        <div class="status-chip"><span class="dot warn"></span><span>3 个验证待审</span></div>
+        <div class="icon-btn has-notif" aria-label="通知"><span class="dot"></span><svg class="ic" viewBox="0 0 24 24"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg></div>
+        <div class="user-chip">
+          <span class="av">NW</span>
+          <span class="nm">NoWint</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="screen">
+        <!-- Hero -->
+        <div class="hero">
+          <div class="hero-l">
+            <div class="eyebrow">项目 · 已选中</div>
+            <h1>EEG 跨被试泛化研究</h1>
+            <div class="meta">
+              <span>计算神经科学</span>
+              <span class="sep">·</span>
+              <span>17 篇文献</span>
+              <span class="sep">·</span>
+              <span>3 个数据集</span>
+              <span class="sep">·</span>
+              <span>上次活跃 2 小时前</span>
+            </div>
+          </div>
+          <div class="hero-acts">
+            <button class="btn btn-gh btn-icon" title="设置"><svg class="ic" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+            <button class="btn btn-gh btn-icon" title="文件夹"><svg class="ic" viewBox="0 0 24 24"><path d="M20 17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3l2 2h7a2 2 0 0 1 2 2z"/></svg></button>
+            <button class="btn btn-sec"><svg class="ic" viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>文献</button>
+            <button class="btn btn-pri"><svg class="ic" viewBox="0 0 24 24"><path d="M5 3l14 9-14 9z"/></svg>继续研究</button>
+          </div>
+        </div>
+
+        <!-- 双栏网格 -->
+        <div class="grid">
+          <!-- 左:项目信息 -->
+          <div class="card">
+            <div class="card-hd">
+              <div><div class="eyebrow">研究上下文</div><h3>项目状态</h3></div>
+              <span class="hd-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/></svg></span>
+            </div>
+            <div>
+              <div class="list-line"><div><strong>研究主题</strong><small>跨被试 EEG 解码模型的泛化边界</small></div><span class="tag acc">活跃</span></div>
+              <div class="list-line"><div><strong>主模型</strong><small>EEGNet + 域对抗训练</small></div><span class="tag">v0.3</span></div>
+              <div class="list-line"><div><strong>数据集</strong><small>PhysioNet · TUH-EEG · DANDI/000409</small></div><span class="tag ok">3 个</span></div>
+              <div class="list-line"><div><strong>关键文献</strong><small>Lawhern 2018 · Kostas 2019 · Banville 2020</small></div><span class="tag">17 篇</span></div>
+              <div class="list-line"><div><strong>验证状态</strong><small>跨数据集复现 + 引用核查待审</small></div><span class="tag warn">3 待审</span></div>
+            </div>
+          </div>
+
+          <!-- 右:神经数据预览 -->
+          <div class="card">
+            <div class="card-hd">
+              <div><div class="eyebrow">最近产物</div><h3>神经数据预览</h3></div>
+              <span class="hd-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></span>
+            </div>
+            <div class="neuro-preview">
+              <!-- EEG 波形 -->
+              <div class="np-card">
+                <div class="np-hd"><span class="np-nm">EEG · Fz-Cz</span><span class="np-ct">2.4s</span></div>
+                <div class="np-viz eeg-mini">
+                  <svg viewBox="0 0 200 56" preserveAspectRatio="none">
+                    <path d="M0,28 Q5,10 10,28 T20,28 Q25,45 30,28 T40,28 Q45,15 50,28 T60,28 Q65,42 70,28 T80,28 Q85,8 90,28 T100,28 Q105,48 110,28 T120,28 Q125,18 130,28 T140,28 Q145,40 150,28 T160,28 Q165,12 170,28 T180,28 Q185,38 190,28 T200,28" stroke="#d4a05a" stroke-width="1" fill="none"/>
+                    <path d="M0,40 Q5,32 10,40 T20,40 Q25,48 30,40 T40,40 Q45,34 50,40 T60,40 Q65,46 70,40 T80,40 Q85,30 90,40 T100,40 Q105,44 110,40 T120,40 Q125,36 130,40 T140,40 Q145,42 150,40 T160,40 Q165,32 170,40 T180,40 Q185,44 190,40 T200,40" stroke="#6b6b6b" stroke-width="0.5" fill="none"/>
+                  </svg>
+                </div>
+              </div>
+              <!-- fMRI 切片 -->
+              <div class="np-card">
+                <div class="np-hd"><span class="np-nm">fMRI · z=24</span><span class="np-ct">轴位</span></div>
+                <div class="np-viz fmri-mini">
+                  <div class="slice"></div>
+                </div>
+              </div>
+              <!-- 连接体 -->
+              <div class="np-card">
+                <div class="np-hd"><span class="np-nm">连接体 · 84 区</span><span class="np-ct">阈值 0.4</span></div>
+                <div class="np-viz conn-mini">
+                  <svg viewBox="0 0 100 56">
+                    <g stroke="#d4a05a" stroke-width="0.3" opacity="0.6" fill="none">
+                      <line x1="20" y1="28" x2="50" y2="14"/>
+                      <line x1="20" y1="28" x2="50" y2="42"/>
+                      <line x1="20" y1="28" x2="80" y2="28"/>
+                      <line x1="50" y1="14" x2="80" y2="28"/>
+                      <line x1="50" y1="42" x2="80" y2="28"/>
+                      <line x1="50" y1="14" x2="50" y2="42"/>
+                      <line x1="20" y1="28" x2="50" y2="28"/>
+                      <line x1="50" y1="28" x2="80" y2="14"/>
+                      <line x1="50" y1="28" x2="80" y2="42"/>
+                    </g>
+                    <g fill="#d4a05a">
+                      <circle cx="20" cy="28" r="2"/>
+                      <circle cx="50" cy="14" r="2"/>
+                      <circle cx="50" cy="28" r="2"/>
+                      <circle cx="50" cy="42" r="2"/>
+                      <circle cx="80" cy="28" r="2"/>
+                      <circle cx="80" cy="14" r="1.5"/>
+                      <circle cx="80" cy="42" r="1.5"/>
+                    </g>
+                  </svg>
+                </div>
+              </div>
+              <!-- Spike raster -->
+              <div class="np-card">
+                <div class="np-hd"><span class="np-nm">Spike raster</span><span class="np-ct">32 通道</span></div>
+                <div class="np-viz raster-mini" id="rasterMini"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 设计说明 -->
+        <div class="note">
+          <strong>Nervefeyn Workbench v1 设计方向</strong> · 完全沿用 BonjourPrism 设计系统:深色近黑底 <code>#0a0a0a</code>、暖金主色 <code>#d4a05a</code>(替代原 Feynman 绿 <code>#2f6a3d</code>)、Geist + Geist Mono 字体、1px 描边、锐角、紧凑密度(13px base)。侧边栏从「实例」改为「研究项目/会话」,顶栏状态芯片改为模型与数据源连接状态,新增四类神经数据迷你预览(EEG 波形 / fMRI 切片 / 连接体图 / Spike raster)作为一等公民产物类型。
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  (function generateRaster() {
+    var el = document.getElementById('rasterMini');
+    if (!el) { return; }
+    var html = '';
+    for (var i = 0; i < 12; i++) {
+      html += '<div class="row">';
+      for (var j = 0; j < 60; j++) {
+        var fire = Math.random() < 0.18;
+        html += '<span class="tick" style="' + (fire ? 'background:#d4a05a;opacity:' + (0.4 + Math.random()*0.6) : 'background:#1a1a1a') + '"></span>';
+      }
+      html += '</div>';
+    }
+    el.innerHTML = html;
+  })();
+</script>
+</body>
+</html>

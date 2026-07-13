@@ -1,0 +1,13 @@
+{
+  "themes": ["-themes/feynman.json"],
+  "packages": [
+    "npm:@companion-ai/alpha-hub",
+    "npm:pi-subagents",
+    "npm:pi-btw",
+    "npm:pi-docparser",
+    "npm:pi-web-access",
+    "npm:pi-otel"
+  ],
+  "quietStartup": true,
+  "collapseChangelog": true
+}
