@@ -1,0 +1,21 @@
+Nervefeyn
+Copyright (C) 2026 NoWint (https://github.com/NoWint)
+
+This project is licensed under the GNU General Public License v3 (GPLv3).
+See LICENSE for the full license text.
+
+=== Third-Party Notices ===
+
+Feynman (original work)
+Copyright (c) 2026 Companion, Inc.
+Licensed under the MIT License.
+See LICENSES/feynman-mit.txt for the full license text.
+Source: https://github.com/companion-inc/feynman
+
+Pi Coding Agent (@earendil-works/pi-coding-agent)
+Licensed under its respective license.
+Source: https://github.com/earendil-works/pi-coding-agent
+
+alphaXiv (@companion-ai/alpha-hub)
+Licensed under its respective license.
+Source: https://github.com/companion-ai/alpha-hub
