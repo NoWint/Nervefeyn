@@ -1182,7 +1182,7 @@ export async function startWorkbenchServer(options: WorkbenchServerOptions): Pro
 
 export async function serveWorkbench(options: ServeWorkbenchOptions): Promise<void> {
 	const handle = await startWorkbenchServer(options);
-	console.log("Feynman workbench running");
+	console.log("Nervefeyn workbench running");
 	console.log(`URL: ${handle.openUrl}`);
 	console.log(`Workspace: ${options.workingDir}`);
 	console.log("Press Ctrl+C to stop.");
