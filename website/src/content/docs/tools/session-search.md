@@ -1,53 +1,53 @@
 ---
-title: Session Search
-description: Search prior Feynman session transcripts to recall past research.
+title: 会话检索
+description: 检索历史 Nervefeyn 会话记录,回溯过往研究。
 section: Tools
 order: 4
 ---
 
-The optional session search package recovers prior Feynman work from stored session transcripts. Feynman persists sessions to disk, and the package adds indexed search over past research, findings, and generated artifacts when it is installed on a supported runtime.
+可选的会话检索包从已存储的会话记录中恢复过往 Nervefeyn 工作。Nervefeyn 把会话持久化到磁盘,该包在受支持的运行时上为过往研究、发现和生成产物增加索引检索。
 
-## Installation
+## 安装
 
-Session search is an optional package. Install it with:
+会话检索是一个可选包。用以下命令安装:
 
 ```bash
-feynman packages install session-search
+nervefeyn packages install session-search
 ```
 
-It is available through Node.js 22.x while the upstream sqlite dependency remains native-bound. On newer Node majors, Feynman skips it instead of making first launch depend on a local C++ build toolchain.
+它通过 Node.js 22.x 提供,前提是上游 sqlite 依赖仍为原生绑定。在更新的 Node 主版本上,Nervefeyn 会跳过它,而非让首次启动依赖本地 C++ 构建工具链。
 
-Once installed and visible in the REPL, the `/search` slash command becomes available in future sessions. If `/search` is not visible, use the direct file search fallback below.
+安装并在 REPL 中可见后,`/search` 斜杠命令在后续会话中可用。若 `/search` 不可见,使用下方的直接文件检索回退。
 
-## Usage
+## 用法
 
-Inside the REPL, invoke session search directly:
+在 REPL 中直接调用会话检索:
 
 ```
 /search transformer scaling laws
 ```
 
-Natural-language recall depends on the optional package being installed and loaded in the current Pi session. When it is not visible, search the session files directly:
+自然语言回溯依赖于该可选包已安装并加载到当前 Pi 会话。当它不可见时,直接检索会话文件:
 
 ```bash
-rg -n "protein folding" ~/.feynman/sessions
+rg -n "protein folding" ~/.nervefeyn/sessions
 ```
 
-## What it searches
+## 它检索什么
 
-The optional package indexes the full contents of your session history:
+该可选包索引你会话历史的全部内容:
 
-- Full session transcripts including your prompts and Feynman's responses
-- Tool outputs and agent results from workflows like deep research and literature review
-- Generated artifacts such as drafts, reports, and comparison matrices
-- Metadata like timestamps, topics, and workflow types
+- 完整会话记录,包括你的提示和 Nervefeyn 的回复
+- 来自深度研究和文献综述等工作流的工具输出和代理结果
+- 生成的产物,如草稿、报告和对比矩阵
+- 元数据,如时间戳、主题和工作流类型
 
-The search uses both keyword matching and semantic similarity to find relevant past work. Results include the session ID, timestamp, and relevant excerpts so you can identify which session contains the information you need.
+检索同时使用关键词匹配和语义相似度来找到相关的过往工作。结果包含会话 ID、时间戳和相关摘录,让你能识别哪个会话包含所需信息。
 
-## When to use it
+## 何时使用
 
-Session search is valuable when the optional package is installed and you want to pick up a previous research thread without rerunning an expensive workflow, find specific findings or citations from a past deep research session, reference prior analysis in a new research context, or check what you have already investigated on a topic before launching a new round.
+当你安装了该可选包并希望:不重跑昂贵工作流而接续此前的研究线索、从过往深度研究会话中找到具体发现或引用、在新研究上下文中引用此前分析,或在启动新一轮前检查你已对某主题调查过什么时,会话检索很有价值。
 
-## How it works
+## 工作原理
 
-The `@kaiserlich-dev/pi-session-search` package provides the underlying search and indexing. Sessions are stored in `~/.feynman/sessions/` by default (configurable with `--session-dir`). The index is built incrementally as new sessions complete.
+`@kaiserlich-dev/pi-session-search` 包提供底层检索和索引。会话默认存储在 `~/.nervefeyn/sessions/`(可用 `--session-dir` 配置)。索引在新会话完成时增量构建。

@@ -1,36 +1,36 @@
 ---
 title: Writer
-description: The writer agent produces structured academic prose from research findings.
+description: writer 代理把研究发现转化为结构化学术正文。
 section: Agents
 order: 3
 ---
 
-The writer agent transforms raw research findings into structured, well-organized documents. It specializes in academic prose, producing papers, briefs, surveys, and reports with proper citations, section structure, and narrative flow.
+writer 代理把原始研究发现转化为结构化、组织良好的文档。它专长学术正文,产出带正确引用、章节结构和叙事流的论文、简报、综述与报告。
 
-## What it does
+## 它做什么
 
-The writer takes source material -- findings from researcher agents, review feedback, comparison matrices -- and synthesizes it into a coherent document. It handles the difficult task of turning a collection of extracted claims and citations into prose that tells a clear story.
+writer 接收来源材料 —— researcher 代理的发现、评审反馈、对比矩阵 —— 并综合成一份连贯的文档。它处理的难题是把一组提取出的主张与引用转化为讲述清晰故事的正文。
 
-The writer understands academic conventions. Claims are attributed to their sources with inline citations. Methodology sections describe procedures with sufficient detail for reproduction. Results are presented with appropriate qualifiers. Limitations are discussed honestly rather than buried or omitted.
+writer 理解学术惯例。主张通过内联引用归于来源,方法章节以足够复现的细节描述流程,结果附带恰当限定词,局限被诚实讨论而非掩盖或省略。
 
-## Writing capabilities
+## 写作能力
 
-The writer agent handles several document types:
+writer 代理处理多种文档类型:
 
-- **Research Briefs** -- Concise summaries of a topic with key findings and citations, produced by the deep research workflow
-- **Literature Reviews** -- Survey-style documents that map consensus, disagreement, and open questions across the field
-- **Paper Drafts** -- Full academic papers with abstract, introduction, body sections, discussion, and references
-- **Comparison Reports** -- Structured analyses of how multiple sources agree and differ
-- **Summaries** -- Condensed versions of longer documents or multi-source findings
+- **研究简报** —— 某主题的简明摘要,含关键发现与引用,由深度研究工作流产出
+- **文献综述** —— 综述式文档,梳理领域内的共识、分歧与开放问题
+- **论文草稿** —— 完整学术论文,含摘要、引言、正文、讨论与参考文献
+- **对比报告** —— 对多个来源如何一致与分歧的结构化分析
+- **摘要** —— 较长文档或多来源发现的精简版本
 
-## Citation handling
+## 引用处理
 
-The writer maintains citation integrity for research claims in the document. Strong factual claims are linked back to source material, and single-source claims are qualified so the reader can assess confidence. The final reference list includes works actually cited in the text.
+writer 为文档中的研究主张维护引用完整性。强事实性主张会回链到来源材料,单一来源的主张会被限定,让读者能够评估置信度。最终参考文献列表只包含正文中实际引用的作品。
 
-## Iteration
+## 迭代
 
-The writer supports iterative refinement. After producing an initial draft, you can ask Feynman to revise specific sections, add more detail on a subtopic, restructure the argument, or adjust the tone and level of technical detail. Each revision preserves the citation links and document structure.
+writer 支持迭代式打磨。产出初稿后,你可以让 Nervefeyn 修改特定章节、在某个子主题上补充更多细节、重组论证,或调整语气与技术细节深度。每次修订都会保留引用链接和文档结构。
 
-## Used by
+## 被谁使用
 
-The writer agent is used by `/deepresearch` (for the final brief), `/lit` (for the review document), `/draft` (as the primary agent), and `/compare` (for the comparison report). It usually runs near the end of a workflow, producing the final output from material gathered and evaluated earlier.
+writer 代理被 `/deepresearch`(产出最终简报)、`/lit`(产出综述文档)、`/draft`(作为主代理)和 `/compare`(产出对比报告)使用。它通常在工作流接近尾声时运行,基于前期采集和评估的材料产出最终输出。

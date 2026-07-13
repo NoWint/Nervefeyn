@@ -12,7 +12,7 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
   integrations: [react()],
-  site: 'https://feynman.is',
+  site: 'https://nervefeyn.dev',
   markdown: {
     shikiConfig: {
       themes: {

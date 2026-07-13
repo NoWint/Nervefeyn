@@ -1,26 +1,26 @@
 ---
-title: Paper Access
-description: Resolve legal full-text access candidates for one paper.
+title: 论文访问
+description: 为单篇论文解析合法的全文访问候选。
 section: Workflows
 order: 3
 ---
 
-Use `feynman paper` when you already have a DOI, arXiv ID, OpenAlex ID, PMID, PMCID, or title and need to find the best legal access route.
+当你已有一个 DOI、arXiv ID、OpenAlex ID、PMID、PMCID 或标题,需要找到最佳合法访问路径时,使用 `nervefeyn paper`。
 
-## Usage
+## 用法
 
 ```bash
-feynman paper 10.7717/peerj.4375
-feynman paper pmid:29456894
-feynman paper 2309.08600 --fetch-full-text
-feynman paper "The state of OA" --json
+nervefeyn paper 10.7717/peerj.4375
+nervefeyn paper pmid:29456894
+nervefeyn paper 2309.08600 --fetch-full-text
+nervefeyn paper "The state of OA" --json
 ```
 
-## Output
+## 输出
 
-Each run writes:
+每次运行写入:
 
-- `<slug>-paper-access.md` -- readable access report with identifiers, candidates, and limits
-- `<slug>-paper-access.json` -- machine-readable paper metadata and access candidates
+- `<slug>-paper-access.md` —— 可读的访问报告,含标识符、候选和限制
+- `<slug>-paper-access.json` —— 机器可读的论文元数据和访问候选
 
-The resolver uses OpenAlex primary, best open-access, and all reported location metadata, DOI links, arXiv/alphaXiv for arXiv papers, and Europe PMC full-text XML for deposited open-access PMC articles. It records PDF links as access candidates, but does not parse arbitrary PDFs or bypass paywalls. When `--fetch-full-text` succeeds, artifacts record only status, source, length, and section metadata; raw full-text bodies are not written.
+解析器使用 OpenAlex 主要来源、最佳开放获取以及所有已报告的位置元数据、DOI 链接、arXiv 论文对应的 arXiv/alphaX,以及存档开放获取 PMC 文章的 Europe PMC 全文 XML。它把 PDF 链接记录为访问候选,但不解析任意 PDF 或绕过付费墙。当 `--fetch-full-text` 成功时,产物只记录状态、来源、长度和章节元数据;不写入原始全文正文。

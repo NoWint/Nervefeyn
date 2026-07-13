@@ -1,34 +1,34 @@
 ---
 title: Researcher
-description: The researcher agent searches, reads, and extracts findings from papers and web sources.
+description: researcher 代理负责检索、阅读并从论文与网络来源中提取发现。
 section: Agents
 order: 1
 ---
 
-The researcher is the primary information-gathering agent in Feynman. It searches academic databases and the web, reads papers and articles, extracts key findings, and organizes source material for other agents to synthesize. Most workflows start with the researcher.
+researcher 是 Nervefeyn 中主要负责信息采集的代理。它检索学术数据库与网络、阅读论文与文章、提取关键发现,并为其他代理整理来源材料以便综合。大多数工作流都从 researcher 开始。
 
-## What it does
+## 它做什么
 
-The researcher agent handles source discovery and extraction for workflows that need gathered evidence. It formulates search queries based on your topic, evaluates results for relevance, reads selected sources in depth, and extracts structured information including claims, methodology, results, and limitations.
+researcher 代理为需要采集证据的工作流处理来源发现与提取。它根据你的主题构造检索查询、评估结果相关性、深入阅读选定来源,并提取结构化信息,包括主张、方法、结果与局限。
 
-For broad deep research and literature review tasks, workflow prompts can spawn multiple researcher agents in parallel. Each agent tackles a different angle of the topic. One might search for foundational papers while another looks for recent work that challenges the established view. This parallel approach produces broader coverage than a single sequential search.
+对于宽泛的深度研究与文献综述任务,工作流提示可以并行启动多个 researcher 代理。每个代理负责主题的不同角度,一个可能检索奠基性论文,另一个寻找挑战既有观点的最新工作。这种并行方式比单次顺序检索覆盖更广。
 
-## Search strategy
+## 检索策略
 
-The researcher uses a multi-source search strategy. For academic topics, it queries AlphaXiv for papers and uses citation chains to discover related work. For applied topics, it searches the web for documentation, blog posts, and code repositories. For ML implementation tasks, it can inspect Hugging Face dataset metadata and repo files directly. For most topics, it uses multiple channels and cross-references findings.
+researcher 使用多来源检索策略。对于学术主题,它查询 AlphaXiv 获取论文并利用引文链发现相关工作。对于应用主题,它检索网络上的文档、博客与代码仓库。对于 ML 实现任务,它可以直接查看 Hugging Face 数据集元数据与仓库文件。对于大多数主题,它会综合多个渠道并交叉验证发现。
 
-Search queries are diversified when breadth is needed. Rather than running the same query multiple times, the researcher generates varied queries that approach the topic from different angles. This catches papers that use different terminology for the same concept and surfaces sources that a single query would miss.
+当需要广度时,检索查询会被多样化。researcher 不是反复跑同一个查询,而是生成从不同角度切入主题的多样化查询。这样能捕获对同一概念使用不同术语的论文,并浮现单一查询会遗漏的来源。
 
-## Source evaluation
+## 来源评估
 
-Not every search result is worth reading in full. The researcher evaluates results by scanning abstracts and summaries first, then selects the most relevant and authoritative sources for deep reading. It considers publication venue, citation count, recency, and topical relevance when prioritizing sources.
+并非每条检索结果都值得通读。researcher 会先扫描摘要和总结来评估结果,再挑选最相关、最权威的来源进行深读。它在排序时会考虑发表期刊、被引次数、时效性与主题相关性。
 
-## Extraction
+## 提取
 
-When reading a source in depth, the researcher extracts structured data: the main claims and their supporting evidence, methodology details, experimental results, stated limitations, and connections to other work. Each extracted item is tagged with its source location for traceability.
+在深入阅读某个来源时,researcher 会提取结构化数据:主要主张及其支撑证据、方法细节、实验结果、所述局限以及与其他工作的联系。每条提取项都会标注来源位置,便于追溯。
 
-For ML recipe and replication work, the researcher switches to recipe-shaped extraction. It links reported results to the dataset, split/schema, method, hyperparameters, compute assumptions, metric, implementation code path, and verification status. A dataset is not described as usable unless the researcher checked availability and format, or explicitly marks that check as `unverified` or `blocked`.
+对于 ML 配方与复现工作,researcher 会切换为配方式提取。它把报告的结果与数据集、划分/schema、方法、超参数、算力假设、指标、实现代码路径和验证状态关联起来。除非 researcher 已检查过可用性与格式,或显式标记该检查为 `unverified` 或 `blocked`,否则不会把数据集描述为可用。
 
-## Used by
+## 被谁使用
 
-The researcher agent is used by the `/deepresearch`, `/lit`, `/review`, `/audit`, `/replicate`, `/recipe`, `/compare`, and `/draft` workflows. The workflow prompts call it through Pi's `subagent` tool when delegation improves coverage or context management; narrow tasks stay lead-owned.
+researcher 代理被 `/deepresearch`、`/lit`、`/review`、`/audit`、`/replicate`、`/recipe`、`/compare` 和 `/draft` 工作流使用。当委派能改善覆盖或上下文管理时,工作流提示会通过 Pi 的 `subagent` 工具调用它;狭窄任务仍由主代理承担。

@@ -17,16 +17,16 @@ function Normalize-Version {
   switch ($RequestedVersion.ToLowerInvariant()) {
     "latest" { return "latest" }
     "stable" { return "latest" }
-    "edge" { throw "The edge channel has been removed. Use the default installer for the latest tagged release or pass an exact version." }
+    "edge" { throw "edge 通道已下线。请使用默认安装器获取最新 tagged 发布,或传入精确版本号。" }
     default { return $RequestedVersion.TrimStart("v") }
   }
 }
 
 function Resolve-LatestReleaseVersion {
-  $page = Invoke-WebRequest -Uri "https://github.com/companion-inc/feynman/releases/latest"
+  $page = Invoke-WebRequest -Uri "https://github.com/NoWint/Nervefeyn/releases/latest"
   $match = [regex]::Match($page.Content, 'releases/tag/v([0-9][^"''<>\s]*)')
   if (-not $match.Success) {
-    throw "Failed to resolve the latest Feynman release version."
+    throw "无法解析最新的 Nervefeyn 发布版本。"
   }
 
   return $match.Groups[1].Value
@@ -46,7 +46,7 @@ function Resolve-VersionMetadata {
   return [PSCustomObject]@{
     ResolvedVersion = $resolvedVersion
     GitRef = "v$resolvedVersion"
-    DownloadUrl = if ($env:FEYNMAN_INSTALL_SKILLS_ARCHIVE_URL) { $env:FEYNMAN_INSTALL_SKILLS_ARCHIVE_URL } else { "https://github.com/companion-inc/feynman/archive/refs/tags/v$resolvedVersion.zip" }
+    DownloadUrl = if ($env:FEYNMAN_INSTALL_SKILLS_ARCHIVE_URL) { $env:FEYNMAN_INSTALL_SKILLS_ARCHIVE_URL } else { "https://github.com/NoWint/Nervefeyn/archive/refs/tags/v$resolvedVersion.zip" }
   }
 }
 
@@ -61,14 +61,14 @@ function Resolve-InstallDir {
   }
 
   if ($ResolvedScope -eq "Repo") {
-    return Join-Path (Get-Location) ".agents\skills\feynman"
+    return Join-Path (Get-Location) ".agents\skills\nervefeyn"
   }
   if ($ResolvedScope -eq "OpenCode") {
-    return Join-Path (Get-Location) ".opencode\skills\feynman"
+    return Join-Path (Get-Location) ".opencode\skills\nervefeyn"
   }
 
   $codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME ".codex" }
-  return Join-Path $codexHome "skills\feynman"
+  return Join-Path $codexHome "skills\nervefeyn"
 }
 
 $metadata = Resolve-VersionMetadata -RequestedVersion $Version
@@ -76,28 +76,28 @@ $resolvedVersion = $metadata.ResolvedVersion
 $downloadUrl = $metadata.DownloadUrl
 $installDir = Resolve-InstallDir -ResolvedScope $Scope -ResolvedTargetDir $TargetDir
 
-$tmpDir = Join-Path ([System.IO.Path]::GetTempPath()) ("feynman-skills-install-" + [System.Guid]::NewGuid().ToString("N"))
+$tmpDir = Join-Path ([System.IO.Path]::GetTempPath()) ("nervefeyn-skills-install-" + [System.Guid]::NewGuid().ToString("N"))
 New-Item -ItemType Directory -Path $tmpDir | Out-Null
 
 try {
-  $archivePath = Join-Path $tmpDir "feynman-skills.zip"
+  $archivePath = Join-Path $tmpDir "nervefeyn-skills.zip"
   $extractDir = Join-Path $tmpDir "extract"
 
-  Write-Host "==> Downloading Feynman skills $resolvedVersion"
+  Write-Host "==> 正在下载 Nervefeyn 技能 $resolvedVersion"
   Invoke-WebRequest -Uri $downloadUrl -OutFile $archivePath
 
-  Write-Host "==> Extracting skills"
+  Write-Host "==> 正在解压技能"
   Expand-Archive -LiteralPath $archivePath -DestinationPath $extractDir -Force
 
   $sourceRoot = Get-ChildItem -Path $extractDir -Directory | Select-Object -First 1
   if (-not $sourceRoot) {
-    throw "Could not find extracted Feynman archive."
+    throw "找不到解压后的 Nervefeyn 归档。"
   }
 
   $skillsSource = Join-Path $sourceRoot.FullName "skills"
   $promptsSource = Join-Path $sourceRoot.FullName "prompts"
   if (-not (Test-Path $skillsSource) -or -not (Test-Path $promptsSource)) {
-    throw "Could not find the bundled skills resources in the downloaded archive."
+    throw "在下载的归档中找不到打包的技能资源。"
   }
 
   $installParent = Split-Path $installDir -Parent
@@ -116,16 +116,16 @@ try {
   Copy-Item -Path (Join-Path $sourceRoot.FullName "AGENTS.md") -Destination (Join-Path $installDir "AGENTS.md") -Force
   Copy-Item -Path (Join-Path $sourceRoot.FullName "CONTRIBUTING.md") -Destination (Join-Path $installDir "CONTRIBUTING.md") -Force
 
-  Write-Host "==> Installed skills to $installDir"
+  Write-Host "==> 技能已安装到 $installDir"
   if ($Scope -eq "Repo") {
-    Write-Host "Repo-local skills will be discovered automatically from .agents/skills."
+    Write-Host "仓库本地技能将从 .agents/skills 自动发现。"
   } elseif ($Scope -eq "OpenCode") {
-    Write-Host "OpenCode project skills will be discovered from .opencode/skills."
+    Write-Host "OpenCode 项目技能将从 .opencode/skills 发现。"
   } else {
-    Write-Host "Codex user skills will be discovered from `$CODEX_HOME/skills."
+    Write-Host "Codex 用户技能将从 `$CODEX_HOME/skills 发现。"
   }
 
-  Write-Host "Feynman skills $resolvedVersion installed successfully."
+  Write-Host "Nervefeyn 技能 $resolvedVersion 安装成功。"
 } finally {
   if (Test-Path $tmpDir) {
     Remove-Item -Recurse -Force $tmpDir

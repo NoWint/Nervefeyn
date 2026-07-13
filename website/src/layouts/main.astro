@@ -9,13 +9,13 @@ interface Props {
 }
 
 const {
-  title = "Feynman - The open source AI research agent",
-  description = "An AI-powered research agent that helps you discover, analyze, and synthesize scientific literature.",
+  title = "Nervefeyn - 开源 AI 研究助手",
+  description = "一个 AI 驱动的研究助手,帮助你发现、分析和综合科学文献。",
   active = "home",
 } = Astro.props
 ---
 
-<html lang="en" class="dark">
+<html lang="zh-CN" class="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -41,7 +41,7 @@ const {
     <nav class="sticky top-0 z-50 bg-background">
       <div class="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
         <a href="/" class="flex items-center gap-2">
-          <span class="font-['VT323'] text-2xl text-primary">feynman</span>
+          <span class="font-['VT323'] text-2xl text-primary">nervefeyn</span>
         </a>
         <div class="flex items-center gap-4 sm:gap-6">
           <a
@@ -51,10 +51,10 @@ const {
               active === "docs" ? "text-foreground" : "text-muted-foreground",
             ]}
           >
-            Docs
+            文档
           </a>
           <a
-            href="https://github.com/companion-inc/feynman"
+            href="https://github.com/NoWint/Nervefeyn"
             target="_blank"
             rel="noopener noreferrer"
             class="text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -65,7 +65,7 @@ const {
           id="theme-toggle"
           type="button"
           class="inline-flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          aria-label="Toggle theme"
+          aria-label="切换主题"
         >
           <svg
             id="sun-icon"
@@ -100,12 +100,12 @@ const {
     <footer>
       <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 sm:flex-row sm:px-6">
         <p class="text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} Companion, Inc.
+          &copy; {new Date().getFullYear()} NoWint
         </p>
         <div class="flex items-center gap-4 text-sm">
-          <a href="/docs/getting-started/installation" class="text-muted-foreground transition-colors hover:text-foreground">Docs</a>
+          <a href="/docs/getting-started/installation" class="text-muted-foreground transition-colors hover:text-foreground">文档</a>
           <a
-            href="https://github.com/companion-inc/feynman"
+            href="https://github.com/NoWint/Nervefeyn"
             target="_blank"
             rel="noopener noreferrer"
             class="text-muted-foreground transition-colors hover:text-foreground"

@@ -1,33 +1,33 @@
 ---
 title: Reviewer
-description: The reviewer agent evaluates research artifacts with severity-graded critique.
+description: reviewer 代理以分级严重度评估研究产物。
 section: Agents
 order: 2
 ---
 
-The reviewer agent evaluates documents, papers, and research artifacts with internal research-review rigor. It does not claim external reviewer authority or venue acceptance; it produces actionable research critique covering methodology, claims, writing quality, and reproducibility.
+reviewer 代理以内部研究评审的严格度评估文档、论文与研究产物。它不主张外部审稿权威或会议录用;它产出可执行的研究评审,覆盖方法、主张、写作质量与可复现性。
 
-## What it does
+## 它做什么
 
-For review tasks, the reviewer reads the available artifact and evaluates it against standard academic criteria. It checks whether claims are supported by the presented evidence, whether the methodology is sound and described in sufficient detail, whether the experimental design controls for confounds, and whether the writing is clear and complete.
+对于 review 任务,reviewer 会阅读可用产物并按学术标准评估。它检查主张是否有所呈现的证据支撑、方法是否合理且描述充分、实验设计是否控制了混淆变量、写作是否清晰完整。
 
-Each piece of feedback is assigned a severity level. **Critical** issues are fundamental problems that undermine the document's validity, such as a statistical test applied incorrectly or a conclusion not supported by the data. **Major** issues are significant problems that should be addressed, like missing baselines or inadequate ablation studies. **Minor** issues are suggestions for improvement, and **nits** are stylistic or formatting comments.
+每条反馈会被赋予一个严重级别。**Critical**(致命)是动摇文档有效性的根本问题,例如统计检验误用或结论不被数据支撑。**Major**(重大)是应当处理的显著问题,如缺失基线或消融不足。**Minor**(次要)是改进建议,**nits**(挑刺)是风格或格式层面的意见。
 
-## Evaluation criteria
+## 评估维度
 
-The reviewer evaluates documents across several dimensions:
+reviewer 从多个维度评估文档:
 
-- **Claims vs. Evidence** -- Does the evidence presented actually support the claims made?
-- **Methodology** -- Is the approach sound? Are there confounds or biases?
-- **Experimental Design** -- Are baselines appropriate? Are ablations sufficient?
-- **Reproducibility** -- Could someone replicate this work from the description alone?
-- **Writing Quality** -- Is the paper clear, well-organized, and free of ambiguity?
-- **Completeness** -- Are limitations discussed? Is related work adequately covered?
+- **主张 vs. 证据** —— 所呈现的证据是否真的支撑了所述主张?
+- **方法** —— 方法是否合理?是否存在混淆或偏倚?
+- **实验设计** —— 基线是否合适?消融是否充分?
+- **可复现性** —— 仅凭描述,他人能否复现这项工作?
+- **写作质量** —— 论文是否清晰、组织良好、无歧义?
+- **完整性** —— 是否讨论了局限?相关工作覆盖是否充分?
 
-## Confidence scoring
+## 置信度评分
 
-The reviewer provides a confidence score for each finding, indicating how certain it is about the assessment. High-confidence findings are clear-cut issues (a statistical error, a missing citation). Lower-confidence findings are judgment calls (whether a baseline is sufficient, whether more ablations are needed) where reasonable reviewers might disagree.
+reviewer 会为每条发现给出置信度分数,表示它对该判断的确定程度。高置信度发现是清晰的问题(统计错误、缺失引用)。较低置信度发现属于判断类(基线是否充分、是否需要更多消融),合理的审稿人可能对此有不同看法。
 
-## Used by
+## 被谁使用
 
-The reviewer agent is the primary agent in the `/review` workflow. It also contributes to `/audit` (evaluating paper claims against code) and `/compare` (assessing the strength of evidence across sources). Workflow prompts call it through Pi's `subagent` tool when an adversarial review pass adds value.
+reviewer 代理是 `/review` 工作流的主代理。它还参与 `/audit`(把论文主张与代码对照评估)和 `/compare`(评估跨来源的证据强度)。当对抗式评审能带来价值时,工作流提示会通过 Pi 的 `subagent` 工具调用它。

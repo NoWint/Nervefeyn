@@ -1,54 +1,54 @@
 ---
 title: Watch
-description: Create a research watch baseline and optionally schedule follow-up checks.
+description: 创建研究 watch 基线,并可选地调度后续检查。
 section: Workflows
 order: 10
 ---
 
-The watch workflow creates a baseline survey for a topic and, when scheduling tools are visible in the current session, schedules follow-up checks. When scheduling is unavailable, it still writes the baseline and records the scheduling gap instead of pretending a recurring job exists.
+watch 工作流为某个主题创建基线综述,并在当前会话中可见调度工具时调度后续检查。当调度不可用时,它仍会写出基线并记录调度缺口,而非假装存在某个周期性作业。
 
-## Usage
+## 用法
 
-From the REPL:
+在 REPL 中:
 
 ```
-/watch New developments in state space models for sequence modeling
+/watch 序列建模状态空间模型的新进展
 ```
 
-From the CLI:
+在 CLI 中:
 
 ```bash
-feynman watch "New developments in state space models for sequence modeling"
+nervefeyn watch "序列建模状态空间模型的新进展"
 ```
 
-After creating a watch, Feynman writes the baseline artifact and the watch plan. Scheduled recurrence is created only when the `schedule_prompt` tool is visible.
+创建 watch 后,Nervefeyn 会写出基线产物和 watch 计划。仅当 `schedule_prompt` 工具可见时才创建调度 recurrence。
 
-## How it works
+## 工作原理
 
-The workflow starts by writing a plan with the topic, monitored signals, meaningful-change criteria, and check frequency. It then runs a baseline sweep and saves the result under `outputs/`.
+工作流先写出包含主题、监控信号、有意义变化标准和检查频率的计划,然后运行一次基线扫描并把结果保存到 `outputs/` 下。
 
-When `schedule_prompt` is available, the workflow schedules the same search plan for a recurring or delayed follow-up. When it is unavailable, the baseline marks scheduling as blocked and includes the exact refresh prompt to run later.
+当 `schedule_prompt` 可用时,工作流会为该检索计划调度周期性或延后的后续。当它不可用时,基线会把调度标记为 blocked,并包含稍后可运行的精确刷新提示。
 
-Each check searches AlphaXiv and the web for papers, articles, docs, releases, or code changes matching your topic. Results are compared against the baseline so genuinely new material is visible instead of mixed into old findings.
+每次检查都会在 AlphaXiv 和网络上检索与主题匹配的论文、文章、文档、发布或代码变更。结果会与基线对比,使真正新的材料可见,而非混入旧发现。
 
-## Managing watches
+## 管理 watch
 
-Inspect current watch state:
+查看当前 watch 状态:
 
 ```
 /jobs
 ```
 
-The `/jobs` command reports visible scheduler/process state when those tools are available and points to durable watch artifacts such as `outputs/.plans/<slug>.md` and `outputs/<slug>-baseline.md`.
+`/jobs` 命令在那些工具可用时报告可见的调度器/进程状态,并指向持久 watch 产物,如 `outputs/.plans/<slug>.md` 和 `outputs/<slug>-baseline.md`。
 
-## Output format
+## 输出格式
 
-Each watch baseline or follow-up produces:
+每个 watch 基线或后续产出:
 
-- **New Papers** -- Titles, authors, and one-paragraph summaries of newly discovered papers
-- **New Articles** -- Relevant blog posts, documentation updates, or news articles
-- **Relevance Notes** -- Why each item was flagged as relevant to your watch topic
+- **新论文** —— 新发现论文的标题、作者和一段式摘要
+- **新文章** —— 相关博客、文档更新或新闻文章
+- **相关性笔记** —— 为何每条被标记为与你的 watch 主题相关
 
-## When to use it
+## 何时使用
 
-Use `/watch` to preserve a repeatable monitoring plan for a fast-moving research area. It is useful for tracking new papers, specific research groups, code releases, or product surfaces related to an active research question.
+把 `/watch` 用于为快速演进的研究领域保留可重复的监控计划。它适合追踪新论文、特定研究小组、代码发布或与活跃研究问题相关的产品界面。

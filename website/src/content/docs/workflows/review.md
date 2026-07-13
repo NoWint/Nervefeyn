@@ -1,15 +1,15 @@
 ---
-title: Research Review
-description: Run an internal research critique with severity-graded feedback.
+title: 研究评审
+description: 运行内部研究评审,产出分级严重度的反馈。
 section: Workflows
 order: 3
 ---
 
-The review workflow runs an internal research critique of a paper, draft, or research artifact. It is not an external peer review or publication decision; it identifies likely methodology, evidence, clarity, and reproducibility issues before you trust or revise the work.
+review 工作流对一篇论文、草稿或研究产物运行内部研究评审。它不是外部同行评审或发表决定;它在你信任或修改该工作之前,识别可能的方法、证据、清晰度和可复现性问题。
 
-## Usage
+## 用法
 
-From the REPL:
+在 REPL 中:
 
 ```
 /review arxiv:2401.12345
@@ -19,40 +19,40 @@ From the REPL:
 /review ~/papers/my-draft.pdf
 ```
 
-From the CLI:
+在 CLI 中:
 
 ```bash
-feynman review arxiv:2401.12345
-feynman review my-draft.md
+nervefeyn review arxiv:2401.12345
+nervefeyn review my-draft.md
 ```
 
-You can pass an arXiv ID, a URL, or a local file path. For arXiv papers, Feynman fetches the source paper directly when the paper tools are available. For local PDFs, Feynman attempts document extraction and records blocked checks if extraction fails.
+你可以传入 arXiv ID、URL 或本地文件路径。对于 arXiv 论文,当论文工具可用时,Nervefeyn 会直接取回来源论文。对于本地 PDF,Nervefeyn 尝试文档抽取,并在抽取失败时记录被阻塞的检查。
 
-## How it works
+## 工作原理
 
-The review workflow first writes a plan to `outputs/.plans/<slug>-review-plan.md`, then continues immediately into evidence gathering and final review generation. It does not stop to ask for a "proceed" response unless you explicitly asked to review the plan first.
+review 工作流先把计划写入 `outputs/.plans/<slug>-review-plan.md`,然后立即进入证据采集和最终评审生成。除非你显式要求先评审计划,否则它不会停下来等待"继续"响应。
 
-The workflow reads or fetches the artifact, records evidence notes in `outputs/.drafts/<slug>-review-evidence.md`, and then writes exactly one final review to `outputs/<slug>-review.md`. For larger artifacts it can delegate evidence gathering or review synthesis to Feynman's bundled research agents; for smaller artifacts it performs the review directly to avoid unnecessary orchestration.
+工作流读取或取回产物、把证据笔记记录在 `outputs/.drafts/<slug>-review-evidence.md`,然后把唯一一份最终评审写入 `outputs/<slug>-review.md`。对于较大产物,它可以把证据采集或评审综合委派给 Nervefeyn 的内置研究代理;对于较小产物,它直接进行评审以避免不必要的编排。
 
-The reviewer examines the paper's claims, checks whether the methodology supports the conclusions, evaluates the experimental design for potential confounds, and assesses the clarity and completeness of the writing.
+reviewer 检查论文的主张、核对方法是否支撑结论、评估实验设计是否存在潜在混淆,并评估写作的清晰度与完整性。
 
-Each piece of feedback is assigned a severity level: **critical** (fundamental issues that undermine the paper's validity), **major** (significant problems that should be addressed), **minor** (suggestions for improvement), or **nit** (stylistic or formatting issues). This grading helps you triage feedback and focus on what matters most.
+每条反馈会被赋予一个严重级别:**critical**(动摇论文有效性的根本问题)、**major**(应处理的显著问题)、**minor**(改进建议)或 **nit**(风格或格式问题)。该分级帮助你分诊反馈并聚焦最重要的内容。
 
-The reviewer also produces a summary assessment with a revision priority and a confidence score indicating how certain it is about each finding. When the reviewer identifies a claim that cannot be verified from the paper alone, it flags it as needing additional evidence.
+reviewer 还会产出一份带修订优先级和置信度分数的总结评估,表示它对每条发现的确定程度。当 reviewer 识别出仅凭论文无法验证的主张时,会标记为需要额外证据。
 
-If a PDF cannot be parsed or an external source is unavailable, the workflow still writes the final review artifact and marks the affected checks as blocked rather than silently ending after a plan.
+如果 PDF 无法解析或外部来源不可用,工作流仍会写出最终评审产物,并把受影响的检查标记为 blocked,而非在计划之后静默结束。
 
-## Output format
+## 输出格式
 
-The review output includes:
+评审输出包括:
 
-- **Summary Assessment** -- Overall evaluation and revision priority
-- **Strengths** -- What the paper does well
-- **Critical Issues** -- Fundamental problems that need to be addressed
-- **Major Issues** -- Significant concerns with suggested fixes
-- **Minor Issues** -- Smaller improvements and suggestions
-- **Inline Annotations** -- Specific comments tied to sections of the document
+- **总结评估** —— 整体评价与修订优先级
+- **优势** —— 论文做得好的地方
+- **Critical 问题** —— 需要处理的根本问题
+- **Major 问题** —— 带建议修复的显著关切
+- **Minor 问题** —— 较小的改进与建议
+- **内联批注** —— 与文档章节绑定的具体意见
 
-## Customization
+## 自定义
 
-You can focus the review by specifying what to examine: "focus on the statistical methodology" or "check the claims in Section 4 against the experimental results." The reviewer adapts its analysis to your priorities while still performing a baseline check of the full document.
+你可以通过指定要检查什么来聚焦评审:"聚焦统计方法"或"把第 4 节的主张与实验结果对照"。reviewer 会在仍对整篇文档做基线检查的同时,把分析适配到你的优先级。

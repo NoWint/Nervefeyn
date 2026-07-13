@@ -1,27 +1,27 @@
 # Astro + React + TypeScript + shadcn/ui
 
-This is a template for a new Astro project with React, TypeScript, and shadcn/ui.
+这是一个内置 React、TypeScript 与 shadcn/ui 的 Astro 项目模板。
 
-## Adding components
+## 添加组件
 
-To add components to your app, run the following command:
+运行以下命令为应用添加组件:
 
 ```bash
 npx shadcn@latest add button
 ```
 
-This will place the ui components in the `src/components` directory.
+该命令会将 UI 组件放入 `src/components` 目录。
 
-## Using components
+## 使用组件
 
-To use the components in your app, import them in an `.astro` file:
+在 `.astro` 文件中导入并使用组件:
 
 ```astro
 ---
 import { Button } from "@/components/ui/button"
 ---
 
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />

@@ -1,23 +1,23 @@
 ---
-title: Setup
-description: Walk through the guided setup wizard to configure Feynman.
+title: 设置
+description: 走完引导式设置向导,完成 Nervefeyn 配置。
 section: Getting Started
 order: 3
 ---
 
-The `feynman setup` wizard configures your model provider, API keys, and optional packages. It runs automatically on first launch, but you can re-run it at any time to change your configuration.
+`nervefeyn setup` 向导用于配置模型提供商、API 密钥及可选包。它在首次启动时自动运行,你也可以随时重新运行以更改配置。
 
-## Running setup
+## 运行设置
 
 ```bash
-feynman setup
+nervefeyn setup
 ```
 
-The wizard walks you through three stages: model configuration, authentication, and optional package installation.
+向导会带你走过三个阶段:模型配置、认证、可选包安装。
 
-## Stage 1: Model selection
+## 阶段 1:模型选择
 
-Feynman supports multiple model providers. The setup wizard presents a list of available providers and models. Select your preferred non-Pro default model using the arrow keys:
+Nervefeyn 支持多个模型提供商。设置向导会列出可用提供商和模型,使用方向键选择你偏好的非 Pro 默认模型:
 
 ```
 ? Select your default model:
@@ -25,39 +25,39 @@ Feynman supports multiple model providers. The setup wizard presents a list of a
   provider:another-non-pro-model
 ```
 
-The non-Pro model you choose here becomes the default for all sessions. You can override it per-session with the `--model` flag or change it later via `feynman model set <provider/model>` or `feynman model set <provider:model>`. Feynman rejects Pro-class model IDs for default and explicit model selection; choose a non-Pro model.
+此处选择的非 Pro 模型会成为所有会话的默认模型。你可以用 `--model` 参数按会话覆盖,或之后通过 `nervefeyn model set <provider/model>` 或 `nervefeyn model set <provider:model>` 修改。Nervefeyn 会拒绝 Pro 类模型 ID 作为默认或显式选择;请选择非 Pro 模型。
 
-## Stage 2: Authentication
+## 阶段 2:认证
 
-Depending on your chosen provider, setup prompts you for an API key or walks you through OAuth login. For providers that support Pi OAuth (like Anthropic and OpenAI), Feynman opens a browser window to complete the sign-in flow. Your credentials are stored securely in the Pi auth storage at `~/.feynman/`.
+根据所选提供商,设置会提示你输入 API 密钥或引导你完成 OAuth 登录。对于支持 Pi OAuth 的提供商(如 Anthropic 和 OpenAI),Nervefeyn 会打开浏览器窗口完成登录流程。你的凭据会安全存储在 `~/.nervefeyn/` 下的 Pi 认证存储中。
 
-For API key providers, you are prompted to paste your key directly:
+对于 API 密钥类提供商,会直接提示你粘贴密钥:
 
 ```
 ? Enter your API key: sk-ant-...
 ```
 
-Keys are encrypted at rest and never sent anywhere except the provider's API endpoint.
+密钥在静态存储时加密,且仅发送到提供商的 API 端点,不会发往其他任何地方。
 
 ### Amazon Bedrock
 
-For Amazon Bedrock, choose:
+对于 Amazon Bedrock,请选择:
 
 ```text
 Amazon Bedrock (AWS credential chain)
 ```
 
-Feynman verifies the same AWS credential chain Pi uses at runtime, including `AWS_PROFILE`, `~/.aws` credentials/config, SSO, ECS/IRSA, and EC2 instance roles. Once that check passes, Bedrock models become available in `feynman model list` without needing a traditional API key.
+Nervefeyn 会校验 Pi 运行时所用的同一套 AWS 凭据链,包括 `AWS_PROFILE`、`~/.aws` 凭据/配置、SSO、ECS/IRSA 以及 EC2 实例角色。该校验通过后,Bedrock 模型即可在 `nervefeyn model list` 中出现,无需传统 API 密钥。
 
-### Local models: LM Studio, LiteLLM, Ollama, vLLM
+### 本地模型:LM Studio、LiteLLM、Ollama、vLLM
 
-If you want to use LM Studio, start the LM Studio local server, load a model, choose the API-key flow, and then select:
+若要使用 LM Studio,先启动 LM Studio 本地服务器、加载模型、选择 API 密钥流程,然后选择:
 
 ```text
 LM Studio (local OpenAI-compatible server)
 ```
 
-The default settings are:
+默认设置为:
 
 ```text
 Base URL: http://localhost:1234/v1
@@ -65,15 +65,15 @@ Authorization header: No
 API key: lm-studio
 ```
 
-Feynman attempts to read LM Studio's `/models` endpoint and prefill the loaded model id.
+Nervefeyn 会尝试读取 LM Studio 的 `/models` 端点并预填已加载的模型 ID。
 
-For LiteLLM, start the proxy, choose the API-key flow, and then select:
+对于 LiteLLM,启动代理、选择 API 密钥流程,然后选择:
 
 ```text
 LiteLLM Proxy (OpenAI-compatible gateway)
 ```
 
-The default settings are:
+默认设置为:
 
 ```text
 Base URL: http://localhost:4000/v1
@@ -81,15 +81,15 @@ API mode: openai-completions
 Master key: optional, read from LITELLM_MASTER_KEY
 ```
 
-Feynman attempts to read LiteLLM's `/models` endpoint and prefill model ids from the proxy config.
+Nervefeyn 会尝试读取 LiteLLM 的 `/models` 端点并从代理配置预填模型 ID。
 
-For Ollama, vLLM, or another OpenAI-compatible local server, choose:
+对于 Ollama、vLLM 或其他 OpenAI 兼容的本地服务器,选择:
 
 ```text
 Custom provider (baseUrl + API key)
 ```
 
-For Ollama, the typical settings are:
+Ollama 的典型设置如下:
 
 ```text
 API mode: openai-completions
@@ -99,31 +99,31 @@ Model ids: llama3.1:8b
 API key: local
 ```
 
-After saving the provider, run:
+保存该提供商后,运行:
 
 ```bash
-feynman model list
-feynman model set <provider>/<model-id>
+nervefeyn model list
+nervefeyn model set <provider>/<model-id>
 ```
 
-to confirm the local model is available and make it the default.
+确认本地模型可用并将其设为默认。
 
-## Stage 3: Optional packages
+## 阶段 3:可选包
 
-Feynman's core ships with the research essentials: alphaXiv access, web access, document parsing, subagents, and `/btw` side conversations while the main research agent is busy. On platforms with supported optional presets, the wizard can offer extras:
+Nervefeyn 核心自带研究必备能力:alphaXiv 访问、网络访问、文档解析、子代理,以及主研究代理忙碌时的 `/btw` 侧边对话。在支持可选预设的平台上,向导可提供额外扩展:
 
-- **memory** -- Preference and correction memory for research-session continuity
-- **hindsight** -- Hindsight-backed research-continuity memory; requires a Hindsight server or Hindsight Cloud account
-- **session-search** -- Indexed recall for prior research-session transcripts. Available through Node.js 22.x while its sqlite dependency is native-bound
+- **memory** —— 用于研究会话连续性的偏好与纠错记忆
+- **hindsight** —— 基于 Hindsight 的研究连续性记忆;需要 Hindsight 服务器或 Hindsight Cloud 账户
+- **session-search** —— 对历史研究会话记录的索引召回。因其 sqlite 依赖为原生绑定,目前通过 Node.js 22.x 提供
 
-You can skip this step and install packages later with `feynman packages install <preset>`.
+你可以跳过此步,之后用 `nervefeyn packages install <preset>` 安装包。
 
-## Workbench onboarding
+## 工作台引导
 
-`feynman serve` includes a separate local onboarding flow for the science workbench. That flow creates a Feynman project and session, captures field and research-goal context, selects a suggested specialist, records chosen setup scopes, suggests seed workflows, and enables Feynman-owned connectors such as Feynman Bio Tools when science-database access is selected.
+`nervefeyn serve` 内置了科研工作台的本地引导流程。该流程会创建一个 Nervefeyn 项目和会话、采集领域与研究目标上下文、选择建议的专家、记录所选设置范围、推荐种子工作流,并在选中科学数据库访问时启用 Nervefeyn 自有的连接器(如 Nervefeyn Bio Tools)。
 
-Workbench onboarding stores setup intent and redacted credential availability records in Feynman-owned state. It does not require another local app and does not expose raw credential values in the browser.
+工作台引导会把设置意图和脱敏后的凭据可用性记录存入 Nervefeyn 自有状态。它不需要另一个本地应用,也不会在浏览器中暴露原始凭据值。
 
-## Re-running setup
+## 重新运行设置
 
-Configuration is stored in `~/.feynman/agent/settings.json`. Running `feynman setup` again overwrites previous settings. If you only need to change a specific value, edit the config file directly or use the targeted commands like `feynman model set` or `feynman alpha login`.
+配置存储在 `~/.nervefeyn/agent/settings.json`。重新运行 `nervefeyn setup` 会覆盖之前的设置。若只需修改某个具体值,可直接编辑该配置文件,或使用定向命令,如 `nervefeyn model set` 或 `nervefeyn alpha login`。

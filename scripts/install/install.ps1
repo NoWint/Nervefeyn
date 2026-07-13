@@ -14,16 +14,16 @@ function Normalize-Version {
   switch ($RequestedVersion.ToLowerInvariant()) {
     "latest" { return "latest" }
     "stable" { return "latest" }
-    "edge" { throw "The edge channel has been removed. Use the default installer for the latest tagged release or pass an exact version." }
+    "edge" { throw "edge 通道已下线。请使用默认安装器获取最新 tagged 发布,或传入精确版本号。" }
     default { return $RequestedVersion.TrimStart("v") }
   }
 }
 
 function Resolve-LatestReleaseVersion {
-  $page = Invoke-WebRequest -Uri "https://github.com/companion-inc/feynman/releases/latest"
+  $page = Invoke-WebRequest -Uri "https://github.com/NoWint/Nervefeyn/releases/latest"
   $match = [regex]::Match($page.Content, 'releases/tag/v([0-9][^"''<>\s]*)')
   if (-not $match.Success) {
-    throw "Failed to resolve the latest Feynman release version."
+    throw "无法解析最新的 Nervefeyn 发布版本。"
   }
 
   return $match.Groups[1].Value
@@ -44,9 +44,9 @@ function Resolve-ReleaseMetadata {
     $resolvedVersion = $normalizedVersion
   }
 
-  $bundleName = "feynman-$resolvedVersion-$AssetTarget"
+  $bundleName = "nervefeyn-$resolvedVersion-$AssetTarget"
   $archiveName = "$bundleName.$BundleExtension"
-  $baseUrl = if ($env:FEYNMAN_INSTALL_BASE_URL) { $env:FEYNMAN_INSTALL_BASE_URL } else { "https://github.com/companion-inc/feynman/releases/download/v$resolvedVersion" }
+  $baseUrl = if ($env:FEYNMAN_INSTALL_BASE_URL) { $env:FEYNMAN_INSTALL_BASE_URL } else { "https://github.com/NoWint/Nervefeyn/releases/download/v$resolvedVersion" }
 
   return [PSCustomObject]@{
     ResolvedVersion = $resolvedVersion
@@ -57,9 +57,9 @@ function Resolve-ReleaseMetadata {
 }
 
 function Get-ArchSuffix {
-  # Prefer PROCESSOR_ARCHITECTURE which is always available on Windows.
-  # RuntimeInformation::OSArchitecture requires .NET 4.7.1+ and may not
-  # be loaded in every Windows PowerShell 5.1 session.
+  # 优先使用 PROCESSOR_ARCHITECTURE,它在 Windows 上始终可用。
+  # RuntimeInformation::OSArchitecture 需要 .NET 4.7.1+,在某些
+  # Windows PowerShell 5.1 会话中可能未加载。
   $envArch = $env:PROCESSOR_ARCHITECTURE
   if ($envArch) {
     switch ($envArch) {
@@ -76,7 +76,7 @@ function Get-ArchSuffix {
     }
   } catch {}
 
-  throw "Unsupported architecture: $envArch"
+  throw "不支持该架构:$envArch"
 }
 
 $archSuffix = Get-ArchSuffix
@@ -87,30 +87,30 @@ $bundleName = $release.BundleName
 $archiveName = $release.ArchiveName
 $downloadUrl = $release.DownloadUrl
 
-$installRoot = Join-Path $env:LOCALAPPDATA "Programs\feynman"
+$installRoot = Join-Path $env:LOCALAPPDATA "Programs\nervefeyn"
 $installBinDir = Join-Path $installRoot "bin"
 $bundleDir = Join-Path $installRoot $bundleName
 
-$tmpDir = Join-Path ([System.IO.Path]::GetTempPath()) ("feynman-install-" + [System.Guid]::NewGuid().ToString("N"))
+$tmpDir = Join-Path ([System.IO.Path]::GetTempPath()) ("nervefeyn-install-" + [System.Guid]::NewGuid().ToString("N"))
 New-Item -ItemType Directory -Path $tmpDir | Out-Null
 
 try {
   $archivePath = Join-Path $tmpDir $archiveName
-  Write-Host "==> Downloading $archiveName"
+  Write-Host "==> 正在下载 $archiveName"
   try {
     Invoke-WebRequest -Uri $downloadUrl -OutFile $archivePath
   } catch {
     throw @"
-Failed to download $archiveName from:
+下载 $archiveName 失败:
   $downloadUrl
 
-The win32-$archSuffix bundle is missing from the GitHub release.
-This usually means the release exists, but not all platform bundles were uploaded.
+GitHub 发布中缺少 win32-$archSuffix 包。
+这通常意味着发布已存在,但未上传全部平台包。
 
-Workarounds:
-  - try again after the release finishes publishing
-  - pass the latest published version explicitly, e.g.:
-    & ([scriptblock]::Create((irm https://feynman.is/install.ps1))) -Version 0.2.31
+可选方案:
+  - 等待发布完成后再试
+  - 显式传入最新已发布版本,例如:
+    & ([scriptblock]::Create((irm https://nervefeyn.dev/install.ps1))) -Version 0.2.31
 "@
   }
 
@@ -119,22 +119,22 @@ Workarounds:
     Remove-Item -Recurse -Force $bundleDir
   }
 
-  Write-Host "==> Extracting $archiveName"
+  Write-Host "==> 正在解压 $archiveName"
   Expand-Archive -LiteralPath $archivePath -DestinationPath $installRoot -Force
 
   New-Item -ItemType Directory -Path $installBinDir -Force | Out-Null
 
-  $shimPath = Join-Path $installBinDir "feynman.cmd"
-  $shimPs1Path = Join-Path $installBinDir "feynman.ps1"
-  Write-Host "==> Linking feynman into $installBinDir"
+  $shimPath = Join-Path $installBinDir "nervefeyn.cmd"
+  $shimPs1Path = Join-Path $installBinDir "nervefeyn.ps1"
+  Write-Host "==> 正在将 nervefeyn 链接到 $installBinDir"
   @"
 @echo off
-CALL "$bundleDir\feynman.cmd" %*
+CALL "$bundleDir\nervefeyn.cmd" %*
 "@ | Set-Content -Path $shimPath -Encoding ASCII
 
   @"
 `$BundleDir = "$bundleDir"
-& "`$BundleDir\node\node.exe" "`$BundleDir\app\bin\feynman.js" @args
+& "`$BundleDir\node\node.exe" "`$BundleDir\app\bin\nervefeyn.js" @args
 "@ | Set-Content -Path $shimPs1Path -Encoding UTF8
 
   $currentUserPath = [Environment]::GetEnvironmentVariable("Path", "User")
@@ -149,20 +149,20 @@ CALL "$bundleDir\feynman.cmd" %*
       "$currentUserPath;$installBinDir"
     }
     [Environment]::SetEnvironmentVariable("Path", $updatedPath, "User")
-    Write-Host "Updated user PATH. Open a new shell to run feynman."
+    Write-Host "已更新用户 PATH。请新开一个 shell 运行 nervefeyn。"
   } else {
-    Write-Host "$installBinDir is already on PATH."
+    Write-Host "$installBinDir 已在 PATH 中。"
   }
 
-  $resolvedCommand = Get-Command feynman -ErrorAction SilentlyContinue
+  $resolvedCommand = Get-Command nervefeyn -ErrorAction SilentlyContinue
   if ($resolvedCommand -and $resolvedCommand.Source -ne $shimPath) {
-    Write-Warning "Current shell resolves feynman to $($resolvedCommand.Source)"
-    Write-Host "Run in a new shell, or run: `$env:Path = '$installBinDir;' + `$env:Path"
-    Write-Host "Then run: feynman"
-    Write-Host "If that path is an old package-manager install, remove it or put $installBinDir first on PATH."
+    Write-Warning "当前 shell 将 nervefeyn 解析到 $($resolvedCommand.Source)"
+    Write-Host "请新开 shell,或运行:`$env:Path = '$installBinDir;' + `$env:Path"
+    Write-Host "然后运行:nervefeyn"
+    Write-Host "如果该路径是旧包管理器安装,请移除它,或将 $installBinDir 放到 PATH 最前。"
   }
 
-  Write-Host "Feynman $resolvedVersion installed successfully."
+  Write-Host "Nervefeyn $resolvedVersion 安装成功。"
 } finally {
   if (Test-Path $tmpDir) {
     Remove-Item -Recurse -Force $tmpDir

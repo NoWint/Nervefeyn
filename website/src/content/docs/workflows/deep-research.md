@@ -1,50 +1,50 @@
 ---
-title: Deep Research
-description: Run a thorough, multi-agent investigation that produces a cited research brief.
+title: 深度研究
+description: 运行一次彻底的多代理调查,产出带引用的研究简报。
 section: Workflows
 order: 1
 ---
 
-Deep research is the flagship Feynman workflow. For broad topics, it can call researcher agents in parallel to search academic papers, web sources, and code repositories, then synthesize everything into a structured research brief with inline citations. Narrow explainers stay lead-owned and use direct searches.
+深度研究是 Nervefeyn 的旗舰工作流。对于宽泛主题,它可以并行调用 researcher 代理检索学术论文、网络来源和代码仓库,再把所有内容综合成带内联引用的结构化研究简报。狭窄的解释性问题由主代理直接处理,使用直接检索。
 
-## Usage
+## 用法
 
-From the REPL:
+在 REPL 中:
 
 ```
-/deepresearch What are the current approaches to mechanistic interpretability in LLMs?
+/deepresearch 当前大模型机制可解释性有哪些主要思路?
 ```
 
-From the CLI:
+在 CLI 中:
 
 ```bash
-feynman deepresearch "What are the current approaches to mechanistic interpretability in LLMs?"
+nervefeyn deepresearch "当前大模型机制可解释性有哪些主要思路?"
 ```
 
-Both forms are equivalent. The workflow first writes a plan to `outputs/.plans/<slug>.md`, summarizes it, and waits for you to confirm or request changes. After you approve the plan, it streams progress as Feynman discovers and analyzes sources.
+两种形式等价。工作流会先把计划写入 `outputs/.plans/<slug>.md`,做一次摘要,并等你确认或提出修改。你批准计划后,它会在 Nervefeyn 发现并分析来源时流式输出进展。
 
-## How it works
+## 工作原理
 
-The deep research workflow proceeds through five phases. First, Feynman creates a plan with key questions, source strategy, scale decision, task ledger, and verification log, then asks for confirmation before executing.
+深度研究工作流分五个阶段进行。首先,Nervefeyn 创建包含关键问题、来源策略、规模决策、任务账本和验证日志的计划,并在执行前请求确认。
 
-Second, after approval, Feynman chooses the execution scale. Narrow "what is X" explainers usually run as direct lead-owned research with multiple search terms. Broader surveys can dispatch researcher agents in parallel to search academic papers, web sources, and code repositories.
+其次,批准后 Nervefeyn 选择执行规模。狭窄的"X 是什么"解释通常以主代理直接研究的方式运行,使用多个检索词。更宽泛的综述可以并行派出 researcher 代理检索学术论文、网络来源和代码仓库。
 
-Third, Feynman reads and extracts key findings from the most relevant sources. It pulls claims, methodology details, results, and limitations from each paper or article. PDF extraction is avoided unless explicitly requested; metadata, abstracts, HTML pages, and official docs are preferred when PDF parsing is brittle.
+第三,Nervefeyn 从最相关的来源中阅读并提取关键发现。它从每篇论文或文章中提取主张、方法细节、结果与局限。除非显式要求,否则避免 PDF 抽取;在 PDF 解析脆弱时优先使用元数据、摘要、HTML 页面和官方文档。
 
-Fourth, a synthesis step cross-references findings across sources, identifies areas of consensus and disagreement, and organizes the material into a coherent narrative. The output is written as a research brief with sections for background, key findings, open questions, and references.
+第四,综合步骤跨来源交叉参照发现,识别共识与分歧区域,并把材料组织成连贯叙事。输出写成研究简报,包含背景、关键发现、开放问题和参考文献等章节。
 
-Finally, Feynman verifies claims against cited sources to flag misattributions or unsupported assertions. The finished report and provenance sidecar are saved under `outputs/` and can be previewed as rendered HTML when a preview command is visible, or opened/rendered with shell tools such as `pandoc`.
+最后,Nervefeyn 把主张与引用来源核对,标记错归属或无支撑的断言。完成后的报告和溯源 sidecar 保存在 `outputs/` 下,并在可见预览命令时作为渲染 HTML 预览,或用 `pandoc` 等shell 工具打开/渲染。
 
-## Output format
+## 输出格式
 
-The research brief follows a consistent structure:
+研究简报遵循一致的结构:
 
-- **Summary** -- A concise overview of the topic and key takeaways
-- **Background** -- Context and motivation for the research area
-- **Key Findings** -- The main results organized by theme, with inline citations
-- **Open Questions** -- Unresolved issues and promising research directions
-- **References** -- Full citation list with links to source papers and articles
+- **摘要** —— 主题与关键结论的简明概览
+- **背景** —— 该研究领域的上下文与动机
+- **关键发现** —— 按主题组织的主要结果,带内联引用
+- **开放问题** —— 未解决的问题与有前景的研究方向
+- **参考文献** —— 完整引用列表,附来源论文和文章链接
 
-## Customization
+## 自定义
 
-You can steer the research by being specific in your prompt. Narrow topics produce more focused briefs. Broad topics produce survey-style overviews. You can also specify constraints like "focus on papers from 2024" or "only consider empirical results" to guide the agents.
+你可以在提示中通过具体化来引导研究。狭窄主题产出更聚焦的简报,宽泛主题产出综述式概览。你也可以指定约束,如"聚焦 2024 年的论文"或"仅考虑实证结果",以引导代理。

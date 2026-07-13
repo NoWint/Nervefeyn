@@ -1,53 +1,53 @@
 ---
-title: Replication
-description: Plan a replication of a paper's experiments and claims; execute only after choosing an environment.
+title: 复现
+description: 为论文的实验和主张规划复现;仅在选定环境后执行。
 section: Workflows
 order: 5
 ---
 
-The replication workflow builds a source-backed plan for reproducing published experiments, benchmark results, or specific claims. It can execute steps only after you choose an environment, and it records scripts, raw outputs, and checks before calling a result replicated.
+复现工作流为重现已发表实验、基准结果或具体主张构建一份有来源支撑的计划。它只能在你选定环境后执行步骤,并在称某结果已复现前记录脚本、原始输出和检查。
 
-## Usage
+## 用法
 
-From the REPL:
+在 REPL 中:
 
 ```
 /replicate arxiv:2401.12345
 ```
 
 ```
-/replicate "The claim that sparse attention achieves 95% of dense attention quality at 60% compute"
+/replicate "稀疏注意力在 60% 算力下达到稠密注意力 95% 质量这一主张"
 ```
 
-From the CLI:
+在 CLI 中:
 
 ```bash
-feynman replicate "paper or claim"
+nervefeyn replicate "论文或主张"
 ```
 
-You can point the workflow at a paper for a replication plan, or at a specific claim for a focused reproduction check.
+你可以把工作流指向一篇论文做复现计划,或指向具体主张做聚焦的复现检查。
 
-## How it works
+## 工作原理
 
-The replication workflow starts with the researcher agent reading the target paper and extracting the details that are actually stated: model architecture, hyperparameters, training schedule, dataset preparation, evaluation protocol, and hardware requirements. It cross-references those details against linked code or supplied code when available.
+复现工作流先由 researcher 代理阅读目标论文,提取实际陈述的细节:模型架构、超参数、训练计划、数据集准备、评估协议和硬件需求。它会把这些细节与链接的代码或提供的代码(若有)交叉参照。
 
-For ML training, fine-tuning, benchmark, or dataset-heavy targets, replication includes a recipe pass before execution planning. That pass links each claimed result to the exact dataset, method, hyperparameters, compute assumptions, metric, and code path that produced it. When a candidate uses Hugging Face resources, Feynman can inspect dataset metadata, splits, features, and small repo files through the [Hugging Face Hub tools](/docs/tools/hugging-face).
+对于 ML 训练、微调、基准或数据密集型目标,复现会在执行规划前先做一次配方 pass。该 pass 把每条声称的结果与产生它的确切数据集、方法、超参数、算力假设、指标和代码路径关联。当候选使用 Hugging Face 资源时,Nervefeyn 可以通过 [Hugging Face Hub 工具](/docs/tools/hugging-face)检视数据集元数据、划分、features 和小型仓库文件。
 
-Next, the workflow generates a structured replication plan that breaks the experiment into discrete steps, estimates compute requirements when the source material supports that estimate, and identifies where the paper is underspecified. For each underspecified detail, it records the gap, the assumption needed to proceed, and how that assumption could affect divergence.
+接着,工作流生成一份结构化复现计划,把实验拆成离散步骤,在来源材料支撑时估算算力需求,并识别论文何处说明不足。对每处说明不足的细节,它记录缺口、推进所需假设,以及该假设如何影响分歧。
 
-The plan also includes a risk assessment: which parts of the experiment are most likely to cause replication failure, what tolerance to expect for numerical results, and which claims are most sensitive to implementation details.
+计划还包括风险评估:实验的哪些部分最可能导致复现失败、数值结果应预期多大容差、以及哪些主张对实现细节最敏感。
 
-## Output format
+## 输出格式
 
-The replication plan includes:
+复现计划包括:
 
-- **Requirements** -- Hardware, software, data, and estimated compute cost
-- **Recipe Extraction** -- Dataset, method, hyperparameters, metric, code path, and verification status for ML-heavy targets
-- **Step-by-step Plan** -- Ordered steps from environment setup through final evaluation
-- **Underspecified Details** -- Where the paper leaves out information needed for replication
-- **Risk Assessment** -- Which steps are most likely to cause divergence from reported results
-- **Success Criteria** -- What results would constitute a successful replication
+- **需求** —— 硬件、软件、数据和估算算力成本
+- **配方提取** —— 对于 ML 密集型目标,数据集、方法、超参数、指标、代码路径和验证状态
+- **逐步计划** —— 从环境搭建到最终评估的有序步骤
+- **说明不足的细节** —— 论文遗漏了复现所需信息的位置
+- **风险评估** —— 哪些步骤最可能导致与报告结果分歧
+- **成功标准** —— 什么结果构成一次成功复现
 
-## Iterative execution
+## 迭代执行
 
-After generating the plan, Feynman asks where execution should happen: local, isolated environment, Docker, Modal, RunPod, or plan-only. When execution is explicitly chosen, it helps implement and run the planned checks, saves notes/scripts/raw outputs/results, and compares observed results against the paper's reported values. A result is labeled replicated only when the planned checks actually pass.
+生成计划后,Nervefeyn 会询问执行应在哪里进行:本地、隔离环境、Docker、Modal、RunPod 或仅计划。当显式选择执行时,它帮助实现并运行计划中的检查,保存笔记/脚本/原始输出/结果,并把观测结果与论文报告值对比。只有当计划中的检查实际通过时,结果才被标记为 replicated。

@@ -1,15 +1,15 @@
 ---
-title: Code Audit
-description: Compare a paper's claims against its public codebase for reproducibility.
+title: 代码审计
+description: 把论文主张与其公开代码库对照,评估可复现性。
 section: Workflows
 order: 4
 ---
 
-The code audit workflow compares a paper's claims against its public codebase to identify mismatches, undocumented deviations, and reproducibility risks. It bridges the gap between what a paper says and what the code actually does.
+代码审计工作流把论文主张与其公开代码库对照,识别不匹配、未文档化的偏差和可复现性风险。它弥合论文所述与代码实际所为之间的差距。
 
-## Usage
+## 用法
 
-From the REPL:
+在 REPL 中:
 
 ```
 /audit arxiv:2401.12345
@@ -19,32 +19,32 @@ From the REPL:
 /audit https://github.com/org/repo --paper arxiv:2401.12345
 ```
 
-From the CLI:
+在 CLI 中:
 
 ```bash
-feynman audit 2401.12345
+nervefeyn audit 2401.12345
 ```
 
-When given an arXiv ID, Feynman locates the associated code repository from the paper's links, Papers With Code, or GitHub search. You can also provide the repository URL directly.
+给定 arXiv ID 时,Nervefeyn 会从论文链接、Papers With Code 或 GitHub 检索中定位相关代码仓库。你也可以直接提供仓库 URL。
 
-## How it works
+## 工作原理
 
-The audit workflow operates in two passes. First, the researcher agent reads the paper and extracts all concrete claims: hyperparameters, architecture details, training procedures, dataset splits, evaluation metrics, and reported results. Each claim is tagged with its location in the paper for traceability.
+审计工作流分两趟进行。首先,researcher 代理阅读论文并提取所有具体主张:超参数、架构细节、训练流程、数据集划分、评估指标和报告结果。每条主张都标注在论文中的位置以便追溯。
 
-Second, the verifier agent examines the codebase to find the corresponding implementation for each claim. It checks configuration files, training scripts, model definitions, and evaluation code to verify that the code matches the paper's description. When it finds a discrepancy -- a hyperparameter that differs, a training step that was described but not implemented, or an evaluation procedure that deviates from the paper -- it documents the mismatch with exact file paths and line numbers.
+其次,verifier 代理检查代码库,为每条主张找到对应实现。它检查配置文件、训练脚本、模型定义和评估代码,验证代码是否与论文描述一致。当发现差异 —— 超参数不同、描述了但未实现的训练步骤、或与论文偏离的评估流程 —— 它会以精确的文件路径和行号记录不匹配。
 
-The audit also checks for common reproducibility issues like missing random seeds, non-deterministic operations without pinned versions, hardcoded paths, and absent environment specifications.
+审计还会检查常见的可复现性问题,如缺失随机种子、未固定版本的非确定性操作、硬编码路径和缺失的环境规格。
 
-## Output format
+## 输出格式
 
-The audit report contains:
+审计报告包含:
 
-- **Match Summary** -- Percentage of claims that match the code
-- **Confirmed Claims** -- Claims that are accurately reflected in the codebase
-- **Mismatches** -- Discrepancies between paper and code with evidence from both
-- **Missing Implementations** -- Claims in the paper with no corresponding code
-- **Reproducibility Risks** -- Issues like missing seeds, unpinned dependencies, or hardcoded paths
+- **匹配摘要** —— 与代码匹配的主张占比
+- **已确认主张** —— 在代码库中得到准确反映的主张
+- **不匹配** —— 论文与代码之间的差异,含双方证据
+- **缺失实现** —— 论文中存在但代码中没有对应实现的主张
+- **可复现性风险** —— 如缺失种子、未固定依赖或硬编码路径等问题
 
-## When to use it
+## 何时使用
 
-Use `/audit` when you are deciding whether to build on a paper's results, when replicating an experiment, or when evaluating a paper before relying on its claims. It is also useful for auditing your own papers before submission to catch inconsistencies between your writeup and implementation.
+在你决定是否基于某篇论文的结果构建、复现实验,或在依赖其主张前评估论文时,使用 `/audit`。它也适合在投稿前审计你自己的论文,以发现写作与实现之间的不一致。

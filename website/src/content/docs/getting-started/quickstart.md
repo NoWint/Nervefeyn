@@ -1,80 +1,80 @@
 ---
-title: Quick Start
-description: Start using Feynman for paper search, research workflows, and code-aware review.
+title: 快速开始
+description: 开始使用 Nervefeyn 进行论文检索、研究工作流和代码感知审阅。
 section: Getting Started
 order: 2
 ---
 
-This guide assumes you have already [installed Feynman](/docs/getting-started/installation) and run `feynman setup`. If not, start there first.
+本指南假定你已[安装 Nervefeyn](/docs/getting-started/installation)并运行过 `nervefeyn setup`。若尚未完成,请先前往该页面。
 
-## Launch the REPL
+## 启动 REPL
 
-Start an interactive session by running:
+运行以下命令启动交互式会话:
 
 ```bash
-feynman
+nervefeyn
 ```
 
-You are dropped into a conversational REPL where you can ask research questions, run workflows, and interact with agents in natural language. Type your question and press Enter.
+你会进入一个对话式 REPL,可以用自然语言提问、运行工作流、与代理交互。输入问题后按回车即可。
 
-## Open the science workbench
+## 打开科研工作台
 
-Use the workbench when a research run needs chat, artifacts, notebooks, compute, settings, and provenance together:
+当一次研究运行需要把聊天、产物、笔记本、算力、设置和溯源放在一起时,使用工作台:
 
 ```bash
-feynman serve
+nervefeyn serve
 ```
 
-The command starts a local authenticated web app with Feynman projects, Pi-backed chat, Feynman Bio Tools, generated artifacts, media/document/science previews, notebook execution records, compute inventory, and verification state. See the [Science Workbench guide](/docs/getting-started/workbench) for the full surface.
+该命令会启动一个本地带认证的 Web 应用,包含 Nervefeyn 项目、Pi 驱动的聊天、Nervefeyn Bio Tools、生成的产物、媒体/文档/科研预览、笔记本执行记录、算力清单以及验证状态。完整能力见[科研工作台指南](/docs/getting-started/workbench)。
 
-## Run a one-shot prompt
+## 运行一次性提示
 
-If you want a quick answer without entering the REPL, use the `--prompt` flag:
+如果你不想进入 REPL 而想快速得到答案,可使用 `--prompt` 参数:
 
 ```bash
-feynman --prompt "Summarize the key findings of Attention Is All You Need"
+nervefeyn --prompt "总结 Attention Is All You Need 的核心发现"
 ```
 
-Feynman processes the prompt, prints the response, and exits. This is useful for scripting or piping output into other tools.
+Nervefeyn 会处理提示、输出回答后退出。这在脚本化或把输出管道给其他工具时很有用。
 
-## Start a deep research session
+## 启动深度研究会话
 
-Deep research is the flagship workflow. It can call researcher agents to search, read, cross-reference, and synthesize information from academic papers and the web when the topic is broad enough to benefit from delegation:
+深度研究是旗舰工作流。当主题足够宽泛、可从委派中获益时,它会调用 researcher 代理去检索、阅读、交叉引用并综合学术论文与网络信息:
 
 ```bash
-feynman
-> /deepresearch What are the current approaches to mechanistic interpretability in LLMs?
+nervefeyn
+> /deepresearch 当前大模型机制可解释性有哪些主要思路?
 ```
 
-The agents collaborate to produce a structured research report with citations, key findings, and open questions. The full report is saved to your session directory for later reference.
+代理协作产出一份带引用、关键发现和开放问题的结构化研究报告。完整报告会保存到你的会话目录,供日后查阅。
 
-## Find an ML training recipe
+## 查找 ML 训练配方
 
-For applied ML work, use `/recipe` when you need a practical starting point rather than a broad literature survey:
+在应用型 ML 工作中,当你需要一个实用起点而非宽泛文献综述时,使用 `/recipe`:
 
 ```bash
-feynman recipe "fine-tune a small model for math reasoning"
+nervefeyn recipe "为数学推理微调一个小模型"
 ```
 
-Feynman ranks candidate recipes by result quality and feasibility, checks datasets and implementation paths when possible, and writes the final brief to `outputs/<slug>-recipe.md`.
+Nervefeyn 会按结果质量与可行性对候选配方排序,尽可能检查数据集与实现路径,并把最终简报写入 `outputs/<slug>-recipe.md`。
 
-## Work with files
+## 处理文件
 
-Feynman can read and write files in your working directory. Point it at a paper or codebase for targeted analysis:
+Nervefeyn 可以读写工作目录中的文件。把它指向某篇论文或代码库即可进行针对性分析:
 
 ```bash
-feynman --cwd ~/papers
+nervefeyn --cwd ~/papers
 > /review arxiv:2301.07041
 ```
 
-You can also ask Feynman to draft documents, audit code, or compare multiple sources by referencing local files directly in your prompts.
+你也可以在提示中直接引用本地文件,让 Nervefeyn 起草文档、审阅代码或对比多个来源。
 
-## Explore slash commands
+## 探索斜杠命令
 
-Type `/help` inside the REPL to see Feynman's public research commands. Each command maps to a workflow or utility, such as `/deepresearch`, `/recipe`, `/review`, `/draft`, or `/watch`. You can also run any workflow directly from the CLI:
+在 REPL 中输入 `/help` 可查看 Nervefeyn 的公开研究命令。每个命令对应一个工作流或工具,例如 `/deepresearch`、`/recipe`、`/review`、`/draft` 或 `/watch`。你也可以直接从 CLI 运行任意工作流:
 
 ```bash
-feynman deepresearch "transformer architectures for protein folding"
+nervefeyn deepresearch "用于蛋白质折叠的 transformer 架构"
 ```
 
-See the [Slash Commands reference](/docs/reference/slash-commands) for the curated public list.
+ curated 公开命令清单见[斜杠命令参考](/docs/reference/slash-commands)。

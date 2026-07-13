@@ -4,81 +4,82 @@ import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 
 const workflows = [
-  { command: "/deepresearch", description: "Multi-agent investigation across papers, web, and code" },
-  { command: "rank", description: "PaperRank scoring for what to read first, with graph and methodology evidence" },
-  { command: "/lit", description: "Literature review from primary sources with consensus mapping" },
-  { command: "/review", description: "Internal research critique with severity scores and a revision plan" },
-  { command: "/audit", description: "Paper-to-code mismatch audit for reproducibility claims" },
-  { command: "/replicate", description: "Replication plan with environment choice before any execution" },
-  { command: "/recipe", description: "Ranked ML training recipes grounded in papers, datasets, docs, and code" },
-  { command: "/compare", description: "Side-by-side source comparison with agreement and conflict matrix" },
-  { command: "/draft", description: "Polished paper-style draft with inline citations from findings" },
-  { command: "/autoresearch", description: "Bounded loop: hypothesize, experiment, measure, repeat" },
-  { command: "/watch", description: "Research watch baseline with optional scheduled follow-up" },
+  { command: "/deepresearch", description: "跨论文、网页与代码的多代理调查" },
+  { command: "rank", description: "PaperRank 评分,决定先读什么,附带图谱与方法学证据" },
+  { command: "/lit", description: "基于一手文献的文献综述,带共识映射" },
+  { command: "/review", description: "内部研究评审,带严重度评分与修订计划" },
+  { command: "/audit", description: "针对可复现性声明的论文与代码差异审计" },
+  { command: "/replicate", description: "在执行前先选择环境的复现计划" },
+  { command: "/recipe", description: "基于论文、数据集、文档与代码的排序 ML 训练配方" },
+  { command: "/compare", description: "并排来源对比,带一致与冲突矩阵" },
+  { command: "/draft", description: "带行内引用的论文风格初稿,源自研究发现" },
+  { command: "/autoresearch", description: "有界循环:假设、实验、度量、重复" },
+  { command: "/watch", description: "研究监视基线,可选定时后续检查" },
 ]
 
 const agents = [
-  { name: "Researcher", description: "Hunts for evidence across papers, the web, repos, and docs" },
-  { name: "Reviewer", description: "Grades claims by severity, flags gaps, and suggests revisions" },
-  { name: "Writer", description: "Structures notes into briefs, drafts, and paper-style output" },
-  { name: "Verifier", description: "Checks citations, verifies URLs, removes dead links" },
+  { name: "Researcher", description: "跨论文、网页、仓库与文档搜集证据" },
+  { name: "Reviewer", description: "按严重度给声明打分,标记缺口并建议修订" },
+  { name: "Writer", description: "将笔记组织为简报、初稿与论文风格输出" },
+  { name: "Verifier", description: "检查引用、验证 URL、移除死链" },
 ]
 
 const sources = [
-  { name: "Feynman Bio Tools", description: "Open science connectors for literature, PubMed metadata, ID conversion, related articles, citation matching, copyright checks, PMC full-text routing, bioRxiv/medRxiv preprint windows, DOI lookup, published links, funder/ROR lookup, preprint statistics, Europe PMC open-access full-text sections, citation graphs, authors, venues, OA status, ClinicalTrials.gov trial details, sponsors, eligibility, investigators, endpoints, Grants.gov opportunities, FDA labels, adverse events, recalls, Drugs@FDA applications, application counts, pharmacologic classes, generic equivalents, ChEMBL compounds, drug indications, ADMET properties, bioactivity, mechanisms, targets, genes, BioMart, CellGuide, PanglaoDB marker genes and gene-to-cell-type lookup, Antibody Registry RRIDs and catalog lookups, reagents, cell types, metabolomics, genome tracks, exact ENCODE/JASPAR/UniBind regulation workflows, UniBind TF-DNA binding, exact gnomAD/CADD/ClinVar/dbSNP variant workflows, GTEx expression and eQTL workflows, KEGG cross-links and ID conversions, InterPro/Pfam protein domains, Rfam RNA family models and sequence search, ArrayExpress/GEO/MetaboLights/MGnify/PRIDE archive project, sample, file, analysis, and protein-evidence workflows, Human Protein Atlas records, STRING networks and homology, purchasable ZINC compounds, GWAS, eQTLs, proteins, predicted structures, EM maps, complexes, interactions, omics, chemistry, pathways, and canceromics" },
-  { name: "AlphaXiv", description: "Paper search, Q&A, code reading, and annotations via the alpha CLI", href: "https://alphaxiv.org" },
-  { name: "Hugging Face Hub", description: "Dataset schema, repo file, and small text-file inspection" },
-  { name: "Web search", description: "Searches via Exa, Perplexity, or Gemini API" },
-  { name: "Session search", description: "Indexed recall across prior research sessions" },
-  { name: "Preview", description: "Local viewers for reports, PDFs, media, spreadsheets, notebooks, LaTeX, KET/RXN/CDXML/CXSMILES chemistry, structures, genomes, alignments, trees, and tensors" },
+  { name: "Nervefeyn Bio Tools", description: "面向开放科学的连接器,覆盖文献、PubMed 元数据、ID 转换、相关文章、引用匹配、版权检查、PMC 全文路由、bioRxiv/medRxiv 预印本窗口、DOI 查询、已发表链接、资助方/ROR 查询、预印本统计、Europe PMC 开放获取全文段落、引用图谱、作者、期刊、OA 状态、ClinicalTrials.gov 试验详情、赞助方、入选标准、研究者、终点、Grants.gov 机会、FDA 标签、不良事件、召回、Drugs@FDA 申请、申请计数、药理分类、仿药等同物、ChEMBL 化合物、药物适应症、ADMET 属性、生物活性、机制、靶点、基因、BioMart、CellGuide、PanglaoDB 标记基因与基因到细胞类型查询、Antibody Registry RRID 与目录查询、试剂、细胞类型、代谢组学、基因组轨迹、精确的 ENCODE/JASPAR/UniBind 调控工作流、UniBind TF-DNA 结合、精确的 gnomAD/CADD/ClinVar/dbSNP 变异工作流、GTEx 表达与 eQTL 工作流、KEGG 交叉链接与 ID 转换、InterPro/Pfam 蛋白结构域、Rfam RNA 家族模型与序列搜索、ArrayExpress/GEO/MetaboLights/MGnify/PRIDE 存档项目/样本/文件/分析/蛋白证据工作流、Human Protein Atlas 记录、STRING 网络与同源、可购买的 ZINC 化合物、GWAS、eQTL、蛋白、预测结构、EM 图谱、复合物、相互作用、组学、化学、通路与肿瘤组学" },
+  { name: "AlphaXiv", description: "通过 alpha CLI 进行论文搜索、问答、代码阅读与标注", href: "https://alphaxiv.org" },
+  { name: "Hugging Face Hub", description: "数据集 schema、仓库文件与小文本文件检查" },
+  { name: "Web search", description: "通过 Exa、Perplexity 或 Gemini API 进行搜索" },
+  { name: "Session search", description: "跨历史研究会话的索引召回" },
+  { name: "Preview", description: "本地查看器,支持报告、PDF、媒体、电子表格、笔记本、LaTeX、KET/RXN/CDXML/CXSMILES 化学、结构、基因组、比对、树与张量" },
 ]
 
 const workbenchFeatures = [
-  { name: "Project control plane", description: "Projects, sessions, frame records, upload-frame links, frame health records, onboarding context, and specialist selection stay in Feynman's workspace state" },
-  { name: "Pi chat and tools", description: "Chat runs through local Pi sessions with frame rows, frame message rows, transcripts, tool activity, attachments, and command insertion" },
-  { name: "Science artifacts", description: "Reports, data files, media, spreadsheets, notebooks, LaTeX, chemistry sketches, structures, genomes, previews, versions, lineage, execution logs, and verification checks are browsable together" },
-  { name: "Feynman-owned setup", description: "Bio connectors, frame records, frame message records, frame health records, watch routine records, skill source/license records, setup decision records, review feedback records, compute poller leases, memory categories, permissions, compute providers, and redacted credential availability do not depend on another local app" },
+  { name: "项目控制平面", description: "项目、会话、frame 记录、上传-frame 链接、frame 健康记录、上手上下文与专家选择都保存在 Nervefeyn 的工作区状态中" },
+  { name: "Pi 聊天与工具", description: "聊天通过本地 Pi 会话运行,带 frame 行、frame 消息行、转录、工具活动、附件与命令插入" },
+  { name: "科研产物", description: "报告、数据文件、媒体、电子表格、笔记本、LaTeX、化学草图、结构、基因组、预览、版本、血缘、执行日志与验证检查可一起浏览" },
+  { name: "Nervefeyn 自有设置", description: "Bio 连接器、frame 记录、frame 消息记录、frame 健康记录、监视例程记录、技能来源/许可证记录、设置决策记录、评审反馈记录、计算轮询租约、记忆分类、权限、计算提供方与脱敏凭据可用性不依赖其他本地应用" },
 ]
 
 const compute = [
-  { name: "Docker", description: "Isolated containers for explicitly chosen replication and benchmark runs", href: "https://www.docker.com/" },
-  { name: "Modal", description: "Burst GPU execution for bounded research benchmark jobs", href: "https://modal.com/" },
-  { name: "RunPod", description: "Persistent GPU pods for long-running research experiments with SSH", href: "https://www.runpod.io/" },
+  { name: "Docker", description: "为显式选择的复现与基准运行提供隔离容器", href: "https://www.docker.com/" },
+  { name: "Modal", description: "为有界研究基准任务提供突发 GPU 执行", href: "https://modal.com/" },
+  { name: "RunPod", description: "为长时间运行的研究实验提供带 SSH 的持久 GPU pod", href: "https://www.runpod.io/" },
 ]
 
 const terminalCommands = [
-  { command: 'feynman "what do we know about scaling laws"', description: "Cited research brief from papers and web" },
-  { command: 'feynman rank "sparse autoencoders"', description: "PaperRank table with citation, graph, methodology, and reproducibility scores" },
-  { command: "feynman serve", description: "Local science workbench with Pi chat, Bio Tools, notebooks, compute, artifacts, provenance, skills, and settings" },
-  { command: 'feynman deepresearch "mechanistic interpretability"', description: "Multi-agent deep dive with synthesis and verification" },
-  { command: 'feynman lit "RLHF alternatives"', description: "Literature review with consensus and open questions" },
-  { command: "feynman audit 2401.12345", description: "Paper claims vs. what the code actually does" },
-  { command: 'feynman replicate "chain-of-thought improves math"', description: "Replication plan, compute target, gated experiment steps" },
-  { command: 'feynman recipe "fine-tune a small model for math reasoning"', description: "Ranked, implementable ML training recipes" },
+  { command: 'nervefeyn "scaling laws 我们知道些什么"', description: "来自论文与网页的带引用研究简报" },
+  { command: 'nervefeyn rank "sparse autoencoders"', description: "PaperRank 表,带引用、图谱、方法学与可复现性评分" },
+  { command: "nervefeyn serve", description: "本地科研工作台,带 Pi 聊天、Bio Tools、笔记本、计算、产物、溯源、技能与设置" },
+  { command: 'nervefeyn deepresearch "mechanistic interpretability"', description: "带综合与验证的多代理深度调查" },
+  { command: 'nervefeyn lit "RLHF alternatives"', description: "带共识与开放问题的文献综述" },
+  { command: "nervefeyn audit 2401.12345", description: "论文声明 vs. 代码实际行为" },
+  { command: 'nervefeyn replicate "chain-of-thought improves math"', description: "复现计划、计算目标、受控实验步骤" },
+  { command: 'nervefeyn recipe "fine-tune a small model for math reasoning"', description: "排序的、可实现的 ML 训练配方" },
 ]
 
 const installCommands = [
-  { label: "curl", command: "curl -fsSL https://feynman.is/install | bash" },
-  { label: "npm", command: "npm install -g @companion-ai/feynman" },
+  { label: "curl", command: "curl -fsSL https://nervefeyn.dev/install | bash" },
+  { label: "npm", command: "npm install -g @nowint/nervefeyn" },
 ]
 ---
 
-<Layout title="Feynman — The open source AI research agent" active="home">
+<Layout title="Nervefeyn — 开源 AI 研究助手" active="home">
   <div class="mx-auto max-w-5xl px-6">
 
     <section class="flex flex-col items-center gap-8 pb-16 pt-20 text-center">
       <div class="flex max-w-3xl flex-col gap-4">
         <h1 class="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-          The open source AI <br />research agent
+          开源 AI<br />研究助手
         </h1>
         <p class="mx-auto max-w-2xl text-lg text-muted-foreground">
-          Reads papers, searches the web, writes research drafts, plans experiments, and cites research claims. Use it from the terminal or open the local science workbench for chat, artifacts, notebooks, compute, and provenance.
+          阅读论文、搜索网页、撰写研究初稿、规划实验,并为研究声明附上引用。从终端使用,或打开本地科研工作台进行聊天、产物、笔记本、计算与溯源。
         </p>
         <p class="text-sm text-muted-foreground">
-          Made by{" "}
-          <a href="https://companion.ai" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">
-            Companion
+          由{" "}
+          <a href="https://github.com/NoWint" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">
+            NoWint
           </a>
+          {" "}制作
         </p>
       </div>
 
@@ -96,7 +97,7 @@ const installCommands = [
                     : "bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/50",
                 ]}
                 data-command={entry.command}
-                aria-label={`Show ${entry.label} install command`}
+                aria-label={`显示 ${entry.label} 安装命令`}
               >
                 {entry.label}
               </button>
@@ -106,7 +107,7 @@ const installCommands = [
             id="install-cmd"
             class="group flex w-full min-w-0 max-w-full items-start justify-between gap-3 rounded-b-lg rounded-tr-lg bg-muted px-4 py-3 text-left font-mono text-xs transition-colors hover:bg-muted/80 cursor-pointer sm:items-center sm:text-sm"
             data-command={installCommands[0].command}
-            aria-label="Copy install command"
+            aria-label="复制安装命令"
           >
             <span id="install-command" class="flex-1 min-w-0 break-all whitespace-normal leading-relaxed sm:overflow-hidden sm:text-ellipsis sm:whitespace-nowrap">{installCommands[0].command}</span>
             <svg id="install-copy" class="mt-0.5 size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground sm:mt-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
@@ -116,31 +117,31 @@ const installCommands = [
 
         <div class="flex flex-wrap items-center justify-center gap-3">
           <a href="/docs/getting-started/installation">
-            <Button client:load size="lg">Get Started</Button>
+            <Button client:load size="lg">开始使用</Button>
           </a>
-          <a href="https://github.com/companion-inc/feynman" target="_blank" rel="noopener noreferrer" class="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-input bg-background px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground">
+          <a href="https://github.com/NoWint/Nervefeyn" target="_blank" rel="noopener noreferrer" class="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-input bg-background px-4 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground">
             GitHub
           </a>
         </div>
 
         <p class="text-sm text-muted-foreground">
-          Use curl for the bundled runtime, or npm if you already manage Node locally.
+          使用 curl 获取打包运行时,或在你已本地管理 Node 时使用 npm。
         </p>
 
         <p class="text-sm text-muted-foreground">
-          Need just the skills? <a href="/docs/getting-started/installation" class="text-primary hover:underline">Install the skills-only bundle</a>.
+          只需要技能? <a href="/docs/getting-started/installation" class="text-primary hover:underline">安装仅技能包</a>。
         </p>
       </div>
 
-      <img src="/hero.png" class="w-full" alt="Feynman CLI" />
+      <img src="/hero.png" class="w-full" alt="Nervefeyn CLI" />
     </section>
 
     <section class="py-16">
       <div class="flex flex-col items-center gap-8 text-center">
         <div class="flex flex-col gap-2">
-          <h2 class="text-2xl font-bold sm:text-3xl">Local science workbench</h2>
+          <h2 class="text-2xl font-bold sm:text-3xl">本地科研工作台</h2>
           <p class="max-w-2xl text-muted-foreground">
-            `feynman serve` opens a standalone Feynman app for research runs that need chat, files, tools, notebooks, and audit trails in one place.
+            `nervefeyn serve` 打开一个独立的 Nervefeyn 应用,适用于需要聊天、文件、工具、笔记本与审计轨迹的研究运行。
           </p>
         </div>
         <div class="grid w-full gap-4 sm:grid-cols-2">
@@ -154,7 +155,7 @@ const installCommands = [
           ))}
         </div>
         <a href="/docs/getting-started/workbench">
-          <Button client:load variant="outline">Open Workbench Docs</Button>
+          <Button client:load variant="outline">打开工作台文档</Button>
         </a>
       </div>
     </section>
@@ -162,8 +163,8 @@ const installCommands = [
     <section class="py-16">
       <div class="flex flex-col items-center gap-8 text-center">
         <div class="flex flex-col gap-2">
-          <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">What you type &rarr; what happens</h2>
-          <p class="text-muted-foreground">Ask a research question or run a workflow. Research claims carry citations.</p>
+          <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">你输入什么 &rarr; 发生什么</h2>
+          <p class="text-muted-foreground">提出研究问题或运行工作流。研究声明都附带引用。</p>
         </div>
         <Card client:load className="w-full text-left">
           <CardContent client:load>
@@ -183,8 +184,8 @@ const installCommands = [
     <section class="py-16">
       <div class="flex flex-col items-center gap-8 text-center">
         <div class="flex flex-col gap-2">
-          <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">Workflows</h2>
-          <p class="text-muted-foreground">Slash commands or natural language. Your call.</p>
+          <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">工作流</h2>
+          <p class="text-muted-foreground">斜杠命令或自然语言,由你选择。</p>
         </div>
         <div class="grid w-full gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {workflows.map((wf) => (
@@ -202,8 +203,8 @@ const installCommands = [
     <section class="py-16">
       <div class="flex flex-col items-center gap-8 text-center">
         <div class="flex flex-col gap-2">
-          <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">Agents</h2>
-          <p class="text-muted-foreground">Specialist agents join when the research task needs them.</p>
+          <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">代理</h2>
+          <p class="text-muted-foreground">当研究任务需要时,专家代理会加入。</p>
         </div>
         <div class="grid w-full gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {agents.map((agent) => (
@@ -221,8 +222,8 @@ const installCommands = [
     <section class="py-16">
       <div class="flex flex-col items-center gap-8 text-center">
         <div class="flex flex-col gap-2">
-          <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">Skills &amp; Tools</h2>
-          <p class="text-muted-foreground">How Feynman retrieves sources, preserves research continuity, and renders artifacts.</p>
+          <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">技能 &amp; 工具</h2>
+          <p class="text-muted-foreground">Nervefeyn 如何检索来源、保留研究连续性并渲染产物。</p>
         </div>
         <div class="grid w-full gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {sources.map((source) => (
@@ -248,8 +249,8 @@ const installCommands = [
     <section class="py-16">
       <div class="flex flex-col items-center gap-8 text-center">
         <div class="flex flex-col gap-2">
-          <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">Compute</h2>
-          <p class="text-muted-foreground">Optional execution targets for research experiments after the workflow chooses an environment.</p>
+          <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">计算</h2>
+          <p class="text-muted-foreground">工作流选择环境后,可选的研究实验执行目标。</p>
         </div>
         <div class="grid w-full gap-4 sm:grid-cols-3">
           {compute.map((provider) => (
@@ -270,14 +271,14 @@ const installCommands = [
 
     <section class="flex flex-col items-center gap-6 py-20 text-center">
       <p class="text-muted-foreground">
-        Built on <a href="https://github.com/badlogic/pi-mono" class="text-primary hover:underline">Pi</a> and <a href="https://www.alphaxiv.org/" class="text-primary hover:underline">alphaXiv</a>. Capabilities ship as Pi skills and research outputs stay source-grounded.
+        基于 <a href="https://github.com/badlogic/pi-mono" class="text-primary hover:underline">Pi</a> 与 <a href="https://www.alphaxiv.org/" class="text-primary hover:underline">alphaXiv</a> 构建。能力以 Pi 技能发布,研究输出保持来源可追溯。
       </p>
       <div class="flex flex-wrap items-center justify-center gap-3">
         <a href="/docs/getting-started/installation">
-          <Button client:load size="lg">Get Started</Button>
+          <Button client:load size="lg">开始使用</Button>
         </a>
-        <a href="https://github.com/companion-inc/feynman" target="_blank" rel="noopener noreferrer">
-          <Button client:load variant="outline" size="lg">View on GitHub</Button>
+        <a href="https://github.com/NoWint/Nervefeyn" target="_blank" rel="noopener noreferrer">
+          <Button client:load variant="outline" size="lg">在 GitHub 上查看</Button>
         </a>
       </div>
     </section>

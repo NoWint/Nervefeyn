@@ -1,52 +1,52 @@
 ---
 title: Autoresearch
-description: Start a bounded research experiment loop that iteratively optimizes against a benchmark.
+description: 启动一个有界研究实验循环,针对基准迭代优化。
 section: Workflows
 order: 9
 ---
 
-The autoresearch workflow runs a bounded research experiment loop that iteratively proposes changes, runs a benchmark, records evidence, and decides whether to keep or revert each change. It is designed for model, retrieval, prompt, architecture, or dataset experiments where the feedback signal is explicit.
+autoresearch 工作流运行一个有界研究实验循环:迭代地提出变更、运行基准、记录证据,并决定保留还是回滚每次变更。它面向模型、检索、提示、架构或数据集实验,且反馈信号是显式的场景。
 
-## Usage
+## 用法
 
-From the REPL:
+在 REPL 中:
 
 ```
-/autoresearch Optimize prompt engineering strategies for math reasoning on GSM8K
+/autoresearch 优化 GSM8K 上数学推理的提示工程策略
 ```
 
-From the CLI:
+在 CLI 中:
 
 ```bash
-feynman autoresearch "Optimize prompt engineering strategies for math reasoning on GSM8K"
+nervefeyn autoresearch "优化 GSM8K 上数学推理的提示工程策略"
 ```
 
-Autoresearch runs in the active Feynman session after you confirm the benchmark, metric, environment, files in scope, and iteration limit.
+autoresearch 在你确认基准、指标、环境、范围内文件和迭代上限后,于当前 Nervefeyn 会话中运行。
 
-## How it works
+## 工作原理
 
-The workflow begins by analyzing the research goal and designing an initial experiment plan. It then enters an iterative loop:
+工作流先分析研究目标并设计初始实验计划,然后进入迭代循环:
 
-1. **Hypothesis** -- The agent proposes a hypothesis or modification based on current results
-2. **Experiment** -- It designs and executes an experiment to test the hypothesis
-3. **Analysis** -- Results are analyzed and compared against prior iterations
-4. **Decision** -- The agent decides whether to continue the current direction, try a variation, or pivot to a new approach
+1. **假设** —— 代理基于当前结果提出一个假设或修改
+2. **实验** —— 它设计并执行一个实验来检验该假设
+3. **分析** —— 分析结果并与先前迭代对比
+4. **决策** —— 代理决定是继续当前方向、尝试变体,还是转向新方法
 
-Each iteration builds on the previous ones. The agent maintains a running log of what has been tried, what worked, what failed, and what the current best result is. This prevents repeating failed approaches and ensures the search progresses efficiently.
+每次迭代都建立在前次之上。代理维护一份运行日志,记录尝试了什么、什么有效、什么失败、当前最佳结果是什么。这防止重复失败的路径,并确保搜索高效推进。
 
-## Monitoring and control
+## 监控与控制
 
-The loop writes `autoresearch.md`, `autoresearch.jsonl`, and benchmark output in the active workspace. Use those files, plus `CHANGELOG.md` milestone entries, to inspect the current best result, failed hypotheses, and next step.
+循环会在当前工作区写入 `autoresearch.md`、`autoresearch.jsonl` 和基准输出。用这些文件加上 `CHANGELOG.md` 的里程碑条目,检视当前最佳结果、失败假设和下一步。
 
-## Output format
+## 输出格式
 
-Autoresearch produces a running experiment log that includes:
+autoresearch 产出一份运行实验日志,包括:
 
-- **Experiment History** -- What was tried in each iteration with parameters and results
-- **Best Configuration** -- The best-performing setup found so far
-- **Ablation Results** -- Which factors mattered most based on the experiments run
-- **Recommendations** -- Suggested next steps based on observed trends
+- **实验历史** —— 每次迭代尝试了什么,含参数和结果
+- **最佳配置** —— 目前找到的最佳表现设置
+- **消融结果** —— 基于所跑实验,哪些因素最重要
+- **建议** —— 基于观察到的趋势给出的下一步建议
 
-## When to use it
+## 何时使用
 
-Use `/autoresearch` for research tasks that benefit from iterative exploration: hyperparameter optimization, prompt-strategy evaluation, architecture search, retrieval tuning, or dataset/benchmark ablations where the search space is large and the feedback signal is clear. It is not the right tool for answering a specific question (use `/deepresearch` for that) and it is not a generic code-optimization loop.
+把 `/autoresearch` 用于可从迭代探索中受益的研究任务:超参数优化、提示策略评估、架构搜索、检索调优,或搜索空间大且反馈信号清晰的数据集/基准消融。它不是回答具体问题的正确工具(那是 `/deepresearch`),也不是通用代码优化循环。

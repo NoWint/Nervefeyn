@@ -1,53 +1,53 @@
 ---
-title: Draft Writing
-description: Generate a paper-style draft from research findings and session context.
+title: 草稿写作
+description: 从研究发现和会话上下文生成论文式草稿。
 section: Workflows
 order: 8
 ---
 
-The draft writing workflow generates structured academic-style documents from your research findings. It uses the writer agent to produce well-organized prose with proper citations, sections, and formatting suitable for papers, technical reports, or internal research notes.
+草稿写作工作流基于你的研究发现生成结构化学术风格文档。它使用 writer 代理产出组织良好、带正确引用、章节和格式的正文,适合论文、技术报告或内部研究笔记。
 
-## Usage
+## 用法
 
-From the REPL:
+在 REPL 中:
 
 ```
-/draft A survey of retrieval-augmented generation techniques
+/draft 检索增强生成技术综述
 ```
 
 ```
 /draft --from-session
 ```
 
-From the CLI:
+在 CLI 中:
 
 ```bash
-feynman draft "A survey of retrieval-augmented generation techniques"
+nervefeyn draft "检索增强生成技术综述"
 ```
 
-When used with `--from-session`, the writer draws from the current session's research findings, making it a natural follow-up to a deep research or literature review workflow.
+与 `--from-session` 一起使用时,writer 从当前会话的研究发现中取材,使其成为深度研究或文献综述工作流的自然后续。
 
-## How it works
+## 工作原理
 
-The draft workflow leverages the writer agent, which specializes in producing structured academic prose. When given a topic, it first consults the researcher agents to gather source material, then organizes the findings into a coherent document with proper narrative flow.
+draft 工作流调用专长于结构化学术正文的 writer 代理。给定主题时,它先咨询 researcher 代理采集来源材料,再把发现组织成具有连贯叙事流的文档。
 
-When working from existing session context (after a deep research or literature review), the writer skips the research phase and works directly with the findings already gathered. This produces a more focused draft because the source material has already been vetted and organized.
+当基于既有会话上下文工作(在深度研究或文献综述之后)时,writer 跳过研究阶段,直接使用已采集的发现。这会产出更聚焦的草稿,因为来源材料已经被审查和组织过。
 
-The writer pays attention to academic conventions: claims are attributed to their sources with inline citations, methodology sections describe procedures precisely, and limitations are discussed honestly. The draft includes placeholder sections for any content the writer cannot generate from available sources, clearly marking what needs human input.
+writer 关注学术惯例:主张通过内联引用归于来源,方法章节精确描述流程,局限被诚实讨论。对于 writer 无法从可用来源生成的内容,草稿会包含占位章节,清晰标记需要人工输入的部分。
 
-Drafts follow Feynman's system-wide provenance rules: unsupported results, figures, images, tables, or benchmark data should become clearly labeled gaps or TODOs, not plausible-looking claims.
+草稿遵循 Nervefeyn 系统级的溯源规则:未支撑的结果、图、图片、表或基准数据应成为清晰标注的缺口或 TODO,而非看起来合理的声明。
 
-## Output format
+## 输出格式
 
-The draft follows standard academic structure:
+草稿遵循标准学术结构:
 
-- **Abstract** -- Concise summary of the document's scope and findings
-- **Introduction** -- Motivation, context, and contribution statement
-- **Body Sections** -- Organized by topic with subsections as needed
-- **Discussion** -- Interpretation of findings and implications
-- **Limitations** -- Honest assessment of scope and gaps
-- **References** -- Complete bibliography in a consistent citation format
+- **摘要** —— 文档范围与发现的简明摘要
+- **引言** —— 动机、上下文与贡献声明
+- **正文章节** —— 按主题组织,按需含子章节
+- **讨论** —— 对发现的解读与含义
+- **局限** —— 对范围和缺口的诚实评估
+- **参考文献** —— 以一致引用格式给出的完整书目
 
-## Preview and iteration
+## 预览与迭代
 
-After generating the draft, use `/preview` when a preview command is visible, or render it with shell tools such as `pandoc`, to review HTML/PDF formatting, math rendering, and typography. You can iterate on the draft by asking Feynman to revise specific sections, add more detail, or restructure the argument.
+生成草稿后,在可见预览命令时使用 `/preview`,或用 `pandoc` 等 shell 工具渲染,以审阅 HTML/PDF 格式、数学渲染和排版。你可以让 Nervefeyn 修改特定章节、补充更多细节或重组论证来迭代草稿。

@@ -1,80 +1,80 @@
 ---
 title: PaperRank
-description: Rank papers for a topic with transparent citation, graph, methodology, and reproducibility scores.
+description: 用透明的引用、图谱、方法和可复现性分数对某主题的论文排序。
 section: Workflows
 order: 2
 ---
 
-PaperRank is Feynman's first evidence-graph research workflow. It helps you decide what to read first by ranking papers for a topic and showing why each paper received its score.
+PaperRank 是 Nervefeyn 首个证据图谱研究工作流。它通过对某主题的论文排序并展示每篇论文得分的依据,帮助你决定先读哪篇。
 
-## Usage
+## 用法
 
 ```bash
-feynman rank "mechanistic interpretability sparse autoencoders"
-feynman rank "scaling laws" --limit 20 --json
-feynman rank "scaling laws" --limit 20 --expand-citations 2 --json
-feynman rank "scaling laws" --limit 20 --full-text-top 3 --json
-feynman rank "scaling laws" --limit 20 --critique-top 5 --json
-feynman rank "scaling laws" --limit 20 --preference-file preferences.json --json
-feynman rank "scaling laws" --limit 20 --reproduction-notes reproduction-notes.json --json
-feynman rank "scaling laws" --limit 20 --synthesize --json
+nervefeyn rank "mechanistic interpretability sparse autoencoders"
+nervefeyn rank "scaling laws" --limit 20 --json
+nervefeyn rank "scaling laws" --limit 20 --expand-citations 2 --json
+nervefeyn rank "scaling laws" --limit 20 --full-text-top 3 --json
+nervefeyn rank "scaling laws" --limit 20 --critique-top 5 --json
+nervefeyn rank "scaling laws" --limit 20 --preference-file preferences.json --json
+nervefeyn rank "scaling laws" --limit 20 --reproduction-notes reproduction-notes.json --json
+nervefeyn rank "scaling laws" --limit 20 --synthesize --json
 ```
 
-## Output
+## 输出
 
-Each run writes a topic slug under `outputs/`:
+每次运行会在 `outputs/` 下写入一个主题 slug:
 
-- `<slug>-research-run.json` -- typed run manifest that names the research jobs, sources, papers, tools, artifacts, verification state, constraints, and next actions for the run
-- `<slug>-paper-rank.md` -- readable ranked brief
-- `<slug>-papers.jsonl` -- normalized paper records
-- `<slug>-scores.jsonl` -- component scores, evidence, and matched source spans
-- `<slug>-score-audit.md` -- per-paper score math, normalized contribution weights, field roles, evidence gaps, and source excerpts
-- `<slug>-rank-sensitivity.json` -- rank stability under balanced, influence-heavy, method/reproducibility-heavy, frontier-heavy, and topic-heavy weighting profiles
-- `<slug>-citation-graph.json` -- local seed/citation-neighborhood graph and PageRank-style values
-- `<slug>-graph-explorer.html` -- interactive citation graph explorer with paper roles, scores, links, and local citation edges
-- `<slug>-field-map.json` -- local topic/concept clusters plus foundation, frontier, bridge, methodology-anchor, and reproducibility-anchor roles
-- `<slug>-critique.md` -- optional research critique when `--critique-top N` is used
-- `<slug>-score-calibration.json`, `<slug>-calibration-template.json`, and `<slug>-calibration-guide.md` -- optional calibration outputs when `--preference-file` is supplied
-- `<slug>-reproduction-ledger.json`, `<slug>-reproduction-notes-template.json`, and `<slug>-replication-plan.md` -- optional reproduction outputs when `--reproduction-notes` is supplied
-- `<slug>-synthesis-packet.json` and `<slug>-synthesis-prompt.md` -- optional model-synthesis handoff when `--synthesize` is used
-- `<slug>-model-synthesis.md` -- optional generated synthesis with the selected model and selection source when `--synthesize` is used and the model call succeeds
-- `<slug>-rank.provenance.md` -- source accounting, formula, and verification caveats
+- `<slug>-research-run.json` —— 类型化的运行清单,记录该运行的研究作业、来源、论文、工具、产物、验证状态、约束和下一步动作
+- `<slug>-paper-rank.md` —— 可读的排序简报
+- `<slug>-papers.jsonl` —— 规范化的论文记录
+- `<slug>-scores.jsonl` —— 分项分数、证据和匹配的来源片段
+- `<slug>-score-audit.md` —— 每篇论文的分数演算、归一化贡献权重、字段角色、证据缺口和来源摘录
+- `<slug>-rank-sensitivity.json` —— 在均衡、影响力偏重、方法/可复现性偏重、前沿偏重和主题偏重等加权 profile 下的排序稳定性
+- `<slug>-citation-graph.json` —— 本地种子/引文邻域图谱及 PageRank 式数值
+- `<slug>-graph-explorer.html` —— 交互式引文图谱浏览器,含论文角色、分数、链接和本地引文边
+- `<slug>-field-map.json` —— 本地主题/概念聚类,以及 foundation、frontier、bridge、methodology-anchor、reproducibility-anchor 角色
+- `<slug>-critique.md` —— 使用 `--critique-top N` 时可选的研究评审
+- `<slug>-score-calibration.json`、`<slug>-calibration-template.json` 和 `<slug>-calibration-guide.md` —— 提供 `--preference-file` 时可选的校准输出
+- `<slug>-reproduction-ledger.json`、`<slug>-reproduction-notes-template.json` 和 `<slug>-replication-plan.md` —— 提供 `--reproduction-notes` 时可选的复现输出
+- `<slug>-synthesis-packet.json` 和 `<slug>-synthesis-prompt.md` —— 使用 `--synthesize` 时可选的模型综合交接
+- `<slug>-model-synthesis.md` —— 使用 `--synthesize` 且模型调用成功时可选的生成综合,含所选模型和选择来源
+- `<slug>-rank.provenance.md` —— 来源账目、公式和验证注意事项
 
-## Score Components
+## 分数构成
 
-`ReadFirstScore` is a weighted average over available components:
+`ReadFirstScore` 是对可用分项的加权平均:
 
-- 30% topical relevance
-- 20% citation impact
-- 20% graph prestige when local citation edges exist
-- 10% citation velocity
-- 10% methodology quality
-- 10% reproducibility
+- 30% 主题相关性
+- 20% 引用影响力
+- 20% 在存在本地引文边时的图谱声望
+- 10% 引用速度
+- 10% 方法质量
+- 10% 可复现性
 
-PaperRank uses OpenAlex work metadata for citation counts, normalized citation percentile, references, abstracts, URLs, and open-access state. Graph prestige is computed over `referenced_works` edges. By default that graph is built from the seed result set. Use `--expand-citations N` to add up to `N` outgoing cited works and incoming citing works per seed paper before computing PageRank-style graph prestige. Ranked outputs still score the seed papers; expansion papers are recorded as graph context in `<slug>-citation-graph.json` and can be inspected in `<slug>-graph-explorer.html`. When the graph has no local citation edges, graph prestige is marked unavailable and excluded from the score instead of being guessed.
+PaperRank 使用 OpenAlex 作品元数据获取被引次数、归一化引用百分位、参考文献、摘要、URL 和开放获取状态。图谱声望基于 `referenced_works` 边计算。默认情况下,该图谱由种子结果集构建。使用 `--expand-citations N` 可在计算 PageRank 式图谱声望前,为每篇种子论文添加最多 `N` 条出站被引作品和入站引用作品。排序输出仍只对种子论文评分;扩展论文作为图谱上下文记录在 `<slug>-citation-graph.json` 中,可在 `<slug>-graph-explorer.html` 中查看。当图谱没有本地引文边时,图谱声望被标记为不可用并从分数中排除,而非猜测。
 
-Methodology and reproducibility are deterministic screening signals over metadata, abstract text, URLs, and enriched full text when requested. Use `--full-text-top N` to fetch source-specific full text for the highest-ranked candidates with a fetchable access route, extract canonical paper sections, attach section-specific paper-body spans, answer checklist-style rubric items, and rescore. Raw full text is not written to `papers.jsonl`; the paper record stores enrichment status, access candidates, `fullTextLength`, and section boundaries, while score evidence stores the matched spans.
+方法和可复现性是基于元数据、摘要文本、URL 以及按需富集的全文的确定性筛选信号。使用 `--full-text-top N` 可为排名最高、且有可获取访问路径的候选取回特定来源的全文,提取规范论文章节,附加章节级论文正文片段,回答清单式 rubric 条目并重新打分。原始全文不写入 `papers.jsonl`;论文记录存储富集状态、访问候选、`fullTextLength` 和章节边界,而分数证据存储匹配的片段。
 
-When a marker is found, the score JSONL keeps a `span` with the source, field, marker, character offsets, section name when available, and surrounding text. The score JSONL also includes rubric answers such as `present`, `partial`, `missing`, or `not_evaluated` for limitations, reproducibility path, experimental details, statistical significance, and compute resources. These spans and rubric answers are designed to show why attention was routed to a paper, not to replace claim validation or reproduction work.
+当找到某个标记时,分数 JSONL 会保留一条 `span`,含来源、字段、标记、字符偏移、章节名(若有)和上下文文本。分数 JSONL 还包含 rubric 回答,如对局限、可复现性路径、实验细节、统计显著性和算力资源的 `present`、`partial`、`missing` 或 `not_evaluated`。这些片段和 rubric 回答旨在展示为何注意力被引向某篇论文,而非替代主张验证或复现工作。
 
-The graph explorer is generated by default so the run is inspectable without hand-opening every JSONL file. It lets you search/filter seed and expanded nodes, click a paper, inspect local citation links, score summaries, field roles, critique judgments, and source URLs. It does not embed raw full-text bodies.
+图谱浏览器默认生成,以便无需手工打开每个 JSONL 文件即可检视运行。它可以搜索/筛选种子与扩展节点,点击论文、查看本地引文链接、分数摘要、字段角色、评审判断和来源 URL。它不嵌入原始全文正文。
 
-The score audit is generated by default for the direct "why did this rank here?" question. It shows each paper's component scores, normalized weights, contribution to the final score, field role, critique status, visible source-span evidence, missing components, and rubric checks to verify. It is the readable companion to `<slug>-scores.jsonl`.
+分数审计默认生成,用于回答直接的"为什么排在这里"问题。它展示每篇论文的分项分数、归一化权重、对最终分数的贡献、字段角色、评审状态、可见来源片段证据、缺失分项和待核 rubric 检查。它是 `<slug>-scores.jsonl` 的可读伴随物。
 
-The research-run manifest is generated by default as the machine-readable spine of the run. It is not another ranking output; it records how this run moved through Feynman's research loop: which jobs were served, which sources and tools were used, which artifacts were produced, which papers still lack completed verification, which next actions are ready, and which constraints apply. Plugin, MCP, and domain-specific execution work should attach to this manifest instead of scraping individual report files.
+research-run 清单默认生成,作为运行的机器可读主线。它不是又一份排序输出;它记录本次运行如何走过 Nervefeyn 的研究循环:服务了哪些作业、使用了哪些来源和工具、产出了哪些产物、哪些论文仍缺完整验证、哪些下一步动作就绪、以及适用哪些约束。插件、MCP 和领域特定执行工作应附加到该清单,而非抓取个别报告文件。
 
-The rank-sensitivity artifact is generated by default to show how much the rank order depends on the chosen weights. It reruns the same component signals under alternate weighting profiles and records each paper's profile ranks, score range, rank range, and stability label. Treat stable papers as robust to these tested assumptions and volatile papers as requiring closer manual inspection before treating the order as decisive.
+rank-sensitivity 产物默认生成,展示排序顺序对所选权重的依赖程度。它在备选加权 profile 下重跑相同的分项信号,并记录每篇论文在各 profile 下的排名、分数范围、排名范围和稳定性标签。把稳定论文视为对这些受测假设稳健,把易变论文视为在把顺序视为决定性之前需要更细致的人工检查。
 
-Calibration stays explicit without becoming default clutter. Without `--preference-file`, the ranked brief and provenance record that default weights are a transparent product hypothesis, not fitted preferences. With a filled preference file, PaperRank writes calibration artifacts, accepts `rankedPaperIds` and pairwise `preferences`, evaluates whether the preferred paper ranks ahead of the comparison paper, and reports default/profile agreement rates. Preferences whose paper IDs are outside the current run are counted as ignored rather than silently dropped.
+校准保持显式但不成为默认杂项。未提供 `--preference-file` 时,排序简报和溯源记录默认权重是一个透明的产品假设,而非拟合偏好。提供填好的偏好文件后,PaperRank 写出校准产物,接受 `rankedPaperIds` 和成对 `preferences`,评估偏好论文是否排在对比论文之前,并报告默认/profile 一致率。论文 ID 不在当前运行中的偏好被计为忽略,而非静默丢弃。
 
-The field map is generated by default to show the local structure of the run. It clusters seed and citation-neighborhood papers by OpenAlex topics and concepts, then assigns ranked seed papers roles such as foundation, frontier, bridge, methodology anchor, and reproducibility anchor. Those roles come from score signals, local citation degree, graph prestige, recency, and visible method/reproducibility evidence. They are local research-navigation labels, not a global taxonomy of the field.
+字段映射默认生成,展示运行的本地结构。它按 OpenAlex 主题和概念对种子与引文邻域论文聚类,然后为排序的种子论文分配 foundation、frontier、bridge、methodology anchor 和 reproducibility anchor 等角色。这些角色来自分数信号、本地引文度、图谱声望、时效性以及可见的方法/可复现性证据。它们是本地研究导航标签,而非领域的全局分类。
 
-Reproduction evidence stays separate from ranking. Without `--reproduction-notes`, PaperRank records that no completed reproduction notes were supplied inside the ranked brief and provenance. With a filled notes file, PaperRank writes a reproduction ledger, notes template, and replication plan. It accepts note statuses `reproduced`, `partially_reproduced`, `failed`, and `not_runnable`, plus central claim, result, metric, expected value, observed value, discrepancy, code/data/environment hints, commands, and check date. Notes whose paper IDs are outside the ranked seed set are counted as ignored. The ledger records externally supplied reproduction notes; it does not execute experiments and it does not embed raw full text.
+复现证据与排序分离。未提供 `--reproduction-notes` 时,PaperRank 在排序简报和溯源中记录未提供已完成的复现笔记。提供填好的笔记文件后,PaperRank 写出复现账本、笔记模板和复现计划。它接受笔记状态 `reproduced`、`partially_reproduced`、`failed` 和 `not_runnable`,以及中心主张、结果、指标、期望值、观测值、差异、代码/数据/环境提示、命令和检查日期。论文 ID 不在排序种子集中的笔记被计为忽略。账本记录外部提供的复现笔记;它不执行实验,也不嵌入原始全文。
 
-Use `--critique-top N` to generate research-critique strengths, concerns, and follow-up questions for the top ranked papers. The critique is deterministic and grounded in PaperRank evidence: component scores, warnings, source spans, and section-aware rubric answers. It is a triage aid for deciding what to verify next, not an external review decision.
+使用 `--critique-top N` 可为排名最高的论文生成研究评审的优势、关切和后续问题。评审是确定性的,基于 PaperRank 证据:分项分数、警告、来源片段和章节感知的 rubric 回答。它是决定下一步验证什么的分诊辅助,而非外部评审决定。
 
-Use `--synthesize` to generate a bounded model-synthesis handoff. The packet contains ranks, component-score explanations, field roles, critique summaries, rubric gaps, source-span excerpts, and source references, while omitting raw full-text bodies. Use `--synthesis-top N` to choose how many ranked papers enter the packet. Feynman then asks the recommended available non-Pro research model to write `<slug>-model-synthesis.md` from that packet. Pass `--synthesis-model provider/model` or `--model provider/model` to select another non-Pro model for that run. The CLI output, generated synthesis, JSON summary, and provenance record the actual model plus whether it came from the recommendation path or an explicit override. The generated synthesis is useful for read-first narrative and next actions, but the deterministic packet, scores, field map, and provenance remain the audit trail.
+使用 `--synthesize` 可生成有界的模型综合交接。该 packet 含排名、分项分数解释、字段角色、评审摘要、rubric 缺口、来源片段摘录和来源引用,但省略原始全文正文。使用 `--synthesis-top N` 选择多少排序论文进入该 packet。Nervefeyn 随后请推荐的可用非 Pro 研究模型基于该 packet 写出 `<slug>-model-synthesis.md`。传 `--synthesis-model provider/model` 或 `--model provider/model` 可为该运行选择其他非 Pro 模型。CLI 输出、生成综合、JSON 摘要和溯源会记录实际使用的模型,以及它来自推荐路径还是显式覆盖。生成综合对"先读什么"叙事和下一步动作有用,但确定性 packet、分数、字段映射和溯源仍是审计轨迹。
 
-## Scientific Basis
+## 科学依据
 
-PaperRank keeps bibliometric influence separate from paper quality. Citation-network influence is based on PageRank-style bibliometrics such as Eigenfactor. Citation expansion follows OpenAlex citation fields and filters: `referenced_works` gives outgoing citations, while `cites:<work>` finds incoming citing works. Field-map clusters use OpenAlex topics and concepts from the fetched papers. Citation velocity is separate because lifetime citation counts favor older papers. Methodology, reproducibility, critique questions, rank sensitivity, score calibration, completed reproduction evidence, field roles, and model synthesis stay separate from citation popularity because ML-paper checklists ask about experimental detail, transparency, data/code access, limitations, statistical significance, and compute resources.
+PaperRank 把文献计量影响力与论文质量分开。引用网络影响力基于 PageRank 式文献计量(如 Eigenfactor)。引用扩展遵循 OpenAlex 引用字段和筛选:`referenced_works` 给出出站引用,而 `cites:<work>` 找到入站引用作品。字段映射聚类使用所获取论文的 OpenAlex 主题和概念。引用速度单独计算,因为终身被引数偏向旧论文。方法、可复现性、评审问题、排序敏感性、分数校准、已完成复现证据、字段角色和模型综合都与引用热度分开,因为 ML 论文清单关注实验细节、透明度、数据/代码访问、局限、统计显著性和算力资源。

@@ -1,50 +1,50 @@
 ---
-title: Source Comparison
-description: Compare multiple sources and produce an agreement/disagreement matrix.
+title: 来源对比
+description: 对比多个来源,产出一致/分歧矩阵。
 section: Workflows
 order: 7
 ---
 
-The source comparison workflow analyzes multiple papers, articles, or documents side by side and produces a structured matrix showing where they agree, disagree, and differ in methodology. It is useful for understanding conflicting results, evaluating competing approaches, and identifying which claims have broad support versus limited evidence.
+来源对比工作流把多篇论文、文章或文档并排分析,产出一份结构化矩阵,展示它们在哪里一致、分歧以及方法差异。它对理解冲突结果、评估竞争方法、以及识别哪些主张有广泛支撑而哪些证据有限很有用。
 
-## Usage
+## 用法
 
-From the REPL:
+在 REPL 中:
 
 ```
-/compare "GPT-4 vs Claude vs Gemini on reasoning benchmarks"
+/compare "GPT-4 vs Claude vs Gemini 在推理基准上"
 ```
 
 ```
 /compare arxiv:2401.12345 arxiv:2402.67890 arxiv:2403.11111
 ```
 
-From the CLI:
+在 CLI 中:
 
 ```bash
-feynman compare "topic or list of sources"
+nervefeyn compare "主题或来源列表"
 ```
 
-You can provide a topic and let Feynman find the sources, or list specific papers and documents for a targeted comparison.
+你可以提供一个主题让 Nervefeyn 找来源,也可以列出具体论文和文档做针对性对比。
 
-## How it works
+## 工作原理
 
-The comparison workflow begins by identifying or retrieving the sources to compare. If you provide a topic, the researcher agents find the most relevant and contrasting papers. If you provide specific IDs or files, they are used directly.
+对比工作流先识别或取回要对比的来源。如果你提供主题,researcher 代理会找到最相关、最具对比性的论文。如果你提供具体 ID 或文件,则直接使用。
 
-Each source is analyzed independently first: the researcher agents extract claims, results, methodology, and limitations from each document. Then the comparison engine aligns claims across sources -- identifying where two papers make the same claim (agreement), where they report contradictory results (disagreement), and where they measure different things entirely (non-overlapping scope).
+每个来源先被独立分析:researcher 代理从每份文档提取主张、结果、方法和局限。然后对比引擎跨来源对齐主张 —— 识别两篇论文提出相同主张的位置(一致)、报告矛盾结果的位置(分歧),以及测量完全不同内容的位置(范围不重叠)。
 
-The alignment step handles the nuance that papers often measure slightly different quantities or use different evaluation protocols. The comparison explicitly notes when an apparent disagreement might be explained by methodological differences rather than genuine conflicting results.
+对齐步骤处理了这样的细微差别:论文经常测量略有不同的量,或使用不同的评估协议。当表象上的分歧可能由方法差异而非真正的冲突结果解释时,对比会明确指出。
 
-## Output format
+## 输出格式
 
-The comparison produces:
+对比产出:
 
-- **Source Summaries** -- One-paragraph summary of each source's key contributions
-- **Agreement Matrix** -- Claims supported by multiple sources with citation evidence
-- **Disagreement Matrix** -- Conflicting claims with analysis of why sources diverge
-- **Methodology Differences** -- How the sources differ in approach, data, and evaluation
-- **Synthesis** -- An overall assessment of which claims are well-supported and which remain contested
+- **来源摘要** —— 每个来源关键贡献的一段式摘要
+- **一致矩阵** —— 多个来源支撑的主张,附引用证据
+- **分歧矩阵** —— 冲突主张,含来源为何分化的分析
+- **方法差异** —— 来源在方法、数据和评估上的差异
+- **综合** —— 对哪些主张有充分支撑、哪些仍有争议的总体评估
 
-## When to use it
+## 何时使用
 
-Use `/compare` when you encounter contradictory results in the literature, when evaluating competing approaches to the same problem, or when you need to understand how different research groups frame the same topic. It is also useful for writing related work sections where you need to accurately characterize the state of debate.
+当你在文献中遇到矛盾结果、评估同一问题的竞争方法,或需要理解不同研究小组如何框定同一主题时,使用 `/compare`。它也适合在写相关工作章节、需要准确刻画辩论状态时使用。

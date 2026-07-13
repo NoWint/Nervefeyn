@@ -4,7 +4,7 @@ set -eu
 
 VERSION="${1:-latest}"
 INSTALL_BIN_DIR="${FEYNMAN_INSTALL_BIN_DIR:-$HOME/.local/bin}"
-INSTALL_APP_DIR="${FEYNMAN_INSTALL_APP_DIR:-$HOME/.local/share/feynman}"
+INSTALL_APP_DIR="${FEYNMAN_INSTALL_APP_DIR:-$HOME/.local/share/nervefeyn}"
 SKIP_PATH_UPDATE="${FEYNMAN_INSTALL_SKIP_PATH_UPDATE:-0}"
 path_action="already"
 path_profile=""
@@ -45,7 +45,7 @@ run_with_spinner() {
 
   printf '\r\033[2K' >&2
   if [ "$status" -ne 0 ]; then
-    printf '==> %s failed\n' "$label" >&2
+    printf '==> %s 失败\n' "$label" >&2
     return "$status"
   fi
 
@@ -61,7 +61,7 @@ normalize_version() {
       printf 'latest\n'
       ;;
     edge)
-      echo "The edge channel has been removed. Use the default installer for the latest tagged release or pass an exact version." >&2
+      echo "edge 通道已下线。请使用默认安装器获取最新 tagged 发布,或传入精确版本号。" >&2
       exit 1
       ;;
     v*)
@@ -95,7 +95,7 @@ download_file() {
     return
   fi
 
-  echo "curl or wget is required to install Feynman." >&2
+  echo "安装 Nervefeyn 需要 curl 或 wget。" >&2
   exit 1
 }
 
@@ -112,7 +112,7 @@ download_text() {
     return
   fi
 
-  echo "curl or wget is required to install Feynman." >&2
+  echo "安装 Nervefeyn 需要 curl 或 wget。" >&2
   exit 1
 }
 
@@ -151,7 +151,7 @@ add_to_path() {
   fi
 
   {
-    printf '\n# Added by Feynman installer\n'
+    printf '\n# Added by Nervefeyn installer\n'
     printf '%s\n' "$path_line"
   } >>"$profile"
   path_action="added"
@@ -159,25 +159,25 @@ add_to_path() {
 
 require_command() {
   if ! command -v "$1" >/dev/null 2>&1; then
-    echo "$1 is required to install Feynman." >&2
+    echo "安装 Nervefeyn 需要 $1。" >&2
     exit 1
   fi
 }
 
 warn_command_conflict() {
-  expected_path="$INSTALL_BIN_DIR/feynman"
-  resolved_path="$(command -v feynman 2>/dev/null || true)"
+  expected_path="$INSTALL_BIN_DIR/nervefeyn"
+  resolved_path="$(command -v nervefeyn 2>/dev/null || true)"
 
   if [ -z "$resolved_path" ]; then
     return
   fi
 
   if [ "$resolved_path" != "$expected_path" ]; then
-    step "Warning: current shell resolves feynman to $resolved_path"
-    step "Run now: export PATH=\"$INSTALL_BIN_DIR:\$PATH\" && hash -r && feynman"
-    step "Or launch directly: $expected_path"
+    step "警告:当前 shell 将 nervefeyn 解析到 $resolved_path"
+    step "立即运行:export PATH=\"$INSTALL_BIN_DIR:\$PATH\" && hash -r && nervefeyn"
+    step "或直接启动:$expected_path"
 
-    step "If that path is an old package-manager install, remove it or put $INSTALL_BIN_DIR first on PATH."
+    step "如果该路径是旧包管理器安装,请移除它,或将 $INSTALL_BIN_DIR 放到 PATH 最前。"
   fi
 }
 
@@ -185,20 +185,20 @@ resolve_release_metadata() {
   normalized_version="$(normalize_version "$VERSION")"
 
   if [ "$normalized_version" = "latest" ]; then
-    release_page="$(download_text "https://github.com/companion-inc/feynman/releases/latest")"
+    release_page="$(download_text "https://github.com/NoWint/Nervefeyn/releases/latest")"
     resolved_version="$(printf '%s\n' "$release_page" | sed -n 's@.*releases/tag/v\([0-9][^"<>[:space:]]*\).*@\1@p' | head -n 1)"
 
     if [ -z "$resolved_version" ]; then
-      echo "Failed to resolve the latest Feynman release version." >&2
+      echo "无法解析最新的 Nervefeyn 发布版本。" >&2
       exit 1
     fi
   else
     resolved_version="$normalized_version"
   fi
 
-  bundle_name="feynman-${resolved_version}-${asset_target}"
+  bundle_name="nervefeyn-${resolved_version}-${asset_target}"
   archive_name="${bundle_name}.${archive_extension}"
-  download_url="${FEYNMAN_INSTALL_BASE_URL:-https://github.com/companion-inc/feynman/releases/download/v${resolved_version}}/${archive_name}"
+  download_url="${FEYNMAN_INSTALL_BASE_URL:-https://github.com/NoWint/Nervefeyn/releases/download/v${resolved_version}}/${archive_name}"
 
   printf '%s\n%s\n%s\n%s\n' "$resolved_version" "$bundle_name" "$archive_name" "$download_url"
 }
@@ -211,7 +211,7 @@ case "$(uname -s)" in
     os="linux"
     ;;
   *)
-    echo "install.sh supports macOS and Linux. Use install.ps1 on Windows." >&2
+    echo "install.sh 仅支持 macOS 与 Linux。Windows 请使用 install.ps1。" >&2
     exit 1
     ;;
 esac
@@ -224,7 +224,7 @@ case "$(uname -m)" in
     arch="arm64"
     ;;
   *)
-    echo "Unsupported architecture: $(uname -m)" >&2
+    echo "不支持该架构:$(uname -m)" >&2
     exit 1
     ;;
 esac
@@ -240,7 +240,7 @@ bundle_name="$(printf '%s\n' "$release_metadata" | sed -n '2p')"
 archive_name="$(printf '%s\n' "$release_metadata" | sed -n '3p')"
 download_url="$(printf '%s\n' "$release_metadata" | sed -n '4p')"
 
-step "Installing Feynman ${resolved_version} for ${asset_target}"
+step "正在为 ${asset_target} 安装 Nervefeyn ${resolved_version}"
 
 tmp_dir="$(mktemp -d)"
 cleanup() {
@@ -249,57 +249,57 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 archive_path="$tmp_dir/$archive_name"
-step "Downloading ${archive_name}"
+step "正在下载 ${archive_name}"
 if ! download_file "$download_url" "$archive_path"; then
   cat >&2 <<EOF
-Failed to download ${archive_name} from:
+下载 ${archive_name} 失败:
   ${download_url}
 
-The ${asset_target} bundle is missing from the GitHub release.
-This usually means the release exists, but not all platform bundles were uploaded.
+GitHub 发布中缺少 ${asset_target} 包。
+这通常意味着发布已存在,但未上传全部平台包。
 
-Workarounds:
-  - try again after the release finishes publishing
-  - pass the latest published version explicitly, e.g.:
-    curl -fsSL https://feynman.is/install | bash -s -- 0.2.31
+可选方案:
+  - 等待发布完成后再试
+  - 显式传入最新已发布版本,例如:
+    curl -fsSL https://nervefeyn.dev/install | bash -s -- 0.2.31
 EOF
   exit 1
 fi
 
 mkdir -p "$INSTALL_APP_DIR"
 rm -rf "$INSTALL_APP_DIR/$bundle_name"
-run_with_spinner "Extracting ${archive_name}" tar -xzf "$archive_path" -C "$INSTALL_APP_DIR"
+run_with_spinner "正在解压 ${archive_name}" tar -xzf "$archive_path" -C "$INSTALL_APP_DIR"
 
 mkdir -p "$INSTALL_BIN_DIR"
-step "Linking feynman into $INSTALL_BIN_DIR"
-cat >"$INSTALL_BIN_DIR/feynman" <<EOF
+step "正在将 nervefeyn 链接到 $INSTALL_BIN_DIR"
+cat >"$INSTALL_BIN_DIR/nervefeyn" <<EOF
 #!/bin/sh
 set -eu
-exec "$INSTALL_APP_DIR/$bundle_name/feynman" "\$@"
+exec "$INSTALL_APP_DIR/$bundle_name/nervefeyn" "\$@"
 EOF
-chmod 0755 "$INSTALL_BIN_DIR/feynman"
+chmod 0755 "$INSTALL_BIN_DIR/nervefeyn"
 
 add_to_path
 
 case "$path_action" in
   added)
-    step "PATH updated for future shells in $path_profile"
-    step "Run now: export PATH=\"$INSTALL_BIN_DIR:\$PATH\" && hash -r && feynman"
+    step "已为未来 shell 更新 PATH(写入 $path_profile)"
+    step "立即运行:export PATH=\"$INSTALL_BIN_DIR:\$PATH\" && hash -r && nervefeyn"
     ;;
   configured)
-    step "PATH is already configured for future shells in $path_profile"
-    step "Run now: export PATH=\"$INSTALL_BIN_DIR:\$PATH\" && hash -r && feynman"
+    step "PATH 已在未来 shell 中配置(位于 $path_profile)"
+    step "立即运行:export PATH=\"$INSTALL_BIN_DIR:\$PATH\" && hash -r && nervefeyn"
     ;;
   skipped)
-    step "PATH update skipped"
-    step "Run now: export PATH=\"$INSTALL_BIN_DIR:\$PATH\" && hash -r && feynman"
+    step "已跳过 PATH 更新"
+    step "立即运行:export PATH=\"$INSTALL_BIN_DIR:\$PATH\" && hash -r && nervefeyn"
     ;;
   *)
-    step "$INSTALL_BIN_DIR is already on PATH"
-    step "Run: hash -r && feynman"
+    step "$INSTALL_BIN_DIR 已在 PATH 中"
+    step "运行:hash -r && nervefeyn"
     ;;
 esac
 
 warn_command_conflict
 
-printf 'Feynman %s installed successfully.\n' "$resolved_version"
+printf 'Nervefeyn %s 安装成功。\n' "$resolved_version"

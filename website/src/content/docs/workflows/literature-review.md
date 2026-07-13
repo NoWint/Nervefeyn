@@ -1,49 +1,49 @@
 ---
-title: Literature Review
-description: Run a structured literature review with consensus mapping, gap analysis, and lab/PI corpus mode.
+title: 文献综述
+description: 运行结构化文献综述,含共识梳理、缺口分析以及实验室/PI 语料库模式。
 section: Workflows
 order: 2
 ---
 
-The literature review workflow produces a structured survey of the academic landscape on a given topic. Unlike deep research which aims for a comprehensive brief, the literature review focuses specifically on mapping the state of the field -- what researchers agree on, where they disagree, and what remains unexplored. When the input names a lab, PI, author, or lab website, `/lit` switches into publication-corpus mode: it resolves the lab or author identity, collects reachable publications, maps topic trajectories, and ranks the papers that most changed the corpus direction.
+文献综述工作流产出对某主题学术图景的结构化综述。与旨在全面简报的深度研究不同,文献综述专注于绘制领域状态 —— 研究者们在什么上达成共识、在什么上存在分歧、以及什么尚未被探索。当输入命名一个实验室、PI、作者或实验室网站时,`/lit` 切换到出版物语料库模式:解析实验室或作者身份、收集可达出版物、映射主题轨迹,并对最改变语料库方向的论文排序。
 
-## Usage
+## 用法
 
-From the REPL:
+在 REPL 中:
 
 ```
-/lit Scaling laws for language model performance
+/lit 语言模型性能的缩放律
 ```
 
-From the CLI:
+在 CLI 中:
 
 ```bash
-feynman lit "Scaling laws for language model performance"
-feynman lit "Anthropic interpretability team"
+nervefeyn lit "语言模型性能的缩放律"
+nervefeyn lit "Anthropic interpretability team"
 ```
 
-## How it works
+## 工作原理
 
-The literature review workflow begins by searching for papers on the topic across AlphaXiv and the web. For a lab/PI input, the lead agent first resolves the lab or author identity and writes a reachable publication log before any delegated synthesis. The workflow prioritizes survey papers, foundational work, recent publications, and stable source URLs to capture both established knowledge and the current frontier.
+文献综述工作流先在 AlphaXiv 和网络上检索该主题的论文。对于实验室/PI 输入,主代理会先解析实验室或作者身份并写出可达出版物日志,然后再做任何委派综合。工作流优先选取综述论文、奠基性工作、近期发表和稳定来源 URL,以同时捕获既有知识与当前前沿。
 
-After gathering sources, the agents extract claims, results, and methodology from each paper. The synthesis step then organizes findings into a structured review that maps out where the community has reached consensus, where active debate exists, and where gaps in the literature remain.
+收集来源后,代理从每篇论文提取主张、结果和方法。综合步骤把发现组织成结构化综述,梳理出社区达成共识的位置、存在活跃辩论的位置,以及文献中尚存缺口的位置。
 
-The output is organized chronologically and thematically, showing how ideas evolved over time and how different research groups approach the problem differently. For publication-corpus reviews, the output also names 3-5 research trajectories and ranks 3-5 papers by contrastive originality, methodology strength, and relationship to prior art. Citation counts and publication venues are used as signals for weighting claims, though the review explicitly notes when influential work contradicts the mainstream view.
+输出按时间与主题组织,展示思想如何随时间演化、不同研究小组如何以不同方式处理该问题。对于出版物语料库综述,输出还会命名 3-5 条研究轨迹,并按对比原创性、方法强度和与先前工作的关系对 3-5 篇论文排序。被引数和发表期刊作为加权主张的信号,但当有影响力的工作与主流观点相悖时,综述会明确指出。
 
-## Output format
+## 输出格式
 
-The literature review produces:
+文献综述产出:
 
-- **Scope and Methodology** -- What was searched and how papers were selected
-- **Consensus** -- Claims that most papers agree on, with supporting citations
-- **Disagreements** -- Active debates where papers present conflicting evidence or interpretations
-- **Open Questions** -- Topics that the literature has not adequately addressed
-- **Timeline** -- Key milestones and how the field evolved
-- **Publication Trajectories** -- For lab/PI inputs, reachable corpus coverage plus topic trajectories and originality-ranked papers
-- **References** -- Complete bibliography organized by relevance
+- **范围与方法** —— 检索了什么、论文如何被选出
+- **共识** —— 多数论文同意的主张,附支撑引用
+- **分歧** —— 论文呈现冲突证据或解读的活跃辩论
+- **开放问题** —— 文献尚未充分处理的主题
+- **时间线** —— 关键里程碑和领域如何演化
+- **出版物轨迹** —— 对于实验室/PI 输入,可达语料库覆盖以及主题轨迹和按原创性排序的论文
+- **参考文献** —— 按相关性组织的完整书目
 
-## When to use it
+## 何时使用
 
-Use `/lit` when you need a map of the research landscape rather than a deep dive into a specific question. It is particularly useful at the start of a new research project when you need to understand what has already been done, or when preparing a related work section for a paper.
+当你需要研究图景的地图而非对某个具体问题的深挖时,使用 `/lit`。它在新研究项目启动、需要了解已有工作时尤其有用,也适合在为论文准备相关工作章节时使用。
 
-For biomedical and clinical research topics, see [Biomedical Literature Review](/docs/workflows/biomedical-literature-review) for research-only framing, evidence-type separation, and privacy boundaries.
+对于生物医学与临床研究主题,见[生物医学文献综述](/docs/workflows/biomedical-literature-review),了解仅研究取向的框架、证据类型分离和隐私边界。

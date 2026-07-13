@@ -1,101 +1,101 @@
 ---
-title: Biomedical Literature Review
-description: Use Feynman for research-only biomedical literature reviews with evidence grading and privacy boundaries.
+title: 生物医学文献综述
+description: 用 Nervefeyn 进行仅研究取向的生物医学文献综述,含证据分级与隐私边界。
 section: Workflows
 order: 3
 ---
 
-Biomedical literature reviews need stricter source handling than general technical surveys. Use this workflow for research synthesis, manuscript preparation, journal club preparation, protocol scoping, or background reading. Do not use it for patient-specific diagnosis, treatment selection, triage, or medical advice.
+生物医学文献综述比一般技术综述需要更严格的来源处理。把该工作流用于研究综合、稿件准备、journal club 准备、方案范围界定或背景阅读。请勿用于患者特定诊断、治疗选择、分诊或医疗建议。
 
-## Usage
+## 用法
 
-From the REPL:
+在 REPL 中:
 
 ```
-/lit PICO: adults with type 2 diabetes; intervention continuous glucose monitoring; comparator standard self-monitoring; outcomes HbA1c and hypoglycemia
+/lit PICO: 患 2 型糖尿病的成人;干预为持续血糖监测;对照为标准自我监测;结局为 HbA1c 与低血糖
 ```
 
-From the CLI:
+在 CLI 中:
 
 ```bash
-feynman lit "PICO: adults with type 2 diabetes; intervention continuous glucose monitoring; comparator standard self-monitoring; outcomes HbA1c and hypoglycemia"
+nervefeyn lit "PICO: 患 2 型糖尿病的成人;干预为持续血糖监测;对照为标准自我监测;结局为 HbA1c 与低血糖"
 ```
 
-## Frame the question
+## 构造问题
 
-Start with a structured research question. For intervention questions, prefer PICO or PICOS:
+从一个结构化研究问题开始。对于干预类问题,优先使用 PICO 或 PICOS:
 
-- **Population** -- patient group, disease definition, setting, age range, severity, and key exclusions
-- **Intervention or exposure** -- treatment, diagnostic test, risk factor, care model, or exposure
-- **Comparator** -- placebo, usual care, standard test, alternative intervention, or no comparator
-- **Outcomes** -- primary and secondary outcomes, safety outcomes, follow-up duration, and clinically meaningful thresholds
-- **Study design** -- systematic reviews, randomized trials, cohort studies, case-control studies, diagnostic accuracy studies, qualitative studies, or guidelines
+- **Population(人群)** —— 患者组、疾病定义、场景、年龄范围、严重程度和关键排除
+- **Intervention or exposure(干预或暴露)** —— 治疗、诊断检验、风险因素、护理模式或暴露
+- **Comparator(对照)** —— 安慰剂、常规护理、标准检验、替代干预或无对照
+- **Outcomes(结局)** —— 主要和次要结局、安全性结局、随访时长和临床有意义的阈值
+- **Study design(研究设计)** —— 系统综述、随机试验、队列研究、病例对照研究、诊断准确性研究、定性研究或指南
 
-For non-intervention questions, state the study type directly. Examples: prognosis, diagnostic accuracy, adverse event signal, mechanism, epidemiology, implementation, or health economics.
+对于非干预类问题,直接说明研究类型。例如:预后、诊断准确性、不良事件信号、机制、流行病学、实施或卫生经济学。
 
-## Source priority
+## 来源优先级
 
-Ask Feynman to separate evidence by study design instead of treating every source as equal. A typical biomedical review should distinguish:
+请 Nervefeyn 按研究设计分离证据,而非把每个来源等同对待。一份典型的生物医学综述应区分:
 
-- clinical practice guidelines and consensus statements
-- systematic reviews and meta-analyses
-- randomized controlled trials
-- prospective and retrospective cohort studies
-- case-control studies
-- diagnostic accuracy studies
-- case series and case reports
-- preprints, conference abstracts, and non-peer-reviewed material
-- mechanistic, animal, or in vitro studies
+- 临床实践指南和共识声明
+- 系统综述和 meta 分析
+- 随机对照试验
+- 前瞻性和回顾性队列研究
+- 病例对照研究
+- 诊断准确性研究
+- 病例系列和病例报告
+- 预印本、会议摘要和非同行评审材料
+- 机制、动物或体外研究
 
-When evidence conflicts, keep the disagreement visible. Do not collapse guideline statements, trials, observational studies, and mechanistic papers into one undifferentiated conclusion.
+当证据冲突时,保持分歧可见。不要把指南声明、试验、观察性研究和机制论文折叠成一个无差别的结论。
 
-## What to ask Feynman to report
+## 让 Nervefeyn 报告什么
 
-For biomedical topics, include these instructions in the prompt when they matter:
+对于生物医学主题,在提示中相关时加入以下指令:
 
-- define inclusion and exclusion criteria before searching
-- report search terms, time window, and source types
-- separate clinical outcomes from surrogate outcomes
-- identify effect sizes, confidence intervals, follow-up duration, and absolute risk when sources provide them
-- distinguish efficacy, effectiveness, safety, feasibility, and cost
-- flag single-study conclusions, small samples, unadjusted analyses, and indirect evidence
-- identify whether claims come from peer-reviewed publications, preprints, registry records, guidelines, or secondary summaries
-- state limitations and unresolved questions before giving a bottom-line synthesis
+- 在检索前定义纳入和排除标准
+- 报告检索词、时间窗口和来源类型
+- 把临床结局与替代结局分开
+- 在来源提供时识别效应量、置信区间、随访时长和绝对风险
+- 区分 efficacy、effectiveness、safety、feasibility 和 cost
+- 标记单研究结论、小样本、未调整分析和间接证据
+- 识别主张来自同行评审出版物、预印本、注册记录、指南还是二次摘要
+- 在给出底线综合前说明局限和未解决问题
 
-## Privacy and safety boundaries
+## 隐私与安全边界
 
-Do not paste protected health information, identifiable patient details, imaging identifiers, hospital records, insurance records, or private clinical notes into a Feynman workflow. Use de-identified, aggregate, or fictionalized research questions instead.
+请勿把受保护的健康信息、可识别的患者细节、影像标识、医院记录、保险记录或私人临床笔记粘贴到 Nervefeyn 工作流。改用去标识、聚合或虚构化的研究问题。
 
-Feynman outputs should be treated as research drafts. A biomedical review can help organize the literature, but it does not replace a systematic review protocol, clinical guideline process, institutional review, statistical analysis plan, or licensed clinical judgment.
+Nervefeyn 输出应被视为研究草稿。生物医学综述可以帮助组织文献,但它不替代系统综述方案、临床指南流程、机构审查、统计分析计划或持牌临床判断。
 
-Avoid prompts that ask for direct patient advice. If a topic touches diagnosis, treatment, screening, or safety, phrase the task as literature synthesis:
+避免请求直接患者建议的提示。若主题触及诊断、治疗、筛查或安全,把任务表述为文献综合:
 
 ```text
-Summarize the research literature on...
-Compare the evidence for...
-Identify limitations and gaps in studies about...
-Draft a background section for a research protocol on...
+总结关于……的研究文献
+比较……的证据
+识别……研究中存在的局限和缺口
+为……研究方案起草一段背景章节
 ```
 
-Do not phrase it as:
+请勿表述为:
 
 ```text
-What should this patient do?
-Which treatment should I choose for this case?
-Diagnose this patient.
+这个患者该怎么办?
+这个病例我该选哪种治疗?
+诊断这个患者。
 ```
 
-## Good output checklist
+## 良好输出清单
 
-A useful biomedical literature review should include:
+一份有用的生物医学文献综述应包含:
 
-- the framed question and scope
-- the search strategy or exact search terms used
-- evidence grouped by study design
-- key effect estimates only when source-backed
-- evidence quality caveats
-- safety signals and adverse event reporting when relevant
-- conflicts, uncertainty, and generalizability limits
-- a clear statement that the output is research synthesis, not medical advice
+- 已构造的问题和范围
+- 检索策略或使用的确切检索词
+- 按研究设计分组的证据
+- 仅在来源支撑时给出关键效应估计
+- 证据质量注意事项
+- 相关时的安全性信号和不良事件报告
+- 冲突、不确定性和外推性限制
+- 一句明确声明:输出是研究综合,而非医疗建议
 
-If Feynman cannot access a full text, trial registry, guideline, supplement, dataset, or source URL, the review should mark that check as blocked instead of inferring missing details.
+若 Nervefeyn 无法访问某份全文、试验注册库、指南、补充材料、数据集或来源 URL,综述应把该检查标记为 blocked,而非推断缺失的细节。

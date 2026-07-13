@@ -1,36 +1,36 @@
 ---
 title: Verifier
-description: The verifier agent cross-checks claims against their cited sources.
+description: verifier 代理把主张与其引用来源交叉核对。
 section: Agents
 order: 4
 ---
 
-The verifier agent is responsible for fact-checking and validation. It cross-references claims against their cited sources, checks code implementations against paper descriptions, and flags unsupported or misattributed assertions.
+verifier 代理负责事实核查与验证。它把主张与其引用来源交叉参照、把代码实现与论文描述对照检查,并标记无支撑或错归属的断言。
 
-## What it does
+## 它做什么
 
-The verifier performs targeted checks on specific claims rather than reading documents end-to-end like the reviewer. It takes a claim and its cited source, retrieves the source, and determines whether the source actually supports the claim as stated. This catches misattributions (citing a paper that says something different), overstatements (claiming a stronger result than the source reports), and fabrications (claims with no basis in the cited source).
+verifier 对具体主张进行定向核查,而非像 reviewer 那样通读文档。它接收一条主张及其引用来源、取回该来源,并判定来源是否真的支撑该主张的措辞。这样能捕获错归属(引用的论文说的是另一回事)、夸大(声称的结果强于来源报告)和杜撰(主张在引用来源中毫无依据)。
 
-When checking code against papers, the verifier examines specific implementation details: hyperparameters, architecture configurations, training procedures, and evaluation metrics. It compares the paper's description to the code's actual behavior, noting discrepancies with exact file paths and line numbers.
+在把代码与论文对照时,verifier 会检查具体实现细节:超参数、架构配置、训练流程与评估指标。它把论文描述与代码实际行为对比,并以精确的文件路径和行号记录差异。
 
-## Verification process
+## 验证流程
 
-The verifier follows a systematic process for each claim it checks:
+verifier 对每条待查主张遵循系统化流程:
 
-1. **Retrieve the source** -- Fetch the cited paper, article, or code file
-2. **Locate the relevant section** -- Find where the source addresses the claim
-3. **Compare** -- Check whether the source supports the claim as stated
-4. **Classify** -- Mark the claim as verified, unsupported, overstated, or contradicted
-5. **Document** -- Record the evidence with source locations and short quotes only when needed
+1. **取回来源** —— 获取被引用的论文、文章或代码文件
+2. **定位相关章节** —— 找到来源中涉及该主张的位置
+3. **对比** —— 检查来源是否如所述支撑该主张
+4. **分类** —— 把主张标记为 verified、unsupported、overstated 或 contradicted
+5. **记录** —— 仅在必要时以来源位置和简短引文记录证据
 
-This process is traceable. Completed verification notes identify the specific passage or code that was checked, making it easy to audit the verifier's work.
+该流程可追溯。完成的验证笔记会标明被核查的具体段落或代码,便于审计 verifier 的工作。
 
-## Confidence and limitations
+## 置信度与局限
 
-The verifier assigns a confidence level to each verification. Claims that directly quote a source are verified with high confidence. Claims that paraphrase or interpret results are verified with moderate confidence, since reasonable interpretations can differ. Claims about the implications or significance of results are verified with lower confidence, since these involve judgment.
+verifier 为每次验证赋予一个置信度。直接引用来源的主张以高置信度验证。转述或解读结果的主张以中等置信度验证,因为合理的解读可能不同。关于结果含义或重要性的主张以较低置信度验证,因为其中包含判断。
 
-The verifier is honest about its limitations. When a claim cannot be verified because the source is behind a paywall, the code is not available, or the claim requires domain expertise beyond what the verifier can assess, it says so explicitly rather than guessing.
+verifier 对自身局限保持诚实。当某条主张因为来源在付费墙后、代码不可得,或需要超出 verifier 评估能力的领域专长而无法验证时,它会明确说明,而非猜测。
 
-## Used by
+## 被谁使用
 
-The verifier agent is used by `/deepresearch` (final fact-checking pass), `/audit` (comparing paper claims to code), `/replicate` (verifying that the replication plan captures all necessary details), and non-trivial `/recipe` runs (checking the top recipe's key sources, dataset availability, and code paths). It serves as the quality control step that runs after the researcher and writer have produced their output.
+verifier 代理被 `/deepresearch`(最终事实核查通过)、`/audit`(把论文主张与代码对照)、`/replicate`(验证复现计划是否捕获了所有必要细节)以及非平凡的 `/recipe` 运行(检查 top 配方的关键来源、数据集可用性和代码路径)使用。它作为质量控制环节,在 researcher 和 writer 产出输出后运行。
