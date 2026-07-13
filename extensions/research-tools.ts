@@ -11,6 +11,7 @@ import { registerInitCommand, registerOutputsCommand } from "./research-tools/pr
 import { registerServiceTierControls } from "./research-tools/service-tier.js";
 import { registerScienceDatabaseTools } from "./research-tools/science-databases.js";
 import { registerModelEndpointTools } from "./research-tools/model-endpoints.js";
+import registerSidebar from "./research-tools/sidebar.js";
 import { registerWorkbenchConnectorTools } from "./research-tools/workbench-connectors.js";
 import { registerWorkbenchContextTool } from "./research-tools/workbench-context.js";
 
@@ -33,6 +34,7 @@ export default function researchTools(pi: ExtensionAPI): void {
 	registerServiceTierControls(pi);
 	registerScienceDatabaseTools(pi);
 	registerModelEndpointTools(pi);
+	registerSidebar(pi);
 	registerWorkbenchConnectorTools(pi);
 	registerWorkbenchContextTool(pi);
 }
