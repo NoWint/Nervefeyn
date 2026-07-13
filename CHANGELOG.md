@@ -4,11 +4,15 @@
 
 本文件用于跟踪时间线,而非 release notes。条目保持简短、事实、可操作。
 
-## 2026-07-13 Nervefeyn 品牌改造
+## 2026-07-13 Nervefeyn 品牌改造与 Workbench UI 完成
 
-- 从 Feynman fork 为 Nervefeyn,GPLv3,用户面中文化
-- Workbench UI 基于 BonjourPrism 深色设计系统重写
-- 下一步:Phase 2 Workbench UI 实施
+- verified: GPLv3 License + NOTICE 双版权合规(原 MIT 保留于 LICENSES/feynman-mit.txt)
+- verified: 全仓库品牌替换(用户面 Feynman → Nervefeyn,代码标识符保留英文)
+- verified: 用户面中文化(CLI/setup/model guidance/workbench UI/docs/prompts/install scripts/website)
+- verified: Workbench UI 基于 BonjourPrism 深色设计系统重写(design-system.css + 4 神经预览组件)
+- verified: typecheck 通过,build:workbench-web 成功(16MB bundle)
+- 保留:extensions/ 中 HTTP User-Agent URL(github.com/companion-ai/feynman)为代码层引用,非用户面
+- 下一步:子项目 A(神经/CS 数据源扩展)单独 brainstorm
 
 ### 2026-07-06 EDT — workbench-light-theme-parity
 
