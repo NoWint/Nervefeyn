@@ -110,16 +110,16 @@ function printHelp(appRoot: string): void {
 	);
 
 	printAsciiHeader([
-		"Research-first agent shell built on Pi.",
-		"Use `feynman setup` first if this is a new machine.",
+		"基于 Pi 构建的研究优先 agent shell。",
+		"首次使用请运行 `nervefeyn setup`。",
 	]);
 
 	printSection("Getting Started");
-	printInfo("feynman");
-	printInfo("feynman setup");
-	printInfo("feynman doctor");
-	printInfo("feynman model");
-	printInfo("feynman search status");
+	printInfo("nervefeyn");
+	printInfo("nervefeyn setup");
+	printInfo("nervefeyn doctor");
+	printInfo("nervefeyn model");
+	printInfo("nervefeyn search status");
 
 	printSection("Commands");
 	for (const section of cliCommandSections) {
@@ -197,7 +197,7 @@ export async function runBundledAlphaCli(appRoot: string, args: string[], option
 		child.on("exit", (code, signal) => {
 			if (signal) {
 				process.exitCode = 1;
-				console.error(`feynman alpha terminated because the alpha child exited with ${signal}.`);
+				console.error(`nervefeyn alpha 进程终止,子进程退出码 ${signal}。`);
 				resolvePromise();
 				return;
 			}
@@ -265,7 +265,7 @@ async function handleModelCommand(subcommand: string | undefined, args: string[]
 	if (subcommand === "set") {
 		const spec = args[0];
 		if (!spec) {
-			throw new Error("Usage: feynman model set <provider/model|provider:model>");
+			throw new Error("用法:nervefeyn model set <provider/model|provider:model>");
 		}
 		setDefaultModelSpec(feynmanSettingsPath, feynmanAuthPath, spec);
 		return;
@@ -286,7 +286,7 @@ async function handleModelCommand(subcommand: string | undefined, args: string[]
 
 		const tier = normalizeServiceTier(requested);
 		if (!tier) {
-			throw new Error("Usage: feynman model tier <auto|default|flex|priority|standard_only|unset>");
+			throw new Error("用法:nervefeyn model tier <auto|default|flex|priority|standard_only|unset>");
 		}
 
 		setConfiguredServiceTier(feynmanSettingsPath, tier);
@@ -365,8 +365,8 @@ async function handlePackagesCommand(subcommand: string | undefined, args: strin
 	);
 
 	if (!subcommand || subcommand === "list") {
-		printPanel("Feynman Packages", [
-			"Core packages are installed by default to keep first-run setup fast.",
+		printPanel("nervefeyn 包", [
+			"核心包默认安装,以保证首次运行配置快速完成。",
 		]);
 		printSection("Core");
 		for (const source of CORE_PACKAGE_SOURCES) {
@@ -382,7 +382,7 @@ async function handlePackagesCommand(subcommand: string | undefined, args: strin
 			const installed = preset.sources.every((source) => configuredSources.has(source));
 			printInfo(`${preset.name}${installed ? " (installed)" : ""}  ${preset.description}`);
 		}
-		printInfo(`Install with: feynman packages install <${listOptionalPackagePresetInstallTargets().join("|")}>`);
+		printInfo(`安装命令:nervefeyn packages install <${listOptionalPackagePresetInstallTargets().join("|")}>`);
 		return;
 	}
 
@@ -396,7 +396,7 @@ async function handlePackagesCommand(subcommand: string | undefined, args: strin
 		if (installTargets.length === 0) {
 			throw new Error(`No optional package presets are available on ${process.platform}.`);
 		}
-		throw new Error(`Usage: feynman packages install <${installTargets.join("|")}>`);
+		throw new Error(`用法:nervefeyn packages install <${installTargets.join("|")}>`);
 	}
 
 	const sources = getOptionalPackagePresetSources(target);
@@ -452,7 +452,7 @@ function handleSearchCommand(subcommand: string | undefined, args: string[]): vo
 		const provider = args[0] as PiWebSearchProvider | undefined;
 		const validProviders: PiWebSearchProvider[] = ["auto", "perplexity", "exa", "gemini"];
 		if (!provider || !validProviders.includes(provider)) {
-			throw new Error("Usage: feynman search set <auto|perplexity|exa|gemini> [api-key]");
+			throw new Error("用法:nervefeyn search set <auto|perplexity|exa|gemini> [api-key]");
 		}
 		setSearchProvider(provider, args[1]);
 		return;
@@ -528,9 +528,9 @@ export function resolvePiPromptOptions(
 
 export function buildLocalModelWorkflowNotice(modelSpec: string, workflowName: string): string {
 	return [
-		`Warning: ${modelSpec} is a local provider.`,
-		`Small local models often ignore /${workflowName}'s multi-step workflow and return a chat-only reply with no files under outputs/.`,
-		"Use a stronger non-Pro model with `feynman model set <provider/model>` if this run produces no artifacts.",
+		`警告:${modelSpec} 是本地 provider。`,
+		`小型本地模型常会忽略 /${workflowName} 的多步工作流,仅返回聊天回复,outputs/ 下不会产生文件。`,
+		"若本次运行未产出制品,请使用更强的非 Pro 模型:运行 `nervefeyn model set <provider/model>`。",
 	].join(" ");
 }
 
@@ -621,7 +621,7 @@ function createRankModelSynthesizer(options: {
 		const recommendation = requestedModel ? undefined : chooseRecommendedModel(options.authPath);
 		const resolvedModelSpec = requestedModel || recommendation?.spec;
 		if (!resolvedModelSpec) {
-			throw new Error("No non-Pro model is available for PaperRank synthesis. Run `feynman model login` for a non-Pro model or pass `--synthesis-model provider/model` with a non-Pro model.");
+			throw new Error("没有可用于 PaperRank 综合的非 Pro 模型。请运行 `nervefeyn model login` 配置一个非 Pro 模型,或通过 `--synthesis-model provider/model` 传入非 Pro 模型。");
 		}
 		if (isProClassModelSpec(resolvedModelSpec)) {
 			throw new Error(`Pro-class synthesis model disabled: ${resolvedModelSpec}. Choose a non-Pro model.`);
@@ -920,7 +920,7 @@ async function runMain(input: { here: string; appRoot: string; feynmanVersion: s
 			console.log(feynmanVersion);
 			return;
 		}
-		throw new Error("Unable to determine the installed Feynman version.");
+		throw new Error("无法确定已安装的 nervefeyn 版本。");
 	}
 
 	const workingDir = resolve(values.cwd ?? process.cwd());
