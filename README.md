@@ -8,6 +8,9 @@
   <a href="https://github.com/NoWint/Nervefeyn"><img alt="GitHub" src="https://img.shields.io/badge/repo-NoWint/Nervefeyn-181717?style=flat-square" /></a>
   <a href="https://github.com/NoWint/Nervefeyn/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/NoWint/Nervefeyn?style=flat-square" /></a>
 </p>
+<p align="center">
+  Fork 自 <a href="https://github.com/companion-inc/feynman">companion-inc/feynman</a> · 原作者 <a href="https://github.com/companion-inc">Companion, Inc.</a>(MIT)· 本 fork 采用 GPLv3
+</p>
 
 ---
 
