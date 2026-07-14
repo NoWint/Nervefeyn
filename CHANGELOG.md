@@ -4,6 +4,16 @@
 
 本文件用于跟踪时间线,而非 release notes。条目保持简短、事实、可操作。
 
+## 2026-07-14 — /ar 长线自主研究循环
+
+- verified: 新增 `prompts/ar.md`(267 行工作流 prompt)+ `skills/ar/SKILL.md`(技能描述)
+- verified: `/ar` 被 `readPromptSpecs` 自动发现(Total prompts: 14,原 13 + 新增 1)
+- verified: `npx tsc --noEmit` 通过(无新增错误)
+- 变更:`/ar <topic>` 启动 plan 驱动的阶段循环,每轮自动编排 `/deepresearch`/`/lit`/`/autoresearch`/`/review` via subagent,reviewer 每轮审查,支持 `--approve each|stage|critical|never`,可跨会话恢复(`/ar <slug>`)
+- 与 `/autoresearch` 区别:bounded 单 metric 优化 vs open-ended 多子目标编排
+- unverified: 待终端手动测试 `/ar <topic>` 验证循环启动、plan 生成、用户确认、第一轮执行
+- 下一步:终端实测 /ar;神经/CS 数据源扩展作为独立 spec
+
 ## 2026-07-13 Nervefeyn 品牌改造与 Workbench UI 完成
 
 - verified: GPLv3 License + NOTICE 双版权合规(原 MIT 保留于 LICENSES/feynman-mit.txt)
