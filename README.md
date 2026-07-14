@@ -1,103 +1,41 @@
 <p align="center">
-  <a href="https://feynman.is">
+  <a href="https://github.com/NoWint/Nervefeyn">
     <img src="assets/hero.png" alt="Nervefeyn CLI" width="800" />
   </a>
 </p>
-<p align="center">开源 AI 研究代理。</p>
+<p align="center">开源 AI 研究代理 — 神经计算研究工作台。基于 Pi 运行时,内置论文搜索、文献综述、多代理深度调查、有界实验循环与长线自主研究。</p>
 <p align="center">
-  <a href="https://feynman.is/docs"><img alt="Docs" src="https://img.shields.io/badge/docs-feynman.is-0d9668?style=flat-square" /></a>
+  <a href="https://github.com/NoWint/Nervefeyn"><img alt="GitHub" src="https://img.shields.io/badge/repo-NoWint/Nervefeyn-181717?style=flat-square" /></a>
   <a href="https://github.com/NoWint/Nervefeyn/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/NoWint/Nervefeyn?style=flat-square" /></a>
 </p>
 
 ---
 
-### 安装
+### 快速开始
+
+需要 Node.js >= 20。clone 后执行 `prepare-runtime-workspace.mjs` 准备 Pi 运行时(下载 Pi 包并打补丁),然后 `npm run dev` 启动。
 
 **macOS / Linux:**
 
 ```bash
-curl -fsSL https://feynman.is/install | bash
+git clone https://github.com/NoWint/Nervefeyn.git
+cd Nervefeyn
+npm install
+node scripts/prepare-runtime-workspace.mjs
+npm run dev
 ```
 
 **Windows (PowerShell):**
 
 ```powershell
-irm https://feynman.is/install.ps1 | iex
+git clone https://github.com/NoWint/Nervefeyn.git
+cd Nervefeyn
+npm install
+node scripts/prepare-runtime-workspace.mjs
+npm run dev
 ```
 
-一行式安装器会拉取最新的 tagged release。如需锁定版本,请显式传入,例如 `curl -fsSL https://feynman.is/install | bash -s -- 0.2.35`。
-
-安装器下载的是自带 Node.js 运行时的独立原生 bundle。
-
-后续升级独立 app,请重新运行安装器。`nervefeyn update` 只会刷新 Nervefeyn 环境内的 Pi 包;它不会替换独立运行时 bundle 本身。
-
-如需卸载独立 app,请删除 launcher 与运行时 bundle,然后可选地删除 `~/.feynman` 目录(同时会清除设置、workbench app 状态、会话与已安装包状态)。若还想清除 alphaXiv 登录状态,请删除 `~/.ahub`。各平台路径请参见安装指南。
-
-本地模型可通过 setup 流程接入。对于 LM Studio,运行 `nervefeyn setup`,选择 `LM Studio`,在未修改服务端口时保留默认 `http://localhost:1234/v1`。对于 LiteLLM,选择 `LiteLLM Proxy`,保留默认 `http://localhost:4000/v1`。对于 Ollama 或 vLLM,选择 `Custom provider (baseUrl + API key)`,使用 `openai-completions`,并指向本地 `/v1` endpoint。
-
-### 仅安装 Skills
-
-如果只需要研究 skills 而不需要完整终端 app:
-
-**macOS / Linux:**
-
-```bash
-curl -fsSL https://feynman.is/install-skills | bash
-```
-
-**Windows (PowerShell):**
-
-```powershell
-irm https://feynman.is/install-skills.ps1 | iex
-```
-
-这会把 skill 库安装到 Codex 的 `~/.codex/skills/feynman`。也可显式指定 Codex 目标:
-
-**macOS / Linux:**
-
-```bash
-curl -fsSL https://feynman.is/install-skills | bash -s -- --codex
-```
-
-**Windows (PowerShell):**
-
-```powershell
-& ([scriptblock]::Create((irm https://feynman.is/install-skills.ps1))) -Scope Codex
-```
-
-如需安装到当前 repo 内供 Claude/agent 使用:
-
-**macOS / Linux:**
-
-```bash
-curl -fsSL https://feynman.is/install-skills | bash -s -- --repo
-```
-
-**Windows (PowerShell):**
-
-```powershell
-& ([scriptblock]::Create((irm https://feynman.is/install-skills.ps1))) -Scope Repo
-```
-
-这会安装到当前 repo 下的 `.agents/skills/feynman`。
-
-如需安装到 OpenCode 项目本地:
-
-**macOS / Linux:**
-
-```bash
-curl -fsSL https://feynman.is/install-skills | bash -s -- --opencode
-```
-
-**Windows (PowerShell):**
-
-```powershell
-& ([scriptblock]::Create((irm https://feynman.is/install-skills.ps1))) -Scope OpenCode
-```
-
-这会安装到当前 repo 下的 `.opencode/skills/feynman`。
-
-这些安装器会下载打包的 `skills/` 与 `prompts/` 目录树,以及这些 skills 引用的 repo 指导文件。它们不会安装 Nervefeyn 终端、内置 Node 运行时、auth 存储或 Pi 包。
+本地模型可通过 setup 流程接入:启动后运行 `/feynman-model` 或 `npm run dev -- setup`,选择 provider(LM Studio 默认 `http://localhost:1234/v1`,LiteLLM 默认 `http://localhost:4000/v1`,Ollama/vLLM 用 Custom provider 指向本地 `/v1` endpoint)。
 
 ---
 
@@ -218,20 +156,7 @@ $ nervefeyn recipe "fine-tune a small model for math reasoning"
 
 ### 贡献
 
-完整贡献者指南请见 [CONTRIBUTING.md](CONTRIBUTING.md)。
-
-从源码运行:
-
-```bash
-git clone https://github.com/NoWint/Nervefeyn.git
-cd Nervefeyn
-nvm use || nvm install      # Node >= 20
-npm install
-node scripts/prepare-runtime-workspace.mjs   # 准备 Pi 运行时(必需)
-npm run dev                 # 启动 CLI: npx tsx src/index.ts
-```
-
-测试与构建:
+完整贡献者指南请见 [CONTRIBUTING.md](CONTRIBUTING.md)。按"快速开始"克隆并启动后,测试与构建:
 
 ```bash
 npm test
