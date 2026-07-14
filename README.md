@@ -6,7 +6,7 @@
 <p align="center">开源 AI 研究代理。</p>
 <p align="center">
   <a href="https://feynman.is/docs"><img alt="Docs" src="https://img.shields.io/badge/docs-feynman.is-0d9668?style=flat-square" /></a>
-  <a href="https://github.com/companion-inc/feynman/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/companion-inc/feynman?style=flat-square" /></a>
+  <a href="https://github.com/NoWint/Nervefeyn/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/NoWint/Nervefeyn?style=flat-square" /></a>
 </p>
 
 ---
@@ -206,11 +206,11 @@ $ nervefeyn recipe "fine-tune a small model for math reasoning"
 
 ### Star History
 
-<a href="https://www.star-history.com/?repos=companion-inc%2Ffeynman&type=date&legend=top-left">
+<a href="https://www.star-history.com/?repos=NoWint%2FNervefeyn&type=date&legend=top-left">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=companion-inc/feynman&type=date&theme=dark&legend=top-left" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=companion-inc/feynman&type=date&legend=top-left" />
-    <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=companion-inc/feynman&type=date&legend=top-left" />
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=NoWint/Nervefeyn&type=date&theme=dark&legend=top-left" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=NoWint/Nervefeyn&type=date&legend=top-left" />
+    <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=NoWint/Nervefeyn&type=date&legend=top-left" />
   </picture>
 </a>
 
@@ -220,17 +220,26 @@ $ nervefeyn recipe "fine-tune a small model for math reasoning"
 
 完整贡献者指南请见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
+从源码运行:
+
 ```bash
-git clone https://github.com/companion-inc/feynman.git
-cd feynman
-nvm use || nvm install
+git clone https://github.com/NoWint/Nervefeyn.git
+cd Nervefeyn
+nvm use || nvm install      # Node >= 20
 npm install
+node scripts/prepare-runtime-workspace.mjs   # 准备 Pi 运行时(必需)
+npm run dev                 # 启动 CLI: npx tsx src/index.ts
+```
+
+测试与构建:
+
+```bash
 npm test
 npm run typecheck
 npm run build
 ```
 
-[文档](https://feynman.is/docs) · [Release Notes](RELEASES.md) · [MIT License](LICENSE)
+[文档](https://feynman.is/docs) · [Release Notes](RELEASES.md) · [GPL License](LICENSE)
 
 ---
 
