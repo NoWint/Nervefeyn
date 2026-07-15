@@ -1,6 +1,6 @@
 // extensions/research-tools/eegds-connector.ts
-import { existsSync, mkdirSync, readFileSync, appendFileSync, writeFileSync } from "node:fs";
-import { dirname, resolve as resolvePath, relative as relativePath } from "node:path";
+import { existsSync, mkdirSync, readFileSync, appendFileSync, writeFileSync, realpathSync } from "node:fs";
+import { dirname, basename, resolve as resolvePath, relative as relativePath } from "node:path";
 import { randomUUID } from "node:crypto";
 
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
@@ -125,4 +125,81 @@ async function ensureHealthy(): Promise<EegdsError | null> {
 	const check = await eegdsHealthCheck();
 	if (!check.ok) return check;
 	return null;
+}
+
+function normalizeSlug(slug: string | undefined): string {
+	const clean = (slug ?? "").trim().toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+	return clean || "eegds-default";
+}
+
+function ensureDir(path: string): void {
+	if (!existsSync(path)) mkdirSync(path, { recursive: true });
+}
+
+function workspaceRoot(): string {
+	return process.cwd();
+}
+
+export function validateWorkspaceFile(filepath: string): { ok: true; absPath: string } | EegdsError {
+	const root = realpathSync(workspaceRoot());
+	const abs = resolvePath(root, filepath);
+	// Normalize symlinks on abs: the file may not exist yet, so fall back to the
+	// realpath of its parent dir + basename. This keeps workspace-root comparisons
+	// correct on macOS where tmpdir() is symlinked (/var → /private/var).
+	let realAbs = abs;
+	try {
+		realAbs = realpathSync(abs);
+	} catch {
+		try {
+			realAbs = resolvePath(realpathSync(dirname(abs)), basename(abs));
+		} catch {
+			realAbs = abs;
+		}
+	}
+	const rel = relativePath(root, realAbs);
+	if (rel.startsWith("..") || rel.includes("\0")) {
+		return { ok: false, error: "file_outside_workspace", message: `File ${filepath} outside workspace (security)` };
+	}
+	if (!existsSync(realAbs)) {
+		return { ok: false, error: "file_not_found", message: `File ${filepath} not found in workspace` };
+	}
+	return { ok: true, absPath: realAbs };
+}
+
+export function writeEegdsResultFile(slug: string, filename: string, content: string | Uint8Array | Record<string, unknown>): string {
+	const safe = normalizeSlug(slug);
+	const dir = resolvePath(workspaceRoot(), "outputs", safe);
+	ensureDir(dir);
+	const target = resolvePath(dir, filename);
+	const data = typeof content === "string" || content instanceof Uint8Array ? content : JSON.stringify(content, null, 2);
+	writeFileSync(target, data);
+	return `outputs/${safe}/${filename}`;
+}
+
+export function appendEegdsProvenance(slug: string, entry: EegdsProvenanceEntry): void {
+	const safe = normalizeSlug(slug);
+	const dir = resolvePath(workspaceRoot(), "outputs");
+	ensureDir(dir);
+	const sidecar = resolvePath(dir, `${safe}.provenance.md`);
+	const header = existsSync(sidecar) ? "" : `# EEGDataScience Provenance — ${safe}\n\n`;
+	const lines: string[] = [];
+	lines.push(`## ${entry.timestamp} — ${entry.action}`);
+	lines.push(`- endpoint: ${entry.endpoint}`);
+	lines.push(`- params: ${JSON.stringify(entry.params)}`);
+	if (entry.sourceFile) lines.push(`- source_file: ${entry.sourceFile}`);
+	if (entry.resultFile) lines.push(`- result_file: ${entry.resultFile}`);
+	if (entry.summary) lines.push(`- summary: ${JSON.stringify(entry.summary)}`);
+	lines.push(`- verification: ${entry.verification}`);
+	if (entry.error) lines.push(`- error: ${entry.error}`);
+	if (entry.notes) lines.push(`- notes: ${entry.notes}`);
+	lines.push("");
+	appendFileSync(sidecar, `${header}${lines.join("\n")}\n`);
+}
+
+function localIsoTimestamp(): string {
+	const d = new Date();
+	const offsetMs = d.getTimezoneOffset() * 60_000;
+	const local = new Date(d.getTime() - offsetMs);
+	const tz = d.getTimezoneOffset() <= 0 ? `+${String(-d.getTimezoneOffset() / 60).padStart(2, "0")}:00` : `-${String(d.getTimezoneOffset() / 60).padStart(2, "0")}:00`;
+	return local.toISOString().replace("T", "T").replace(/\.\d{3}Z$/, "") + tz;
 }

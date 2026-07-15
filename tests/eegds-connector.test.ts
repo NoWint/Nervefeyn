@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { afterEach, beforeEach, test } from "node:test";
+import { tmpdir } from "node:os";
+import { mkdtempSync, readFileSync, rmSync, existsSync } from "node:fs";
+import { join } from "node:path";
 
-import { loadEegdsSettings, resetEegdsHealthCache, eegdsHealthCheck } from "../extensions/research-tools/eegds-connector.js";
+import { loadEegdsSettings, resetEegdsHealthCache, eegdsHealthCheck, appendEegdsProvenance, validateWorkspaceFile, writeEegdsResultFile } from "../extensions/research-tools/eegds-connector.js";
 
 function jsonResponse(body: unknown, status = 200): Response {
 	return new Response(JSON.stringify(body), {
@@ -96,4 +99,104 @@ test("eegdsHealthCheck 2s timeout fires eegds_timeout", async () => {
 	const result = await eegdsHealthCheck({ timeoutMs: 20 });
 	assert.equal(result.ok, false);
 	assert.equal(result.error, "eegds_timeout");
+});
+
+test("appendEegdsProvenance creates sidecar and appends entries with local timezone", () => {
+	const dir = mkdtempSync(join(tmpdir(), "eegds-prov-"));
+	const origCwd = process.cwd();
+	try {
+		process.chdir(dir);
+		appendEegdsProvenance("flow-recovery-s01", {
+			timestamp: "2026-07-15T14:32:11+08:00",
+			action: "analyze",
+			endpoint: "POST /api/analyze",
+			params: { subject: "S01" },
+			summary: { recovery_time_sec: 42.3 },
+			verification: "unverified",
+			resultFile: "outputs/flow-recovery-s01/eegds-results.json",
+		});
+		appendEegdsProvenance("flow-recovery-s01", {
+			timestamp: "2026-07-15T14:35:02+08:00",
+			action: "neurolink_dashboard",
+			endpoint: "GET /api/neurolink/dashboard",
+			params: {},
+			summary: { connected: true },
+			verification: "inferred",
+		});
+		const sidecar = join(dir, "outputs", "flow-recovery-s01.provenance.md");
+		assert.equal(existsSync(sidecar), true);
+		const text = readFileSync(sidecar, "utf8");
+		assert.match(text, /# EEGDataScience Provenance — flow-recovery-s01/);
+		assert.match(text, /## 2026-07-15T14:32:11\+08:00 — analyze/);
+		assert.match(text, /## 2026-07-15T14:35:02\+08:00 — neurolink_dashboard/);
+		assert.match(text, /verification: unverified/);
+		assert.match(text, /verification: inferred/);
+	} finally {
+		process.chdir(origCwd);
+		rmSync(dir, { recursive: true, force: true });
+	}
+});
+
+test("appendEegdsProvenance uses default slug 'eegds-default' when slug is empty", () => {
+	const dir = mkdtempSync(join(tmpdir(), "eegds-prov-default-"));
+	const origCwd = process.cwd();
+	try {
+		process.chdir(dir);
+		appendEegdsProvenance("", {
+			timestamp: "2026-07-15T14:32:11+08:00",
+			action: "health_check",
+			endpoint: "GET /api/neurolink/status",
+			params: {},
+			verification: "verified",
+		});
+		const sidecar = join(dir, "outputs", "eegds-default.provenance.md");
+		assert.equal(existsSync(sidecar), true);
+	} finally {
+		process.chdir(origCwd);
+		rmSync(dir, { recursive: true, force: true });
+	}
+});
+
+test("validateWorkspaceFile rejects path outside workspace", () => {
+	const dir = mkdtempSync(join(tmpdir(), "eegds-ws-"));
+	const origCwd = process.cwd();
+	try {
+		process.chdir(dir);
+		const outside = join(dir, "..", "..", "etc", "passwd");
+		const result = validateWorkspaceFile(outside);
+		assert.equal(result.ok, false);
+		assert.equal(result.error, "file_outside_workspace");
+	} finally {
+		process.chdir(origCwd);
+		rmSync(dir, { recursive: true, force: true });
+	}
+});
+
+test("validateWorkspaceFile rejects non-existent file", () => {
+	const dir = mkdtempSync(join(tmpdir(), "eegds-ws-2-"));
+	const origCwd = process.cwd();
+	try {
+		process.chdir(dir);
+		const result = validateWorkspaceFile(join(dir, "missing.csv"));
+		assert.equal(result.ok, false);
+		assert.equal(result.error, "file_not_found");
+	} finally {
+		process.chdir(origCwd);
+		rmSync(dir, { recursive: true, force: true });
+	}
+});
+
+test("writeEegdsResultFile writes JSON to outputs/<slug>/ and returns relative path", () => {
+	const dir = mkdtempSync(join(tmpdir(), "eegds-write-"));
+	const origCwd = process.cwd();
+	try {
+		process.chdir(dir);
+		const rel = writeEegdsResultFile("batch-20260715", "eegds-batch-progress.json", { status: "done" });
+		assert.equal(rel, "outputs/batch-20260715/eegds-batch-progress.json");
+		const text = readFileSync(join(dir, rel), "utf8");
+		assert.equal(JSON.parse(text).status, "done");
+	} finally {
+		process.chdir(origCwd);
+		rmSync(dir, { recursive: true, force: true });
+	}
 });
