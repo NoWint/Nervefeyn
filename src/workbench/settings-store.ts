@@ -88,6 +88,22 @@ export type WorkbenchMemoryCategory = {
 	updatedAt: string;
 };
 
+export type EegdsSettings = {
+	baseUrl: string;
+	timeoutMs: number;
+	batchPollIntervalMs: number;
+	batchMaxPollMs: number;
+	autoHealthCheck: boolean;
+};
+
+export const EEGDS_DEFAULT_SETTINGS: EegdsSettings = {
+	baseUrl: "http://localhost:18765",
+	timeoutMs: 60_000,
+	batchPollIntervalMs: 2_000,
+	batchMaxPollMs: 900_000,
+	autoHealthCheck: true,
+};
+
 export type WorkbenchSettings = {
 	schema: "feynman.workbenchSettings.v1";
 	customConnectors: WorkbenchCustomConnector[];
@@ -97,6 +113,7 @@ export type WorkbenchSettings = {
 	computeProviderPreferences: WorkbenchComputeProviderPreference[];
 	permissionGrants: WorkbenchPermissionGrant[];
 	memoryCategories: WorkbenchMemoryCategory[];
+	eegds: EegdsSettings;
 	updatedAt: string;
 };
 
@@ -120,6 +137,7 @@ function emptySettings(): WorkbenchSettings {
 		computeProviderPreferences: [],
 		permissionGrants: [],
 		memoryCategories: [],
+		eegds: { ...EEGDS_DEFAULT_SETTINGS },
 		updatedAt: nowIso(),
 	};
 }
@@ -303,6 +321,19 @@ function normalizeMemoryCategory(record: Record<string, unknown>): WorkbenchMemo
 	};
 }
 
+function normalizeEegdsSettings(value: unknown): EegdsSettings {
+	const record = recordObject(value);
+	const envUrl = process.env.NERVEFEYN_EEGDS_URL?.trim();
+	const envTimeout = process.env.NERVEFEYN_EEGDS_TIMEOUT_MS?.trim();
+	const parsedTimeout = envTimeout && Number.isFinite(Number(envTimeout)) ? Number(envTimeout) : undefined;
+	const baseUrl = envUrl ?? stringValue(record.baseUrl) ?? EEGDS_DEFAULT_SETTINGS.baseUrl;
+	const timeoutMs = parsedTimeout ?? (typeof record.timeoutMs === "number" && Number.isFinite(record.timeoutMs) ? record.timeoutMs : EEGDS_DEFAULT_SETTINGS.timeoutMs);
+	const batchPollIntervalMs = typeof record.batchPollIntervalMs === "number" && Number.isFinite(record.batchPollIntervalMs) ? record.batchPollIntervalMs : EEGDS_DEFAULT_SETTINGS.batchPollIntervalMs;
+	const batchMaxPollMs = typeof record.batchMaxPollMs === "number" && Number.isFinite(record.batchMaxPollMs) ? record.batchMaxPollMs : EEGDS_DEFAULT_SETTINGS.batchMaxPollMs;
+	const autoHealthCheck = typeof record.autoHealthCheck === "boolean" ? record.autoHealthCheck : EEGDS_DEFAULT_SETTINGS.autoHealthCheck;
+	return { baseUrl, timeoutMs, batchPollIntervalMs, batchMaxPollMs, autoHealthCheck };
+}
+
 export function readWorkbenchSettings(workingDir: string): WorkbenchSettings {
 	const path = settingsPath(workingDir);
 	if (!existsSync(path)) return emptySettings();
@@ -317,6 +348,7 @@ export function readWorkbenchSettings(workingDir: string): WorkbenchSettings {
 			computeProviderPreferences: collectionArray(parsed.computeProviderPreferences, normalizeComputeProviderPreference),
 			permissionGrants: collectionArray(parsed.permissionGrants, normalizePermissionGrant),
 			memoryCategories: collectionArray(parsed.memoryCategories, normalizeMemoryCategory),
+			eegds: normalizeEegdsSettings(parsed.eegds),
 			updatedAt: stringValue(parsed.updatedAt) ?? nowIso(),
 		};
 	} catch {
