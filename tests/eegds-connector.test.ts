@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import { afterEach, beforeEach, test } from "node:test";
 import { tmpdir } from "node:os";
-import { mkdtempSync, readFileSync, rmSync, existsSync } from "node:fs";
-import { join } from "node:path";
+import { mkdtempSync, readFileSync, rmSync, existsSync, writeFileSync, mkdirSync } from "node:fs";
+import { dirname, join } from "node:path";
 
-import { loadEegdsSettings, resetEegdsHealthCache, eegdsHealthCheck, appendEegdsProvenance, validateWorkspaceFile, writeEegdsResultFile } from "../extensions/research-tools/eegds-connector.js";
+import { loadEegdsSettings, resetEegdsHealthCache, eegdsHealthCheck, appendEegdsProvenance, validateWorkspaceFile, writeEegdsResultFile, handleEegdsAction } from "../extensions/research-tools/eegds-connector.js";
 
 function jsonResponse(body: unknown, status = 200): Response {
 	return new Response(JSON.stringify(body), {
@@ -200,3 +200,131 @@ test("writeEegdsResultFile writes JSON to outputs/<slug>/ and returns relative p
 		rmSync(dir, { recursive: true, force: true });
 	}
 });
+
+test("handleEegdsAction health_check success returns ok with baseUrl and latencyMs", async () => {
+	globalThis.fetch = async (input) => {
+		const url = new URL(String(input));
+		if (url.pathname === "/api/neurolink/status") return jsonResponse({ connected: false });
+		throw new Error("unexpected");
+	};
+	const result = await handleEegdsAction({ action: "health_check" });
+	assert.equal(result.ok, true);
+	assert.equal(result.baseUrl, "http://localhost:18765");
+	assert.equal(typeof result.latencyMs, "number");
+});
+
+test("handleEegdsAction analyze success extracts summary and lands results.json + provenance", async () => {
+	const dir = mkdtempSync(join(tmpdir(), "eegds-analyze-"));
+	const origCwd = process.cwd();
+	try {
+		process.chdir(dir);
+		// Create the source CSV inside workspace
+		const csvRel = "data/recordings/test.csv";
+		const csvAbs = join(dir, csvRel);
+		ensureTestDir(join(dir, "data/recordings"));
+		writeTestFile(csvAbs, "time,ch1,ch2\n0,1,2\n");
+
+		let uploadSeen = false;
+		let analyzeSeen = false;
+		globalThis.fetch = async (input, init) => {
+			const url = new URL(String(input));
+			if (url.pathname === "/api/neurolink/status") return jsonResponse({ connected: false });
+			if (url.pathname === "/api/upload") {
+				uploadSeen = true;
+				return jsonResponse({ filepath: "test.csv", format: "csv", n_channels: 2, fs: 120 });
+			}
+			if (url.pathname === "/api/analyze") {
+				analyzeSeen = true;
+				return jsonResponse({
+					recovery_time_sec: 42.3,
+					flow_index: 0.68,
+					band_powers: { delta: 10, theta: 8, alpha: 12, beta: 6, gamma: 2 },
+					focus_avg: 0.71,
+					artifact_ratio: 0.07,
+					conditions: ["AtoA"],
+					viz_data: { huge: new Array(1000).fill(0) },
+					topomap_data: { huge: new Array(800).fill(0) },
+				});
+			}
+			throw new Error(`unexpected ${url.pathname}`);
+		};
+		const result = await handleEegdsAction({ action: "analyze", filepath: csvRel, slug: "flow-s01", subject: "S01", condition: "AtoA" });
+		assert.equal(result.ok, true);
+		assert.equal(uploadSeen, true);
+		assert.equal(analyzeSeen, true);
+		assert.equal(result.recovery_time_sec, 42.3);
+		assert.equal(result.flow_index, 0.68);
+		assert.equal(result.focus_avg, 0.71);
+		assert.equal(result.artifact_ratio, 0.07);
+		assert.equal(result.results_file, "outputs/flow-s01/eegds-results.json");
+		assert.equal(existsSync(join(dir, result.results_file)), true);
+		const sidecar = join(dir, "outputs", "flow-s01.provenance.md");
+		assert.equal(existsSync(sidecar), true);
+		assert.match(readFileSync(sidecar, "utf8"), /## .* — analyze/);
+	} finally {
+		process.chdir(origCwd);
+		rmSync(dir, { recursive: true, force: true });
+	}
+});
+
+test("handleEegdsAction analyze file_not_found", async () => {
+	const dir = mkdtempSync(join(tmpdir(), "eegds-analyze-404-"));
+	const origCwd = process.cwd();
+	try {
+		process.chdir(dir);
+		globalThis.fetch = async () => jsonResponse({ connected: false }); // only status endpoint called
+		const result = await handleEegdsAction({ action: "analyze", filepath: "missing.csv" });
+		assert.equal(result.ok, false);
+		assert.equal(result.error, "file_not_found");
+	} finally {
+		process.chdir(origCwd);
+		rmSync(dir, { recursive: true, force: true });
+	}
+});
+
+test("handleEegdsAction analyze file_outside_workspace", async () => {
+	const dir = mkdtempSync(join(tmpdir(), "eegds-analyze-outside-"));
+	const origCwd = process.cwd();
+	try {
+		process.chdir(dir);
+		globalThis.fetch = async () => jsonResponse({ connected: false });
+		const result = await handleEegdsAction({ action: "analyze", filepath: "../../etc/passwd" });
+		assert.equal(result.ok, false);
+		assert.equal(result.error, "file_outside_workspace");
+	} finally {
+		process.chdir(origCwd);
+		rmSync(dir, { recursive: true, force: true });
+	}
+});
+
+test("handleEegdsAction analyze eegds_http_error on 500", async () => {
+	const dir = mkdtempSync(join(tmpdir(), "eegds-analyze-500-"));
+	const origCwd = process.cwd();
+	try {
+		process.chdir(dir);
+		const csvAbs = join(dir, "data.csv");
+		writeTestFile(csvAbs, "time,ch1\n0,1\n");
+		globalThis.fetch = async (input) => {
+			const url = new URL(String(input));
+			if (url.pathname === "/api/neurolink/status") return jsonResponse({ connected: false });
+			if (url.pathname === "/api/upload") return jsonResponse({ filepath: "data.csv", format: "csv", n_channels: 1, fs: 120 });
+			if (url.pathname === "/api/analyze") return new Response("internal error", { status: 500 });
+			throw new Error("unexpected");
+		};
+		const result = await handleEegdsAction({ action: "analyze", filepath: "data.csv" });
+		assert.equal(result.ok, false);
+		assert.equal(result.error, "eegds_http_error");
+	} finally {
+		process.chdir(origCwd);
+		rmSync(dir, { recursive: true, force: true });
+	}
+});
+
+// Test helpers used by multiple tests
+function ensureTestDir(path: string): void {
+	if (!existsSync(path)) mkdirSync(path, { recursive: true });
+}
+function writeTestFile(path: string, content: string): void {
+	ensureTestDir(dirname(path));
+	writeFileSync(path, content);
+}

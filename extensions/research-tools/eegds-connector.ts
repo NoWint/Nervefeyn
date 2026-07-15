@@ -203,3 +203,183 @@ function localIsoTimestamp(): string {
 	const tz = d.getTimezoneOffset() <= 0 ? `+${String(-d.getTimezoneOffset() / 60).padStart(2, "0")}:00` : `-${String(d.getTimezoneOffset() / 60).padStart(2, "0")}:00`;
 	return local.toISOString().replace("T", "T").replace(/\.\d{3}Z$/, "") + tz;
 }
+
+type EegdsActionParams = {
+	action: EegdsAction;
+	slug?: string;
+	filepath?: string;
+	subject?: string;
+	condition?: string;
+	hp?: number;
+	lp?: number;
+	notch?: number;
+	window_sec?: number;
+	tolerance?: number;
+	n_samples?: number;
+	files?: string[];
+	assignments?: Array<{ filename: string; subject: string; condition: string }>;
+	batch_id?: string;
+	board_id?: "synthetic" | "cyton" | "daisy" | "ganglion";
+	serial_port?: string;
+	mac_address?: string;
+};
+
+async function parseJsonSafe(response: Response): Promise<unknown> {
+	try {
+		return await response.json();
+	} catch {
+		const text = await response.text().catch(() => "");
+		throw new Error(`Failed to parse EEGDataScience response: ${text.slice(0, 200)}`);
+	}
+}
+
+async function handleHealthCheck(_params: EegdsActionParams, slug: string): Promise<EegdsResult> {
+	const check = await eegdsHealthCheck({ force: true });
+	if (!check.ok) {
+		appendEegdsProvenance(slug, {
+			timestamp: localIsoTimestamp(),
+			action: "health_check",
+			endpoint: "GET /api/neurolink/status",
+			params: {},
+			verification: "blocked",
+			error: check.error,
+		});
+		return check;
+	}
+	appendEegdsProvenance(slug, {
+		timestamp: localIsoTimestamp(),
+		action: "health_check",
+		endpoint: "GET /api/neurolink/status",
+		params: {},
+		summary: { baseUrl: check.baseUrl, latencyMs: check.latencyMs },
+		verification: "verified",
+	});
+	return { ok: true, baseUrl: check.baseUrl, latencyMs: check.latencyMs };
+}
+
+async function handleAnalyze(params: EegdsActionParams, slug: string): Promise<EegdsResult> {
+	const settings = loadEegdsSettings();
+	const filepath = params.filepath;
+	if (!filepath) {
+		return { ok: false, error: "eegds_http_error", message: "analyze requires filepath" };
+	}
+	const validation = validateWorkspaceFile(filepath);
+	if (!validation.ok) {
+		appendEegdsProvenance(slug, {
+			timestamp: localIsoTimestamp(),
+			action: "analyze",
+			endpoint: "POST /api/upload + POST /api/analyze",
+			params: { filepath },
+			verification: "blocked",
+			error: validation.error,
+		});
+		return validation;
+	}
+	const healthErr = await ensureHealthy();
+	if (healthErr) {
+		appendEegdsProvenance(slug, {
+			timestamp: localIsoTimestamp(),
+			action: "analyze",
+			endpoint: "POST /api/upload + POST /api/analyze",
+			params: { filepath },
+			verification: "blocked",
+			error: healthErr.error,
+		});
+		return healthErr;
+	}
+	const fileBuffer = readFileSync(validation.absPath);
+	// 1) multipart upload
+	const uploadBoundary = `eegds-${randomUUID()}`;
+	const uploadBody = new Uint8Array([
+		...new TextEncoder().encode(`--${uploadBoundary}\r\nContent-Disposition: form-data; name="file"; filename="${resolvePath(filepath).split("/").pop()}"\r\nContent-Type: application/octet-stream\r\n\r\n`),
+		...fileBuffer,
+		...new TextEncoder().encode(`\r\n--${uploadBoundary}--\r\n`),
+	]);
+	const uploadUrl = new URL("/api/upload", settings.baseUrl);
+	const uploadRes = await eegdsFetch(uploadUrl, {
+		method: "POST",
+		headers: { "content-type": `multipart/form-data; boundary=${uploadBoundary}` },
+		body: uploadBody,
+	});
+	if (!uploadRes.ok) {
+		const body = await uploadRes.text().catch(() => "");
+		const err = { ok: false, error: "eegds_http_error", message: `EEGDataScience returned ${uploadRes.status}: ${body.slice(0, 200)}` } as EegdsError;
+		appendEegdsProvenance(slug, { timestamp: localIsoTimestamp(), action: "analyze", endpoint: "POST /api/upload", params: { filepath }, verification: "blocked", error: err.message });
+		return err;
+	}
+	const uploadJson = await parseJsonSafe(uploadRes) as Record<string, unknown>;
+	// 2) POST /api/analyze with filters + upload metadata
+	const analyzeBody = {
+		filepath: uploadJson.filepath ?? resolvePath(filepath).split("/").pop(),
+		format: uploadJson.format,
+		subject: params.subject,
+		condition: params.condition,
+		hp: params.hp,
+		lp: params.lp,
+		notch: params.notch,
+		window_sec: params.window_sec,
+		tolerance: params.tolerance,
+	};
+	const analyzeUrl = new URL("/api/analyze", settings.baseUrl);
+	const analyzeRes = await eegdsFetch(analyzeUrl, {
+		method: "POST",
+		headers: { "content-type": "application/json" },
+		body: JSON.stringify(analyzeBody),
+	});
+	if (!analyzeRes.ok) {
+		const body = await analyzeRes.text().catch(() => "");
+		const err = { ok: false, error: "eegds_http_error", message: `EEGDataScience returned ${analyzeRes.status}: ${body.slice(0, 200)}` } as EegdsError;
+		appendEegdsProvenance(slug, { timestamp: localIsoTimestamp(), action: "analyze", endpoint: "POST /api/analyze", params: analyzeBody, verification: "blocked", error: err.message });
+		return err;
+	}
+	const raw = await parseJsonSafe(analyzeRes) as Record<string, unknown>;
+	const resultsFile = writeEegdsResultFile(slug, "eegds-results.json", JSON.stringify(raw, null, 2));
+	const bandPowers = (raw.band_powers ?? {}) as Record<string, number>;
+	const summary: Record<string, unknown> = {
+		recovery_time_sec: raw.recovery_time_sec,
+		flow_index: raw.flow_index,
+		band_powers: {
+			delta: bandPowers.delta,
+			theta: bandPowers.theta,
+			alpha: bandPowers.alpha,
+			beta: bandPowers.beta,
+			gamma: bandPowers.gamma,
+		},
+		focus_avg: raw.focus_avg,
+		artifact_ratio: raw.artifact_ratio,
+		conditions: raw.conditions,
+		results_file: resultsFile,
+	};
+	appendEegdsProvenance(slug, {
+		timestamp: localIsoTimestamp(),
+		action: "analyze",
+		endpoint: "POST /api/upload + POST /api/analyze",
+		params: analyzeBody,
+		sourceFile: filepath,
+		resultFile: resultsFile,
+		summary,
+		verification: "unverified",
+	});
+	return { ok: true, ...summary };
+}
+
+export async function handleEegdsAction(params: EegdsActionParams): Promise<EegdsResult> {
+	const slug = params.slug ?? "";
+	try {
+		switch (params.action) {
+			case "health_check":
+				return await handleHealthCheck(params, slug);
+			case "analyze":
+				return await handleAnalyze(params, slug);
+			default:
+				return { ok: false, error: "eegds_http_error", message: `Unknown action: ${params.action}` };
+		}
+	} catch (err) {
+		// parseJsonSafe throws Error("Failed to parse EEGDataScience response: <snippet>") — convert to eegds_parse_error.
+		const message = err instanceof Error ? err.message : String(err);
+		if (message.startsWith("Failed to parse EEGDataScience response")) {
+			return { ok: false, error: "eegds_parse_error", message };
+		}
+		return { ok: false, error: "eegds_http_error", message };
+	}
+}
