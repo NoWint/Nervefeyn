@@ -5,6 +5,7 @@ import type {
 	WorkbenchResource,
 	WorkbenchResourceGroup,
 } from "./types.js";
+import { loadEegdsSettings } from "../../extensions/research-tools/eegds-connector.js";
 
 const LOCAL_USER_ID = "local-workbench";
 
@@ -97,6 +98,17 @@ export function buildWorkbenchCapabilitySettings({
 }): WorkbenchCapabilitySetting[] {
 	const { settingsUpdatedAt, settingsUpdatedById } = buildSettingsUpdatedById(workingDir);
 	const computeEnabled = computeEnabledByResourceId(compute);
+	const eegdsSettings = loadEegdsSettings();
+	const eegdsCapability: WorkbenchCapabilitySetting = {
+		userId: LOCAL_USER_ID,
+		kind: "eegds",
+		key: "default",
+		enabled: true,
+		updatedAt: settingsUpdatedAt,
+		updatedAtMs: Date.parse(settingsUpdatedAt) || 0,
+		source: "local",
+		status: "configured",
+	};
 	return resources
 		.flatMap((group) =>
 			group.resources.map((resource) =>
@@ -109,5 +121,6 @@ export function buildWorkbenchCapabilitySettings({
 				})
 			)
 		)
+		.concat([eegdsCapability])
 		.sort((a, b) => a.kind.localeCompare(b.kind) || a.key.localeCompare(b.key));
 }

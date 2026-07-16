@@ -4,7 +4,8 @@ import { tmpdir } from "node:os";
 import { mkdtempSync, readFileSync, rmSync, existsSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 
-import { loadEegdsSettings, resetEegdsHealthCache, eegdsHealthCheck, appendEegdsProvenance, validateWorkspaceFile, writeEegdsResultFile, handleEegdsAction } from "../extensions/research-tools/eegds-connector.js";
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { loadEegdsSettings, resetEegdsHealthCache, eegdsHealthCheck, appendEegdsProvenance, validateWorkspaceFile, writeEegdsResultFile, handleEegdsAction, registerEegdsConnector } from "../extensions/research-tools/eegds-connector.js";
 
 function jsonResponse(body: unknown, status = 200): Response {
 	return new Response(JSON.stringify(body), {
@@ -496,3 +497,52 @@ function writeTestFile(path: string, content: string): void {
 	ensureTestDir(dirname(path));
 	writeFileSync(path, content);
 }
+
+test("registerEegdsConnector registers a tool named 'feynman_eegds' with 11-action schema", () => {
+	const registered: Array<{ name: string; parameters: unknown }> = [];
+	const fakePi = {
+		registerTool(tool: { name: string; parameters: unknown }) {
+			registered.push({ name: tool.name, parameters: tool.parameters });
+		},
+		on() {},
+	} as unknown as ExtensionAPI;
+	registerEegdsConnector(fakePi);
+	assert.equal(registered.length, 1);
+	assert.equal(registered[0].name, "feynman_eegds");
+	// Verify the action schema includes all 11 actions
+	const params = registered[0].parameters as { properties: { action: { enum?: string[] } } };
+	const actions = params.properties?.action?.enum ?? [];
+	assert.equal(actions.length, 11);
+	assert.ok(actions.includes("health_check"));
+	assert.ok(actions.includes("analyze"));
+	assert.ok(actions.includes("neurolink_dashboard"));
+	assert.ok(actions.includes("neurolink_last_analysis"));
+	assert.ok(actions.includes("neurolink_recent_eeg"));
+	assert.ok(actions.includes("batch_analyze"));
+	assert.ok(actions.includes("batch_progress"));
+	assert.ok(actions.includes("batch_report"));
+	assert.ok(actions.includes("realtime_status"));
+	assert.ok(actions.includes("realtime_start"));
+	assert.ok(actions.includes("realtime_stop"));
+});
+
+test("registerEegdsConnector execute routes to handleEegdsAction", async () => {
+	const captured: { value: { name: string; execute: (id: string, params: Record<string, unknown>) => Promise<unknown> } | null } = { value: null };
+	const fakePi = {
+		registerTool(tool: { name: string; execute: (id: string, params: Record<string, unknown>) => Promise<unknown> }) {
+			captured.value = { name: tool.name, execute: tool.execute };
+		},
+		on() {},
+	} as unknown as ExtensionAPI;
+	registerEegdsConnector(fakePi);
+	assert.equal(captured.value?.name, "feynman_eegds");
+	globalThis.fetch = async (input) => {
+		const url = new URL(String(input));
+		if (url.pathname === "/api/neurolink/status") return jsonResponse({ connected: false });
+		throw new Error("unexpected");
+	};
+	const result = await captured.value!.execute("call-1", { action: "health_check" });
+	const r = result as { content: Array<{ type: string; text: string }>; details: Record<string, unknown> };
+	assert.equal(r.content[0].type, "text");
+	assert.equal(r.details.ok, true);
+});

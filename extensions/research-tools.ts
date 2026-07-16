@@ -13,6 +13,7 @@ import { registerScienceDatabaseTools } from "./research-tools/science-databases
 import { registerModelEndpointTools } from "./research-tools/model-endpoints.js";
 import { registerWorkbenchConnectorTools } from "./research-tools/workbench-connectors.js";
 import { registerWorkbenchContextTool } from "./research-tools/workbench-context.js";
+import { registerEegdsConnector } from "./research-tools/eegds-connector.js";
 
 export default function researchTools(pi: ExtensionAPI): void {
 	const cache: { agentSummaryPromise?: Promise<{ agents: string[]; chains: string[] }> } = {};
@@ -35,4 +36,5 @@ export default function researchTools(pi: ExtensionAPI): void {
 	registerModelEndpointTools(pi);
 	registerWorkbenchConnectorTools(pi);
 	registerWorkbenchContextTool(pi);
+	registerEegdsConnector(pi);
 }

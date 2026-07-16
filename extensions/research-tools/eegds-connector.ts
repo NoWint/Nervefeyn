@@ -645,3 +645,75 @@ export async function handleEegdsAction(params: EegdsActionParams): Promise<Eegd
 		return { ok: false, error: "eegds_http_error", message };
 	}
 }
+
+// TypeBox's Type.Union([Type.Literal(...)]) emits `anyOf: [{const:...}]`, but the
+// tool schema contract (and tests) expect a flat `enum: [...]`. Type.Unsafe produces
+// the canonical JSON Schema `{type:"string", enum:[...]}` shape while staying a valid TSchema.
+const EEGDS_ACTION_SCHEMA = Type.Unsafe<EegdsAction>({
+	type: "string",
+	enum: [
+		"health_check",
+		"analyze",
+		"neurolink_dashboard",
+		"neurolink_last_analysis",
+		"neurolink_recent_eeg",
+		"batch_analyze",
+		"batch_progress",
+		"batch_report",
+		"realtime_status",
+		"realtime_start",
+		"realtime_stop",
+	],
+});
+
+export function registerEegdsConnector(pi: ExtensionAPI): void {
+	pi.registerTool({
+		name: "feynman_eegds",
+		label: "EEGDataScience Connector",
+		description:
+			"Wrap the user's EEGDataScience FastAPI platform (http://localhost:18765 by default). 11 actions: health_check (ping the platform), analyze (upload a CSV from the workspace and run the 5-module offline pipeline — flow_recovery/spectrum/erp/ersp/topomap/focus/artifact/stats_rigor — returning recovery_time_sec / flow_index / band_powers / focus_avg / artifact_ratio summary), neurolink_dashboard (live NeuroLink status: connected / flow_state / buffer_duration_sec / last_analysis / auto_analysis), neurolink_last_analysis (last live-analysis results), neurolink_recent_eeg (recent EEG samples, written to file not returned inline), batch_analyze (multipart upload of multiple files + subject/condition assignments, returns batch_id immediately — async), batch_progress (poll batch status: running/done/failed), batch_report (download ZIP report once batch is done), realtime_status (BrainFlow board state), realtime_start (start BrainFlow acquisition — synthetic/cyton/daisy/ganglion; non-synthetic requires serial_port or mac_address), realtime_stop. All results land to outputs/<slug>/eegds-*.json|zip; every call appends to outputs/<slug>.provenance.md. Configure via eegds.baseUrl / eegds.timeoutMs / eegds.autoHealthCheck in workbench settings or NERVEFEYN_EEGDS_URL / NERVEFEYN_EEGDS_TIMEOUT_MS env vars.",
+		promptSnippet: "Call feynman_eegds to drive the user's EEGDataScience platform: analyze a workspace CSV for flow recovery time, query NeuroLink live status, run batch analyses over data/recordings/, or control BrainFlow acquisition. Always pass a slug to namespace outputs/<slug>/. Poll batch_progress after batch_analyze; pull ZIP via batch_report once status='done'.",
+		promptGuidelines: [
+			"Use feynman_eegds for any task that names EEGDataScience, NeuroLink, BrainFlow, flow recovery, batch analysis of EEG recordings, or live EEG acquisition. Always pass a descriptive slug (e.g., 'flow-recovery-s01', 'batch-20260715') so outputs are namespaced.",
+			"For analyze: pass filepath relative to workspace root. The connector validates it is inside the workspace and uploads it. Pass subject/condition/hp/lp/notch/window_sec/tolerance when running controlled comparisons; otherwise defaults apply.",
+			"For batch_analyze: files[] and assignments[] lengths must match. Each assignment is {filename, subject, condition}. The call returns immediately with batch_id — do NOT block. Poll with batch_progress every ~2s. Only call batch_report after status='done'.",
+			"For realtime_start with board_id='cyton' or 'daisy': pass serial_port. For 'ganglion': pass mac_address. 'synthetic' needs no hardware params. The connector validates before sending the request — missing params return missing_hardware_params without contacting the board.",
+			"Every call appends a Markdown entry to outputs/<slug>.provenance.md with timestamp, endpoint, params, summary, and verification status (verified/unverified/blocked/inferred). When the agent makes claims based on eegds results, the provenance sidecar is the audit trail.",
+		],
+		parameters: Type.Object({
+			action: EEGDS_ACTION_SCHEMA,
+			slug: Type.Optional(Type.String({ description: "Output namespace. Defaults to 'eegds-default'. All files land under outputs/<slug>/ and provenance to outputs/<slug>.provenance.md." })),
+			filepath: Type.Optional(Type.String({ description: "Workspace-relative path to CSV for analyze. Must be inside workspace root." })),
+			subject: Type.Optional(Type.String({ description: "Subject label for analyze (e.g., 'S01')." })),
+			condition: Type.Optional(Type.String({ description: "Condition label for analyze (e.g., 'AtoA', 'AtoB')." })),
+			hp: Type.Optional(Type.Number({ description: "High-pass filter cutoff Hz for analyze." })),
+			lp: Type.Optional(Type.Number({ description: "Low-pass filter cutoff Hz for analyze." })),
+			notch: Type.Optional(Type.Number({ description: "Notch filter Hz for analyze." })),
+			window_sec: Type.Optional(Type.Number({ description: "Window length seconds for flow recovery analysis." })),
+			tolerance: Type.Optional(Type.Number({ description: "Tolerance ratio (0-1) for flow recovery threshold." })),
+			n_samples: Type.Optional(Type.Number({ description: "Sample count for neurolink_recent_eeg. Default 1200, max 5000." })),
+			files: Type.Optional(Type.Array(Type.String(), { description: "Array of workspace-relative CSV paths for batch_analyze." })),
+			assignments: Type.Optional(Type.Array(Type.Object({
+				filename: Type.String(),
+				subject: Type.String(),
+				condition: Type.String(),
+			}), { description: "Per-file assignments for batch_analyze. Length must match files." })),
+			batch_id: Type.Optional(Type.String({ description: "Batch identifier from batch_analyze, used by batch_progress and batch_report." })),
+			board_id: Type.Optional(Type.Union([
+				Type.Literal("synthetic"),
+				Type.Literal("cyton"),
+				Type.Literal("daisy"),
+				Type.Literal("ganglion"),
+			], { description: "BrainFlow board for realtime_start." })),
+			serial_port: Type.Optional(Type.String({ description: "Serial port for cyton/daisy (e.g., '/dev/ttyUSB0')." })),
+			mac_address: Type.Optional(Type.String({ description: "MAC address for ganglion (e.g., 'XX:XX:XX:XX:XX:XX')." })),
+		}),
+		async execute(_toolCallId, params) {
+			const result = await handleEegdsAction(params as EegdsActionParams);
+			return {
+				content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+				details: result,
+			};
+		},
+	});
+}
