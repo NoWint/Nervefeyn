@@ -10,10 +10,12 @@
 - 服务于:运行复现实验 + 声明核对(子项目 A,全链路研究闭环第一跳)
 - 验证:
   - verified: 27/27 单元测试通过;typecheck clean;build success
-  - verified: health_check 对运行中的 EEGDataScience 平台返回 200(latencyMs ~59ms)
-  - verified: upload multipart 契约正确(eeg_file 字段 + condition form 字段)
-  - blocked: analyze action 对 NeuroLink tab 分隔 CSV 返回 500 —— 平台侧 `_detect_brainflow_csv` 不识别带命名表头的 tab 分隔文件(仅支持纯数字表头或无表头 RAW),`load_eeg_full` 回退到 `pd.read_csv` 默认逗号分隔导致 ValueError。这是 EEGDataScience 平台 bug,非 connector 问题
-- 下一步:(1) EEGDataScience 平台修复 tab-CSV 识别(扩展 `_detect_brainflow_csv` 或 `load_eeg_full` fallback `sep='\t'`);(2) 子项目 B(eegds-flow-recovery skill)独立 spec
+  - verified: smoke test 对运行中的 EEGDataScience 平台全链路跑通 —— health_check(56ms)+ analyze(NeuroLink CSV 上传 + 5 模块全管线)+ results.json 落盘 + provenance sidecar 追加
+  - verified: 上传契约正确(eeg_file multipart 字段 + condition form 字段);analyze body 匹配 AnalyzeRequest 模型;summary 提取匹配 run_full_pipeline 返回结构
+  - inferred: neurolink_*/batch_*/realtime_* handlers 未经真实平台 smoke test(仅单元测试 mock 验证)
+- 平台侧修复(EEG-Science 仓库):`load_eeg_full` 加 `sep=None` 自动检测 tab 分隔;Timestamp 毫秒单位自动转秒(修复 fs=0 导致的 ZeroDivisionError)
+- 已知问题:`channels` 字段包含非 EEG 列(Index/Accel_X/Y/Z/Marker)—— 平台侧 `load_eeg_full` 应过滤至 EXG 通道,非 connector 问题
+- 下一步:子项目 B(eegds-flow-recovery skill)独立 spec
 
 ## 2026-07-14 — /ar 长线自主研究循环
 
