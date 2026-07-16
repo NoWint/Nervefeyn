@@ -271,12 +271,16 @@ async function handleAnalyze(params: EegdsActionParams, slug: string): Promise<E
 		return healthErr;
 	}
 	const fileBuffer = readFileSync(validation.absPath);
-	// 1) multipart upload
+	const filename = resolvePath(filepath).split("/").pop() ?? "eeg-upload.csv";
+	// condition is both the form field and the file identifier (eeg_{condition}.csv).
+	// Default to a slug-derived name so repeated calls don't collide.
+	const condition = params.condition?.trim() || `nervefeyn-${normalizeSlug(slug)}`;
+	// 1) multipart upload — EEGDataScience expects field name "eeg_file" + "condition" form field.
 	const uploadBoundary = `eegds-${randomUUID()}`;
 	const uploadBody = new Uint8Array([
-		...new TextEncoder().encode(`--${uploadBoundary}\r\nContent-Disposition: form-data; name="file"; filename="${resolvePath(filepath).split("/").pop()}"\r\nContent-Type: application/octet-stream\r\n\r\n`),
+		...new TextEncoder().encode(`--${uploadBoundary}\r\nContent-Disposition: form-data; name="eeg_file"; filename="${filename}"\r\nContent-Type: application/octet-stream\r\n\r\n`),
 		...fileBuffer,
-		...new TextEncoder().encode(`\r\n--${uploadBoundary}--\r\n`),
+		...new TextEncoder().encode(`\r\n--${uploadBoundary}\r\nContent-Disposition: form-data; name="condition"\r\n\r\n${condition}\r\n--${uploadBoundary}--\r\n`),
 	]);
 	const uploadUrl = new URL("/api/upload", settings.baseUrl);
 	const uploadRes = await eegdsFetch(uploadUrl, {
@@ -287,22 +291,17 @@ async function handleAnalyze(params: EegdsActionParams, slug: string): Promise<E
 	if (!uploadRes.ok) {
 		const body = await uploadRes.text().catch(() => "");
 		const err = { ok: false, error: "eegds_http_error", message: `EEGDataScience returned ${uploadRes.status}: ${body.slice(0, 200)}` } as EegdsError;
-		appendEegdsProvenance(slug, { timestamp: localIsoTimestamp(), action: "analyze", endpoint: "POST /api/upload", params: { filepath }, verification: "blocked", error: err.message });
+		appendEegdsProvenance(slug, { timestamp: localIsoTimestamp(), action: "analyze", endpoint: "POST /api/upload", params: { filepath, condition }, verification: "blocked", error: err.message });
 		return err;
 	}
-	const uploadJson = await parseJsonSafe(uploadRes) as Record<string, unknown>;
-	// 2) POST /api/analyze with filters + upload metadata
-	const analyzeBody = {
-		filepath: uploadJson.filepath ?? resolvePath(filepath).split("/").pop(),
-		format: uploadJson.format,
-		subject: params.subject,
-		condition: params.condition,
-		hp: params.hp,
-		lp: params.lp,
-		notch: params.notch,
-		window_sec: params.window_sec,
-		tolerance: params.tolerance,
-	};
+	// 2) POST /api/analyze — JSON body per AnalyzeRequest model (condition + filter params).
+	//    The API looks up the uploaded file by condition (eeg_{condition}.csv).
+	const analyzeBody: Record<string, unknown> = { condition };
+	if (params.hp !== undefined) analyzeBody.hp = params.hp;
+	if (params.lp !== undefined) analyzeBody.lp = params.lp;
+	if (params.notch !== undefined) analyzeBody.notch = params.notch;
+	if (params.window_sec !== undefined) analyzeBody.window_sec = params.window_sec;
+	if (params.tolerance !== undefined) analyzeBody.tolerance = params.tolerance;
 	const analyzeUrl = new URL("/api/analyze", settings.baseUrl);
 	const analyzeRes = await eegdsFetch(analyzeUrl, {
 		method: "POST",
@@ -317,27 +316,27 @@ async function handleAnalyze(params: EegdsActionParams, slug: string): Promise<E
 	}
 	const raw = await parseJsonSafe(analyzeRes) as Record<string, unknown>;
 	const resultsFile = writeEegdsResultFile(slug, "eegds-results.json", JSON.stringify(raw, null, 2));
-	const bandPowers = (raw.band_powers ?? {}) as Record<string, number>;
+	// Summary fields match run_full_pipeline() return shape (see EEG-Science/app/analysis/flow_recovery.py).
 	const summary: Record<string, unknown> = {
-		recovery_time_sec: raw.recovery_time_sec,
-		flow_index: raw.flow_index,
-		band_powers: {
-			delta: bandPowers.delta,
-			theta: bandPowers.theta,
-			alpha: bandPowers.alpha,
-			beta: bandPowers.beta,
-			gamma: bandPowers.gamma,
-		},
-		focus_avg: raw.focus_avg,
+		condition: raw.condition ?? condition,
+		recovery_time: raw.recovery_time,
 		artifact_ratio: raw.artifact_ratio,
-		conditions: raw.conditions,
+		attenuation: raw.attenuation,
+		band_powers: raw.band_powers,
+		recovery_per_feature: raw.recovery_per_feature,
+		baseline_means: raw.baseline_means,
+		event_times: raw.event_times,
+		duration_sec: raw.duration_sec,
+		n_samples: raw.n_samples,
+		channels: raw.channels,
+		metadata: raw.metadata,
 		results_file: resultsFile,
 	};
 	appendEegdsProvenance(slug, {
 		timestamp: localIsoTimestamp(),
 		action: "analyze",
 		endpoint: "POST /api/upload + POST /api/analyze",
-		params: analyzeBody,
+		params: { filepath, condition, ...analyzeBody },
 		sourceFile: filepath,
 		resultFile: resultsFile,
 		summary,

@@ -112,7 +112,7 @@ test("appendEegdsProvenance creates sidecar and appends entries with local timez
 			action: "analyze",
 			endpoint: "POST /api/analyze",
 			params: { subject: "S01" },
-			summary: { recovery_time_sec: 42.3 },
+			summary: { recovery_time: 42.3 },
 			verification: "unverified",
 			resultFile: "outputs/flow-recovery-s01/eegds-results.json",
 		});
@@ -227,36 +227,54 @@ test("handleEegdsAction analyze success extracts summary and lands results.json 
 
 		let uploadSeen = false;
 		let analyzeSeen = false;
+		let uploadBodyText = "";
+		let analyzeBodyText = "";
 		globalThis.fetch = async (input, init) => {
 			const url = new URL(String(input));
 			if (url.pathname === "/api/neurolink/status") return jsonResponse({ connected: false });
 			if (url.pathname === "/api/upload") {
 				uploadSeen = true;
-				return jsonResponse({ filepath: "test.csv", format: "csv", n_channels: 2, fs: 120 });
+				uploadBodyText = typeof init?.body === "string" ? init.body : new TextDecoder().decode(init?.body as Uint8Array);
+				return jsonResponse({ status: "uploaded", eeg_path: "/tmp/eeg_AtoA.csv", events_path: null, condition: "AtoA" });
 			}
 			if (url.pathname === "/api/analyze") {
 				analyzeSeen = true;
+				analyzeBodyText = typeof init?.body === "string" ? init.body : "";
 				return jsonResponse({
-					recovery_time_sec: 42.3,
-					flow_index: 0.68,
-					band_powers: { delta: 10, theta: 8, alpha: 12, beta: 6, gamma: 2 },
-					focus_avg: 0.71,
+					condition: "AtoA",
+					recovery_time: 42.3,
 					artifact_ratio: 0.07,
-					conditions: ["AtoA"],
+					attenuation: { alpha_rel: -12.5, beta_rel: 8.3 },
+					band_powers: { ch1: { alpha: 12.0, beta: 6.0 } },
+					recovery_per_feature: { alpha_rel: 38.1 },
+					baseline_means: { alpha_rel: 0.42 },
+					event_times: { recovery_start: 665.0 },
+					duration_sec: 600.0,
+					n_samples: 150000,
+					channels: ["ch1", "ch2"],
+					metadata: { source: "neurolink" },
 					viz_data: { huge: new Array(1000).fill(0) },
-					topomap_data: { huge: new Array(800).fill(0) },
 				});
 			}
 			throw new Error(`unexpected ${url.pathname}`);
 		};
-		const result = await handleEegdsAction({ action: "analyze", filepath: csvRel, slug: "flow-s01", subject: "S01", condition: "AtoA" });
+		const result = await handleEegdsAction({ action: "analyze", filepath: csvRel, slug: "flow-s01", condition: "AtoA" });
 		assert.equal(result.ok, true);
 		assert.equal(uploadSeen, true);
 		assert.equal(analyzeSeen, true);
-		assert.equal(result.recovery_time_sec, 42.3);
-		assert.equal(result.flow_index, 0.68);
-		assert.equal(result.focus_avg, 0.71);
+		// Upload multipart must use field name "eeg_file" + include "condition" form field
+		assert.match(uploadBodyText, /name="eeg_file"/);
+		assert.match(uploadBodyText, /name="condition"\r\n\r\nAtoA/);
+		// Analyze body is JSON with condition + no filepath/format/subject
+		const analyzeJson = JSON.parse(analyzeBodyText);
+		assert.equal(analyzeJson.condition, "AtoA");
+		assert.equal(analyzeJson.filepath, undefined);
+		assert.equal(analyzeJson.subject, undefined);
+		// Summary matches run_full_pipeline return shape
+		assert.equal(result.recovery_time, 42.3);
 		assert.equal(result.artifact_ratio, 0.07);
+		assert.equal(result.condition, "AtoA");
+		assert.equal(result.duration_sec, 600.0);
 		assert.equal(result.results_file, "outputs/flow-s01/eegds-results.json");
 		assert.equal(existsSync(join(dir, result.results_file)), true);
 		const sidecar = join(dir, "outputs", "flow-s01.provenance.md");
