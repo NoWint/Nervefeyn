@@ -356,6 +356,27 @@ export function readWorkbenchSettings(workingDir: string): WorkbenchSettings {
 	}
 }
 
+// Settings loader — env vars override settings-store, which overrides defaults.
+export function loadEegdsSettings(): EegdsSettings {
+	const fromStore = (() => {
+		try {
+			return readWorkbenchSettings(process.cwd()).eegds;
+		} catch {
+			return EEGDS_DEFAULT_SETTINGS;
+		}
+	})();
+	const envUrl = process.env.NERVEFEYN_EEGDS_URL?.trim();
+	const envTimeout = process.env.NERVEFEYN_EEGDS_TIMEOUT_MS?.trim();
+	const parsedTimeout = envTimeout && Number.isFinite(Number(envTimeout)) ? Number(envTimeout) : undefined;
+	return {
+		baseUrl: envUrl ?? fromStore.baseUrl,
+		timeoutMs: parsedTimeout ?? fromStore.timeoutMs,
+		batchPollIntervalMs: fromStore.batchPollIntervalMs,
+		batchMaxPollMs: fromStore.batchMaxPollMs,
+		autoHealthCheck: fromStore.autoHealthCheck,
+	};
+}
+
 function writeWorkbenchSettings(workingDir: string, settings: WorkbenchSettings): WorkbenchSettings {
 	const path = settingsPath(workingDir);
 	const next = { ...settings, schema: SETTINGS_SCHEMA, updatedAt: nowIso() };

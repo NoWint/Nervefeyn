@@ -5,7 +5,7 @@ import type {
 	WorkbenchResource,
 	WorkbenchResourceGroup,
 } from "./types.js";
-import { loadEegdsSettings } from "../../extensions/research-tools/eegds-connector.js";
+import { loadEegdsSettings } from "./settings-store.js";
 
 const LOCAL_USER_ID = "local-workbench";
 
