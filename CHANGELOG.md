@@ -4,6 +4,13 @@
 
 本文件用于跟踪时间线,而非 release notes。条目保持简短、事实、可操作。
 
+## 2026-07-15
+- slug: eegds-connector
+- 新增 EEGDataScience REST connector(eegds tool,11 action:health_check/analyze/neurolink_*/batch_*/realtime_*)
+- 服务于:运行复现实验 + 声明核对(子项目 A,全链路研究闭环第一跳)
+- 验证:unverified(待 npm test 全绿 + 手动启动 EEGDataScience 跑通后转 verified)
+- 下一步:子项目 B(eegds-flow-recovery skill)独立 spec
+
 ## 2026-07-14 — /ar 长线自主研究循环
 
 - verified: 新增 `prompts/ar.md`(267 行工作流 prompt)+ `skills/ar/SKILL.md`(技能描述)
@@ -3503,3 +3510,24 @@
 - Verified: Full `npm test` passed (`585/585`); `npm run typecheck`; `npm run build` with existing RDKit/3Dmol/patristic warnings; `npm run architecture:check` with existing split-debt warnings; root `npm audit --omit=dev` (`0 vulnerabilities`); website `npm run lint`, `npm run typecheck` (`0 errors`, `0 warnings`, `0 hints`), `npm run build` (`34 pages`), and `npm audit --omit=dev` (`0 vulnerabilities`); `git diff --check`; `npm pack --dry-run --json` (`entryCount: 401`, shasum `cc7a11600c6ebf36481195626203769be3c52dcb`); real tarball smoke from `/tmp/feynman-pack-smoke-uvbzpV/companion-ai-feynman-0.3.5.tgz` found bundled `pi-btw` files and passed `feynman --version`, `feynman --help`, `feynman packages list` showing `npm:pi-btw` in Core, and `feynman alpha status`.
 - Note: The first real-pack metadata parser hit the known mixed-log JSON shape after the tarball was created; the produced tarball was used directly for archive inspection and installed-package smoke.
 - Next: Commit or push only when explicitly authorized; otherwise keep the local `#185` fix plus unrelated workbench edits intact.
+
+### 2026-07-14 10:52 EDT — eegdata-analysis
+- **Iter 1 (基线)**: 创建 `analyze_eegdata.py`，加载 2 个 BrainFlow RAW 文件。发现：采样率 ~73.6 Hz (Ganglion BLE)，文件0 (28.7 min, 36.4% artifacts)，文件1 (25.0 min, 33.2% artifacts)。预处理后各通道 std ~53 μV。处理吞吐 ~100K rows/sec。✅
+- **Next**: Iter 2 — 滤波器参数调优 (hp=0.5/1/2 Hz 对比)
+### 2026-07-14 10:52 EDT — eegdata-analysis (cont.)
+- **Iter 2 (滤波)**: hp=0.5/1/2/5 Hz 对比 → 推荐 hp=1Hz (保留 theta, SNR=15dB)
+- **Iter 3 (Welch)**: window=1/2/4/8s → 推荐 4s (θ/α CV=1.28, 时间分辨率平衡)
+- **Iter 4 (伪迹)**: threshold=50/100/200/500 → 推荐 200μV (80% 有效数据)
+- **Iter 5 (特征提取)**: 2 个文件成功提取 6 指标时间序列 (2287+2030 windows)
+- 发现: Beta 相对功率 ~80%, Theta/Alpha mean ~1.05 (活跃认知状态)
+- **Next**: Iter 6 — 恢复检测灵敏度 (tolerance 3%/5%/8%)
+### 2026-07-14 10:52 EDT — eegdata-analysis (cont.)
+- **Iter 6 (恢复检测)**: 无事件标记无法触发恢复检测 (marker 通道全 0)
+- **Iter 7 (跨文件对比)**: Beta 主导 79-81%, Alpha 仅 1.9% (异常低)。Beta/Alpha 比值 40-43。3/6 指标在文件间统计显著。alpha-entropy 强相关 r=0.84。
+- **Next**: Iter 8 — 最终分析报告
+### 2026-07-14 10:52 EDT — eegdata-analysis (cont.)
+- **Iter 8 (完成)**: 8 轮 autoresearch 循环完成。4 个分析脚本 + 输出文件生成。
+- **技术发现**: Ganglion 实际采样率 73.6Hz (非 200Hz)。推荐 hp=1Hz, threshold=200μV, window=4s。Notch 不可用 (fs<100Hz)。
+- **科学发现**: Beta 主导 80% (Alpha 仅 2%)，Beta/Alpha 比值 40+ 为极值。相关性模式生理有效。
+- **关键局限**: 无事件标记无法触发恢复检测分析。需在后续记录中添加 markers。
+- **输出**: outputs/eegdata-features/ + outputs/eegdata-analysis/

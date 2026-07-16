@@ -3,7 +3,7 @@
     <img src="assets/hero.png" alt="Nervefeyn CLI" width="800" />
   </a>
 </p>
-<p align="center">开源 AI 研究代理 — 神经计算研究工作台。基于 Pi 运行时,内置论文搜索、文献综述、多代理深度调查、有界实验循环与长线自主研究。</p>
+<p align="center">开源 AI 研究代理 — 神经计算研究工作台。基于 Pi 运行时,内置论文搜索、文献综述、多代理深度调查、有界实验循环与长线自主研究。**EEGDataScience 实验平台对接(REST connector:离线分析/NeuroLink 状态/批量报告/BrainFlow 采集控制)**。</p>
 <p align="center">
   <a href="https://github.com/NoWint/Nervefeyn"><img alt="GitHub" src="https://img.shields.io/badge/repo-NoWint/Nervefeyn-181717?style=flat-square" /></a>
   <a href="https://github.com/NoWint/Nervefeyn/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/NoWint/Nervefeyn?style=flat-square" /></a>
@@ -86,6 +86,10 @@ $ nervefeyn replicate "chain-of-thought improves math"
 
 $ nervefeyn recipe "fine-tune a small model for math reasoning"
 → 从论文、数据集、文档与代码中找出可实施、已排名的 ML 训练 recipe
+
+$ nervefeyn "用 EEGDataScience 分析 data/recordings/NeuroLink_unknown_AtoA_20260714_135913.csv 的恢复时间"
+→ 调 eegds(action=analyze),上传文件,跑 5 模块全管线,返回 recovery_time/band_powers/focus 摘要
+  完整结果落 outputs/<slug>/eegds-results.json + provenance sidecar
 ```
 
 ---
@@ -129,6 +133,7 @@ $ nervefeyn recipe "fine-tune a small model for math reasoning"
 
 - **[AlphaXiv](https://www.alphaxiv.org/)** — 论文搜索、Q&A、代码阅读、注释(通过 Nervefeyn 的 `alpha` 工具与 `nervefeyn alpha` 命令)
 - **Nervefeyn Bio Tools** — Nervefeyn 自有的开放科学 connector 目录,覆盖文献、精确 OpenAlex work/citation/reference/author/venue 工作流、精确 arXiv 搜索与批量论文检索、PubMed 元数据、PMID/PMCID/DOI 转换、related-article 链接、citation 匹配、版权/license 检查、PMC 全文路由、bioRxiv/medRxiv preprint DOI 查找、日期/类别窗口、published-preprint 链接、funder/ROR 查找、使用/内容统计、Europe PMC 开放访问全文 section、citation 图、作者、venue、OA 状态、ClinicalTrials.gov 试验搜索、NCT 详情、sponsor 项目、eligibility 过滤、investigator 记录、endpoint 摘要、Grants.gov 精确机会搜索、FDA 标签、不良事件、召回、Drugs@FDA 申请、sponsor/status/route 计数、药理类别、generic-equivalent active-ingredient 集合、ChEMBL compound/drug/ADMET/bioactivity/mechanism/target 工作流、PubChem compound/search/similarity/bioassay/safety 工作流、ChEBI entity/ontology 工作流、BindingDB target/compound 工作流、可编辑 Ketcher 化学草图 seed、gene、BioMart、Ensembl lookup/xref/VEP/homology/sequence/overlap 工作流、MyGene query-many、OLS ontology、QuickGO 注释、UniProt entry、Reactome pathway、CellGuide、PanglaoDB marker genes 与 gene-to-cell-type 工作流、精确 Antibody Registry antibody/RRID/catalog/stat 工作流、reagent、cell-type、metabolomics、genome-track、UCSC 精确 track/chromosome/conservation/TFBS 工作流、UniBind TF-DNA binding、KEGG entry/search/link/ID-conversion 工作流、InterPro/Pfam 精确 domain architecture、entry、clan、family protein/proteome 模式、Human Protein Atlas 精确 gene/search 模式、STRING 精确 ID mapping、network、similarity 与 best-hit 工作流、可购买 ZINC compound、protein、predicted-structure、structure、EM-map、complex、interaction、精确 ENCODE/JASPAR/UniBind regulation 模式(experiments、biosamples、files、matrices、species/taxa/collections/releases、datasets 与 regional TFBS)、精确 ArrayExpress/GEO/MetaboLights/MGnify/PRIDE omics-archive 模式(experiments、samples、files、analyses、projects 与 protein evidence、metagenomics、chemical-ontology、chemistry、pathway)、精确 Rfam RNA family 元数据、accession/id 转换、seed alignment、covariance model、tree、region、structure-mapping 与 sequence-search 工作流、精确 gnomAD short variant、gene、region、liftover、ClinVar-mirror、structural 与 mitochondrial 工作流、精确 CADD variant/position/range 分数、精确 direct ClinVar search/accession/rsID 工作流、精确 dbSNP rsID/region 工作流、GWAS Catalog 精确 association/study/trait/SNP 工作流、eQTL Catalogue 精确 dataset 与 association 工作流、PheWeb/FinnGen PheWAS 工作流、GTEx dataset/tissue/sample/gene/expression/eQTL 工作流、tissue/protein-atlas、expression、human-genetics、cBioPortal study/detail/mutation-frequency/mutation/CNA/clinical-attribute 工作流、DepMap model/gene/dependency 工作流、CIViC gene/variant/evidence/assertion/profile/disease/therapy 工作流、ClinGen validity/dosage/actionability/classification 工作流、Open Targets disease-drug/disease-target/drug/search 工作流,以及 canceromics 来源
+- **Nervefeyn EEGDataScience Connector** — 对接用户 EEGDataScience FastAPI 平台的 `eegds` tool,11 个 action:离线分析(`analyze`,上传 CSV 跑 5 模块全管线,返回 recovery_time/band_powers/focus 摘要)、NeuroLink 状态查询(`neurolink_dashboard`/`neurolink_last_analysis`/`neurolink_recent_eeg`)、批量分析与报告导出(`batch_analyze`/`batch_progress`/`batch_report`,异步轮询+ZIP 落盘)、BrainFlow 采集控制(`realtime_status`/`realtime_start`/`realtime_stop`,硬件参数校验)。结果落盘到 `outputs/<slug>/`,每次调用追加 provenance 到 `outputs/<slug>.provenance.md`。配置项:`eegds.baseUrl`(默认 `http://localhost:18765`)、`eegds.timeoutMs`、`eegds.autoHealthCheck`。
 - **[Hugging Face Hub](https://huggingface.co/docs/hub/api)** — 从 model、dataset 与 Space repo 读取 dataset 元数据、split/schema 检视与小文件
 - **Web search** — Exa、Perplexity 或 Gemini API;默认不访问 Chromium cookie
 - **Session search** — 跨过往研究会话的索引召回
