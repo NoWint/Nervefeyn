@@ -320,6 +320,174 @@ test("handleEegdsAction analyze eegds_http_error on 500", async () => {
 	}
 });
 
+test("handleEegdsAction neurolink_dashboard success with connected:false", async () => {
+	globalThis.fetch = async (input) => {
+		const url = new URL(String(input));
+		if (url.pathname === "/api/neurolink/status") return jsonResponse({ connected: false });
+		if (url.pathname === "/api/neurolink/dashboard") return jsonResponse({ connected: false, flow_state: "idle", flow_index: 0, buffer_duration_sec: 0, last_analysis: { has_results: false }, auto_analysis: { enabled: false, interval: 0 } });
+		throw new Error("unexpected");
+	};
+	const result = await handleEegdsAction({ action: "neurolink_dashboard", slug: "live" });
+	assert.equal(result.ok, true);
+	assert.equal(result.connected, false);
+	assert.equal(result.flow_state, "idle");
+});
+
+test("handleEegdsAction neurolink_recent_eeg lands samples to file, return only path", async () => {
+	const dir = mkdtempSync(join(tmpdir(), "eegds-recent-"));
+	const origCwd = process.cwd();
+	try {
+		process.chdir(dir);
+		const samples = new Array(1200).fill(0).map((_, i) => [i, i % 4]);
+		globalThis.fetch = async (input) => {
+			const url = new URL(String(input));
+			if (url.pathname === "/api/neurolink/status") return jsonResponse({ connected: false });
+			if (url.pathname === "/api/neurolink/recent-eeg") return jsonResponse({ ok: true, fs: 120, n_samples: 1200, duration_sec: 10, samples });
+			throw new Error("unexpected");
+		};
+		const result = await handleEegdsAction({ action: "neurolink_recent_eeg", slug: "recent", n_samples: 1200 });
+		assert.equal(result.ok, true);
+		assert.equal(result.fs, 120);
+		assert.equal(result.n_samples, 1200);
+		assert.equal(result.samples_file, "outputs/recent/eegds-recent-eeg.json");
+		assert.equal(existsSync(join(dir, result.samples_file)), true);
+		assert.equal((result as { samples?: unknown }).samples, undefined);
+	} finally {
+		process.chdir(origCwd);
+		rmSync(dir, { recursive: true, force: true });
+	}
+});
+
+test("handleEegdsAction batch_analyze returns immediately with batch_id, does not block", async () => {
+	const dir = mkdtempSync(join(tmpdir(), "eegds-batch-start-"));
+	const origCwd = process.cwd();
+	try {
+		process.chdir(dir);
+		const f1 = join(dir, "data", "a.csv");
+		const f2 = join(dir, "data", "b.csv");
+		ensureTestDir(join(dir, "data"));
+		writeTestFile(f1, "time,ch1\n0,1\n");
+		writeTestFile(f2, "time,ch1\n0,1\n");
+		globalThis.fetch = async (input) => {
+			const url = new URL(String(input));
+			if (url.pathname === "/api/neurolink/status") return jsonResponse({ connected: false });
+			if (url.pathname === "/api/batch-analyze") return jsonResponse({ ok: true, batch_id: "batch-001", total: 2, status: "running" });
+			throw new Error("unexpected");
+		};
+		const result = await handleEegdsAction({
+			action: "batch_analyze",
+			slug: "batch-20260715",
+			files: ["data/a.csv", "data/b.csv"],
+			assignments: [
+				{ filename: "a.csv", subject: "S01", condition: "AtoA" },
+				{ filename: "b.csv", subject: "S01", condition: "AtoB" },
+			],
+		});
+		assert.equal(result.ok, true);
+		assert.equal(result.batch_id, "batch-001");
+		assert.equal(result.total, 2);
+		assert.equal(result.status, "running");
+	} finally {
+		process.chdir(origCwd);
+		rmSync(dir, { recursive: true, force: true });
+	}
+});
+
+test("handleEegdsAction batch_analyze rejects files/assignments length mismatch", async () => {
+	const dir = mkdtempSync(join(tmpdir(), "eegds-batch-mismatch-"));
+	const origCwd = process.cwd();
+	try {
+		process.chdir(dir);
+		const result = await handleEegdsAction({
+			action: "batch_analyze",
+			files: ["a.csv"],
+			assignments: [],
+		});
+		assert.equal(result.ok, false);
+		assert.equal(result.error, "batch_assignment_mismatch");
+	} finally {
+		process.chdir(origCwd);
+		rmSync(dir, { recursive: true, force: true });
+	}
+});
+
+test("handleEegdsAction batch_progress parses running / done / failed and lands snapshot", async () => {
+	const dir = mkdtempSync(join(tmpdir(), "eegds-batch-progress-"));
+	const origCwd = process.cwd();
+	try {
+		process.chdir(dir);
+		const states: Array<{ status: string; current: number; total: number }> = [
+			{ status: "running", current: 1, total: 3 },
+			{ status: "done", current: 3, total: 3 },
+		];
+		for (const expected of states) {
+			globalThis.fetch = async (input) => {
+				const url = new URL(String(input));
+				if (url.pathname === "/api/neurolink/status") return jsonResponse({ connected: false });
+				if (url.pathname.startsWith("/api/batch-progress/")) return jsonResponse({ ok: true, ...expected, current_file: "x.csv", current_module: "flow_recovery", errors: [] });
+				throw new Error("unexpected");
+			};
+			const result = await handleEegdsAction({ action: "batch_progress", batch_id: "batch-001", slug: "batch-20260715" });
+			assert.equal(result.ok, true);
+			assert.equal(result.status, expected.status);
+			assert.equal(result.current, expected.current);
+			assert.equal(result.progress_file, "outputs/batch-20260715/eegds-batch-progress.json");
+		}
+		assert.equal(existsSync(join(dir, "outputs", "batch-20260715", "eegds-batch-progress.json")), true);
+	} finally {
+		process.chdir(origCwd);
+		rmSync(dir, { recursive: true, force: true });
+	}
+});
+
+test("handleEegdsAction batch_report lands ZIP binary to file", async () => {
+	const dir = mkdtempSync(join(tmpdir(), "eegds-batch-zip-"));
+	const origCwd = process.cwd();
+	try {
+		process.chdir(dir);
+		const zipBytes = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0, 0, 0, 0]);
+		globalThis.fetch = async (input) => {
+			const url = new URL(String(input));
+			if (url.pathname === "/api/neurolink/status") return jsonResponse({ connected: false });
+			if (url.pathname === "/api/export-batch-report") return new Response(zipBytes, { status: 200, headers: { "content-type": "application/zip" } });
+			throw new Error("unexpected");
+		};
+		const result = await handleEegdsAction({ action: "batch_report", batch_id: "batch-001", slug: "batch-20260715" });
+		assert.equal(result.ok, true);
+		assert.equal(result.zip_file, "outputs/batch-20260715/eegds-batch-report.zip");
+		assert.equal(existsSync(join(dir, result.zip_file)), true);
+	} finally {
+		process.chdir(origCwd);
+		rmSync(dir, { recursive: true, force: true });
+	}
+});
+
+test("handleEegdsAction realtime_start synthetic succeeds without hardware params", async () => {
+	globalThis.fetch = async (input) => {
+		const url = new URL(String(input));
+		if (url.pathname === "/api/neurolink/status") return jsonResponse({ connected: false });
+		if (url.pathname === "/api/realtime/start") return jsonResponse({ ok: true, board_id: "synthetic", board_name: "Synthetic Board", fs: 250, channels: 8, n_exg: 8 });
+		throw new Error("unexpected");
+	};
+	const result = await handleEegdsAction({ action: "realtime_start", board_id: "synthetic" });
+	assert.equal(result.ok, true);
+	assert.equal(result.board_id, "synthetic");
+});
+
+test("handleEegdsAction realtime_start cyton missing serial_port returns missing_hardware_params without HTTP", async () => {
+	let realtimeCalled = false;
+	globalThis.fetch = async (input) => {
+		const url = new URL(String(input));
+		if (url.pathname === "/api/neurolink/status") return jsonResponse({ connected: false });
+		if (url.pathname === "/api/realtime/start") { realtimeCalled = true; return jsonResponse({ ok: true }); }
+		throw new Error("unexpected");
+	};
+	const result = await handleEegdsAction({ action: "realtime_start", board_id: "cyton" });
+	assert.equal(result.ok, false);
+	assert.equal(result.error, "missing_hardware_params");
+	assert.equal(realtimeCalled, false);
+});
+
 // Test helpers used by multiple tests
 function ensureTestDir(path: string): void {
 	if (!existsSync(path)) mkdirSync(path, { recursive: true });

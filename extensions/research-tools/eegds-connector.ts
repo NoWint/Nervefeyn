@@ -363,16 +363,278 @@ async function handleAnalyze(params: EegdsActionParams, slug: string): Promise<E
 	return { ok: true, ...summary };
 }
 
+async function handleNeurolinkDashboard(_params: EegdsActionParams, slug: string): Promise<EegdsResult> {
+	const settings = loadEegdsSettings();
+	const healthErr = await ensureHealthy();
+	if (healthErr) return healthErr;
+	const url = new URL("/api/neurolink/dashboard", settings.baseUrl);
+	const res = await eegdsFetch(url, { method: "GET" });
+	if (!res.ok) {
+		const body = await res.text().catch(() => "");
+		return { ok: false, error: "eegds_http_error", message: `EEGDataScience returned ${res.status}: ${body.slice(0, 200)}` };
+	}
+	const raw = await parseJsonSafe(res) as Record<string, unknown>;
+	const summary: Record<string, unknown> = {
+		connected: raw.connected,
+		flow_state: raw.flow_state,
+		flow_index: raw.flow_index,
+		buffer_duration_sec: raw.buffer_duration_sec,
+		last_analysis: raw.last_analysis,
+		auto_analysis: raw.auto_analysis,
+	};
+	appendEegdsProvenance(slug, { timestamp: localIsoTimestamp(), action: "neurolink_dashboard", endpoint: "GET /api/neurolink/dashboard", params: {}, summary, verification: "inferred" });
+	return { ok: true, ...summary };
+}
+
+async function handleNeurolinkLastAnalysis(_params: EegdsActionParams, slug: string): Promise<EegdsResult> {
+	const settings = loadEegdsSettings();
+	const healthErr = await ensureHealthy();
+	if (healthErr) return healthErr;
+	const url = new URL("/api/neurolink/last-analysis", settings.baseUrl);
+	const res = await eegdsFetch(url, { method: "GET" });
+	if (!res.ok) {
+		const body = await res.text().catch(() => "");
+		return { ok: false, error: "eegds_http_error", message: `EEGDataScience returned ${res.status}: ${body.slice(0, 200)}` };
+	}
+	const raw = await parseJsonSafe(res) as Record<string, unknown>;
+	const resultsFile = writeEegdsResultFile(slug, "eegds-last-analysis.json", JSON.stringify(raw, null, 2));
+	const summary: Record<string, unknown> = {
+		results_summary: raw.results_summary ?? raw.summary,
+		timestamp: raw.timestamp,
+		duration: raw.duration,
+		error: raw.error,
+		running: raw.running,
+		results_file: resultsFile,
+	};
+	appendEegdsProvenance(slug, { timestamp: localIsoTimestamp(), action: "neurolink_last_analysis", endpoint: "GET /api/neurolink/last-analysis", params: {}, summary, verification: "inferred", resultFile: resultsFile });
+	return { ok: true, ...summary };
+}
+
+async function handleNeurolinkRecentEeg(params: EegdsActionParams, slug: string): Promise<EegdsResult> {
+	const settings = loadEegdsSettings();
+	const healthErr = await ensureHealthy();
+	if (healthErr) return healthErr;
+	const nSamples = Math.max(1, Math.min(params.n_samples ?? 1200, 5000));
+	const url = new URL("/api/neurolink/recent-eeg", settings.baseUrl);
+	url.searchParams.set("n", String(nSamples));
+	const res = await eegdsFetch(url, { method: "GET" });
+	if (!res.ok) {
+		const body = await res.text().catch(() => "");
+		return { ok: false, error: "eegds_http_error", message: `EEGDataScience returned ${res.status}: ${body.slice(0, 200)}` };
+	}
+	const raw = await parseJsonSafe(res) as Record<string, unknown>;
+	const samplesFile = writeEegdsResultFile(slug, "eegds-recent-eeg.json", JSON.stringify(raw, null, 2));
+	const summary: Record<string, unknown> = {
+		fs: raw.fs,
+		n_samples: raw.n_samples,
+		duration_sec: raw.duration_sec,
+		samples_file: samplesFile,
+	};
+	appendEegdsProvenance(slug, { timestamp: localIsoTimestamp(), action: "neurolink_recent_eeg", endpoint: `GET /api/neurolink/recent-eeg?n=${nSamples}`, params: { n_samples: nSamples }, summary, verification: "inferred", resultFile: samplesFile });
+	return { ok: true, ...summary };
+}
+
+async function handleBatchAnalyze(params: EegdsActionParams, slug: string): Promise<EegdsResult> {
+	const settings = loadEegdsSettings();
+	const files = params.files ?? [];
+	const assignments = params.assignments ?? [];
+	if (files.length !== assignments.length) {
+		const err: EegdsError = { ok: false, error: "batch_assignment_mismatch", message: `files count (${files.length}) != assignments count (${assignments.length})` };
+		appendEegdsProvenance(slug, { timestamp: localIsoTimestamp(), action: "batch_analyze", endpoint: "POST /api/batch-analyze", params: { files, assignments }, verification: "blocked", error: err.message });
+		return err;
+	}
+	// Validate all files in workspace
+	for (const f of files) {
+		const v = validateWorkspaceFile(f);
+		if (!v.ok) {
+			appendEegdsProvenance(slug, { timestamp: localIsoTimestamp(), action: "batch_analyze", endpoint: "POST /api/batch-analyze", params: { files, assignments }, verification: "blocked", error: v.error });
+			return v;
+		}
+	}
+	const healthErr = await ensureHealthy();
+	if (healthErr) return healthErr;
+	// Build multipart with all files + assignments JSON
+	const boundary = `eegds-${randomUUID()}`;
+	const parts: Uint8Array[] = [];
+	for (let i = 0; i < files.length; i++) {
+		const abs = (validateWorkspaceFile(files[i]) as { ok: true; absPath: string }).absPath;
+		const buf = readFileSync(abs);
+		const filename = resolvePath(files[i]).split("/").pop() ?? `file-${i}`;
+		parts.push(new TextEncoder().encode(`--${boundary}\r\nContent-Disposition: form-data; name="files"; filename="${filename}"\r\nContent-Type: application/octet-stream\r\n\r\n`));
+		parts.push(buf);
+		parts.push(new TextEncoder().encode("\r\n"));
+	}
+	parts.push(new TextEncoder().encode(`--${boundary}\r\nContent-Disposition: form-data; name="assignments"\r\nContent-Type: application/json\r\n\r\n${JSON.stringify(assignments)}\r\n`));
+	parts.push(new TextEncoder().encode(`--${boundary}--\r\n`));
+	const totalLen = parts.reduce((n, p) => n + p.length, 0);
+	const body = new Uint8Array(totalLen);
+	let offset = 0;
+	for (const p of parts) { body.set(p, offset); offset += p.length; }
+	const url = new URL("/api/batch-analyze", settings.baseUrl);
+	const res = await eegdsFetch(url, {
+		method: "POST",
+		headers: { "content-type": `multipart/form-data; boundary=${boundary}` },
+		body,
+	});
+	if (!res.ok) {
+		const text = await res.text().catch(() => "");
+		return { ok: false, error: "eegds_http_error", message: `EEGDataScience returned ${res.status}: ${text.slice(0, 200)}` };
+	}
+	const raw = await parseJsonSafe(res) as Record<string, unknown>;
+	const summary: Record<string, unknown> = {
+		batch_id: raw.batch_id,
+		total: raw.total,
+		status: raw.status ?? "running",
+	};
+	appendEegdsProvenance(slug, { timestamp: localIsoTimestamp(), action: "batch_analyze", endpoint: "POST /api/batch-analyze", params: { files, assignments }, summary, verification: "unverified" });
+	return { ok: true, ...summary };
+}
+
+async function handleBatchProgress(params: EegdsActionParams, slug: string): Promise<EegdsResult> {
+	const settings = loadEegdsSettings();
+	const batchId = params.batch_id;
+	if (!batchId) return { ok: false, error: "eegds_http_error", message: "batch_progress requires batch_id" };
+	const healthErr = await ensureHealthy();
+	if (healthErr) return healthErr;
+	const url = new URL(`/api/batch-progress/${encodeURIComponent(batchId)}`, settings.baseUrl);
+	const res = await eegdsFetch(url, { method: "GET" });
+	if (res.status === 404) return { ok: false, error: "batch_not_found", message: `batch_id ${batchId} not found` };
+	if (!res.ok) {
+		const body = await res.text().catch(() => "");
+		return { ok: false, error: "eegds_http_error", message: `EEGDataScience returned ${res.status}: ${body.slice(0, 200)}` };
+	}
+	const raw = await parseJsonSafe(res) as Record<string, unknown>;
+	// Spec §4.1: write a batch_progress snapshot to outputs/<slug>/eegds-batch-progress.json
+	const progressFile = writeEegdsResultFile(slug, "eegds-batch-progress.json", JSON.stringify(raw, null, 2));
+	const summary: Record<string, unknown> = {
+		total: raw.total,
+		current: raw.current,
+		current_file: raw.current_file,
+		current_module: raw.current_module,
+		status: raw.status,
+		errors: raw.errors ?? [],
+		progress_file: progressFile,
+	};
+	appendEegdsProvenance(slug, { timestamp: localIsoTimestamp(), action: "batch_progress", endpoint: `GET /api/batch-progress/${batchId}`, params: { batch_id: batchId }, summary, verification: "inferred", resultFile: progressFile });
+	return { ok: true, ...summary };
+}
+
+async function handleBatchReport(params: EegdsActionParams, slug: string): Promise<EegdsResult> {
+	const settings = loadEegdsSettings();
+	const batchId = params.batch_id;
+	if (!batchId) return { ok: false, error: "eegds_http_error", message: "batch_report requires batch_id" };
+	const healthErr = await ensureHealthy();
+	if (healthErr) return healthErr;
+	const url = new URL("/api/export-batch-report", settings.baseUrl);
+	url.searchParams.set("batch_id", batchId);
+	const res = await eegdsFetch(url, { method: "GET" });
+	if (!res.ok) {
+		const body = await res.text().catch(() => "");
+		return { ok: false, error: "eegds_http_error", message: `EEGDataScience returned ${res.status}: ${body.slice(0, 200)}` };
+	}
+	const zipBytes = new Uint8Array(await res.arrayBuffer());
+	const zipFile = writeEegdsResultFile(slug, "eegds-batch-report.zip", zipBytes);
+	const summary: Record<string, unknown> = { zip_file: zipFile, batch_id: batchId };
+	appendEegdsProvenance(slug, { timestamp: localIsoTimestamp(), action: "batch_report", endpoint: `GET /api/export-batch-report?batch_id=${batchId}`, params: { batch_id: batchId }, summary, verification: "unverified", resultFile: zipFile });
+	return { ok: true, ...summary };
+}
+
+async function handleRealtimeStatus(_params: EegdsActionParams, slug: string): Promise<EegdsResult> {
+	const settings = loadEegdsSettings();
+	const healthErr = await ensureHealthy();
+	if (healthErr) return healthErr;
+	const url = new URL("/api/realtime/status", settings.baseUrl);
+	const res = await eegdsFetch(url, { method: "GET" });
+	if (!res.ok) {
+		const body = await res.text().catch(() => "");
+		return { ok: false, error: "eegds_http_error", message: `EEGDataScience returned ${res.status}: ${body.slice(0, 200)}` };
+	}
+	const raw = await parseJsonSafe(res) as Record<string, unknown>;
+	const summary: Record<string, unknown> = {
+		state: raw.state,
+		board_name: raw.board_name,
+		fs: raw.fs,
+		channels: raw.channels,
+		n_clients: raw.n_clients,
+		elapsed_sec: raw.elapsed_sec,
+		packets_lost: raw.packets_lost,
+	};
+	appendEegdsProvenance(slug, { timestamp: localIsoTimestamp(), action: "realtime_status", endpoint: "GET /api/realtime/status", params: {}, summary, verification: "inferred" });
+	return { ok: true, ...summary };
+}
+
+async function handleRealtimeStart(params: EegdsActionParams, slug: string): Promise<EegdsResult> {
+	const settings = loadEegdsSettings();
+	const boardId = params.board_id;
+	if (!boardId) return { ok: false, error: "eegds_http_error", message: "realtime_start requires board_id" };
+	if (boardId !== "synthetic") {
+		if (boardId === "ganglion" && !params.mac_address) {
+			const err: EegdsError = { ok: false, error: "missing_hardware_params", message: `board_id=${boardId} requires mac_address` };
+			appendEegdsProvenance(slug, { timestamp: localIsoTimestamp(), action: "realtime_start", endpoint: "POST /api/realtime/start", params: { board_id: boardId }, verification: "blocked", error: err.message });
+			return err;
+		}
+		if ((boardId === "cyton" || boardId === "daisy") && !params.serial_port) {
+			const err: EegdsError = { ok: false, error: "missing_hardware_params", message: `board_id=${boardId} requires serial_port` };
+			appendEegdsProvenance(slug, { timestamp: localIsoTimestamp(), action: "realtime_start", endpoint: "POST /api/realtime/start", params: { board_id: boardId }, verification: "blocked", error: err.message });
+			return err;
+		}
+	}
+	const healthErr = await ensureHealthy();
+	if (healthErr) return healthErr;
+	const url = new URL("/api/realtime/start", settings.baseUrl);
+	const res = await eegdsFetch(url, {
+		method: "POST",
+		headers: { "content-type": "application/json" },
+		body: JSON.stringify({ board_id: boardId, serial_port: params.serial_port, mac_address: params.mac_address }),
+	});
+	if (!res.ok) {
+		const body = await res.text().catch(() => "");
+		return { ok: false, error: "eegds_http_error", message: `EEGDataScience returned ${res.status}: ${body.slice(0, 200)}` };
+	}
+	const raw = await parseJsonSafe(res) as Record<string, unknown>;
+	const summary: Record<string, unknown> = {
+		board_id: raw.board_id,
+		board_name: raw.board_name,
+		fs: raw.fs,
+		channels: raw.channels,
+		n_exg: raw.n_exg,
+	};
+	appendEegdsProvenance(slug, { timestamp: localIsoTimestamp(), action: "realtime_start", endpoint: "POST /api/realtime/start", params: { board_id: boardId }, summary, verification: "unverified" });
+	return { ok: true, ...summary };
+}
+
+async function handleRealtimeStop(_params: EegdsActionParams, slug: string): Promise<EegdsResult> {
+	const settings = loadEegdsSettings();
+	const healthErr = await ensureHealthy();
+	if (healthErr) return healthErr;
+	const url = new URL("/api/realtime/stop", settings.baseUrl);
+	const res = await eegdsFetch(url, { method: "POST" });
+	if (!res.ok) {
+		const body = await res.text().catch(() => "");
+		return { ok: false, error: "eegds_http_error", message: `EEGDataScience returned ${res.status}: ${body.slice(0, 200)}` };
+	}
+	const raw = await parseJsonSafe(res) as Record<string, unknown>;
+	const summary: Record<string, unknown> = { elapsed_sec: raw.elapsed_sec };
+	appendEegdsProvenance(slug, { timestamp: localIsoTimestamp(), action: "realtime_stop", endpoint: "POST /api/realtime/stop", params: {}, summary, verification: "unverified" });
+	return { ok: true, ...summary };
+}
+
 export async function handleEegdsAction(params: EegdsActionParams): Promise<EegdsResult> {
 	const slug = params.slug ?? "";
 	try {
 		switch (params.action) {
-			case "health_check":
-				return await handleHealthCheck(params, slug);
-			case "analyze":
-				return await handleAnalyze(params, slug);
-			default:
-				return { ok: false, error: "eegds_http_error", message: `Unknown action: ${params.action}` };
+			case "health_check": return await handleHealthCheck(params, slug);
+			case "analyze": return await handleAnalyze(params, slug);
+			case "neurolink_dashboard": return await handleNeurolinkDashboard(params, slug);
+			case "neurolink_last_analysis": return await handleNeurolinkLastAnalysis(params, slug);
+			case "neurolink_recent_eeg": return await handleNeurolinkRecentEeg(params, slug);
+			case "batch_analyze": return await handleBatchAnalyze(params, slug);
+			case "batch_progress": return await handleBatchProgress(params, slug);
+			case "batch_report": return await handleBatchReport(params, slug);
+			case "realtime_status": return await handleRealtimeStatus(params, slug);
+			case "realtime_start": return await handleRealtimeStart(params, slug);
+			case "realtime_stop": return await handleRealtimeStop(params, slug);
+			default: return { ok: false, error: "eegds_http_error", message: `Unknown action: ${params.action}` };
 		}
 	} catch (err) {
 		// parseJsonSafe throws Error("Failed to parse EEGDataScience response: <snippet>") — convert to eegds_parse_error.
