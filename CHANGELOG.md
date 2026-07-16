@@ -8,8 +8,12 @@
 - slug: eegds-connector
 - 新增 EEGDataScience REST connector(eegds tool,11 action:health_check/analyze/neurolink_*/batch_*/realtime_*)
 - 服务于:运行复现实验 + 声明核对(子项目 A,全链路研究闭环第一跳)
-- 验证:unverified(待 npm test 全绿 + 手动启动 EEGDataScience 跑通后转 verified)
-- 下一步:子项目 B(eegds-flow-recovery skill)独立 spec
+- 验证:
+  - verified: 27/27 单元测试通过;typecheck clean;build success
+  - verified: health_check 对运行中的 EEGDataScience 平台返回 200(latencyMs ~59ms)
+  - verified: upload multipart 契约正确(eeg_file 字段 + condition form 字段)
+  - blocked: analyze action 对 NeuroLink tab 分隔 CSV 返回 500 —— 平台侧 `_detect_brainflow_csv` 不识别带命名表头的 tab 分隔文件(仅支持纯数字表头或无表头 RAW),`load_eeg_full` 回退到 `pd.read_csv` 默认逗号分隔导致 ValueError。这是 EEGDataScience 平台 bug,非 connector 问题
+- 下一步:(1) EEGDataScience 平台修复 tab-CSV 识别(扩展 `_detect_brainflow_csv` 或 `load_eeg_full` fallback `sep='\t'`);(2) 子项目 B(eegds-flow-recovery skill)独立 spec
 
 ## 2026-07-14 — /ar 长线自主研究循环
 
